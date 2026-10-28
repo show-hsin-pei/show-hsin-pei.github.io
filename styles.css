@@ -187,22 +187,29 @@ h2 {
   letter-spacing: .16em;
   text-indent: .16em;
 }
-.name-en {
+.name-rest {
   display: block;
-  margin-top: 8px;
+  margin-top: 10px;
   color: var(--gold);
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: .34em;
-  text-indent: .34em;
-  text-transform: none;
+  font-family: var(--serif);
+  font-size: clamp(16px, 4.2vw, 20px);
+  font-weight: 600;
+  letter-spacing: .14em;
+  text-indent: .14em;
 }
 .role {
-  margin: 22px 0 0;
+  margin: 18px 0 0;
   color: var(--secondary);
   font-size: 13.5px;
   letter-spacing: .12em;
-  line-height: 1.8;
+  line-height: 1.7;
+}
+.role + .role { margin-top: 2px; }
+.since {
+  margin: 10px 0 0;
+  color: var(--secondary);
+  font-size: 12px;
+  letter-spacing: .16em;
 }
 .pipe { color: var(--gold-soft); }
 .tagline {
@@ -244,6 +251,74 @@ h2 {
 .btn-ghost:hover { background: var(--ink); color: var(--bg); }
 .cta .btn { width: 100%; }
 .btn:active { transform: translateY(1px); }
+
+/* honors */
+.honors { background: var(--bg-2); }
+.badges {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  max-width: 760px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.badges li {
+  display: grid;
+  place-items: center;
+  min-height: 72px;
+  margin: 0;
+  padding: 16px 10px;
+  border: 1px solid var(--gold);
+  border-radius: 16px;
+  background: var(--card);
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-align: center;
+  line-height: 1.45;
+}
+.honors-note {
+  margin: 18px 0 0;
+  color: var(--secondary);
+  font-size: 15px;
+  letter-spacing: .04em;
+}
+
+/* practice */
+.service-grid {
+  display: grid;
+  gap: 12px;
+}
+.service {
+  padding: 22px 20px 24px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+}
+.service svg { color: var(--gold); }
+.service h3 {
+  margin: 14px 0 6px;
+  font-family: var(--serif);
+  font-size: 19px;
+  letter-spacing: .06em;
+}
+.service p {
+  margin: 0;
+  color: var(--secondary);
+  font-size: 15px;
+  line-height: 1.75;
+}
+.pullquote.long {
+  max-width: 16em;
+  margin: 36px auto 0;
+  font-size: clamp(18px, 4.6vw, 26px);
+  font-weight: 600;
+  letter-spacing: .04em;
+  line-height: 1.75;
+}
 
 /* story */
 .story {
@@ -312,6 +387,28 @@ h2 {
   padding-bottom: 2px;
 }
 .text-link:hover { color: var(--gold); }
+.team-quote {
+  max-width: 40rem;
+  margin: 28px 0 0;
+  font-family: var(--serif);
+  font-size: clamp(20px, 4.8vw, 26px);
+  font-weight: 600;
+  line-height: 1.65;
+  letter-spacing: .04em;
+}
+
+/* life */
+.life {
+  background: var(--card);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.btn-sm {
+  min-height: 42px;
+  margin-top: 22px;
+  padding: 8px 18px;
+  font-size: 14px;
+}
 
 /* column */
 .column-card {
@@ -414,6 +511,12 @@ footer {
   text-align: center;
 }
 footer p { margin: 0; }
+footer .hash {
+  margin-top: 8px;
+  color: var(--secondary);
+  font-size: 11px;
+  letter-spacing: .08em;
+}
 
 .line-fab {
   position: fixed;
@@ -474,16 +577,25 @@ footer p { margin: 0; }
   .hero-text { order: -1; text-align: left; }
   .hero-photo { width: min(100%, 420px); margin: 0 0 0 auto; }
   .cta { justify-content: flex-start; }
-  .role { letter-spacing: .18em; font-size: 14px; }
+  .role { letter-spacing: .16em; font-size: 14px; }
+  .since { letter-spacing: .2em; }
   .story .wrap,
   .why .wrap,
   .team .wrap,
-  .column .wrap { max-width: 720px; }
+  .column .wrap,
+  .life .wrap { max-width: 720px; }
+  .badges { grid-template-columns: repeat(4, 1fr); max-width: none; gap: 16px; }
+  .badges li { min-height: 88px; font-size: 18px; }
+  .service-grid { grid-template-columns: 1fr 1fr; gap: 18px; }
+  .service { padding: 28px 26px 30px; }
   .story-card, .column-card { padding: 40px 40px 42px; }
   .invite { padding: 32px 32px 34px; }
   .pullquote { font-size: 32px; letter-spacing: .06em; }
   .contact h2 { max-width: 18em; word-break: keep-all; }
-  .contact h2 br { display: none; }
+  .contact h2 br,
+  .practice h2 br,
+  .pullquote.long br { display: none; }
+  .pullquote.long { max-width: 22em; word-break: keep-all; }
   .column-card {
     flex-direction: row;
     align-items: center;
