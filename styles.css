@@ -387,15 +387,6 @@ h2 {
   padding-bottom: 2px;
 }
 .text-link:hover { color: var(--gold); }
-.team-quote {
-  max-width: 40rem;
-  margin: 28px 0 0;
-  font-family: var(--serif);
-  font-size: clamp(20px, 4.8vw, 26px);
-  font-weight: 600;
-  line-height: 1.65;
-  letter-spacing: .04em;
-}
 
 /* life */
 .life {
