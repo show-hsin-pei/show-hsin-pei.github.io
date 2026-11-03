@@ -586,6 +586,7 @@ footer .hash {
   .contact h2 br,
   .practice h2 br,
   .pullquote.long br { display: none; }
+  .team .pullquote.long br { display: inline; }
   .pullquote.long { max-width: 22em; word-break: keep-all; }
   .column-card {
     flex-direction: row;
