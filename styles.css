@@ -400,6 +400,13 @@ h2 {
   padding: 8px 18px;
   font-size: 14px;
 }
+.life-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 22px;
+}
+.life-links .btn-sm { margin-top: 0; white-space: nowrap; }
 
 /* column */
 .column-card {
