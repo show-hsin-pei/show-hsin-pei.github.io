@@ -1,5 +1,5 @@
 (function () {
-  const VERSION = "1.2";
+  const VERSION = "1.3";
   const UPDATED = "2026年11月24日";
   const KEY = "hean-village-v1";
   const FONT = '"Noto Sans TC", "PingFang TC", "Microsoft JhengHei", "WenQuanYi Micro Hei", sans-serif';
@@ -802,9 +802,9 @@
     const scale = window.HEAN_CHARS.SCALE;
     pen.save();
     pen.translate(x, y);
-    pen.fillStyle = "rgba(40, 28, 18, 0.28)";
+    pen.fillStyle = "rgba(48, 32, 20, 0.22)";
     pen.beginPath();
-    pen.ellipse(0, 4, isPlayer ? 16 : 14, 6, 0, 0, Math.PI * 2);
+    pen.ellipse(2, 5, isPlayer ? 18 : 16, 6.5, 0, 0, Math.PI * 2);
     pen.fill();
     if (isPlayer) {
       pen.strokeStyle = "rgba(165, 134, 90, 0.8)";
