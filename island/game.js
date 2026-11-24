@@ -1,5 +1,5 @@
 (function () {
-  const VERSION = "1.0";
+  const VERSION = "1.1";
   const UPDATED = "2026年11月24日";
   const KEY = "hean-village-v1";
   const FONT = '"Noto Sans TC", "PingFang TC", "Microsoft JhengHei", "WenQuanYi Micro Hei", sans-serif';
@@ -18,12 +18,6 @@
     agent: "給業務員的提醒",
     broker: "給經紀人的提醒"
   };
-  const ROLE_COAT = {
-    consumer: "#c4a36a",
-    agent: "#b98362",
-    broker: "#7f8f78"
-  };
-
   const SCENARIOS = window.HEAN_SCENARIOS || [];
   const byId = Object.fromEntries(SCENARIOS.map(function (s) { return [s.id, s]; }));
 
@@ -482,12 +476,12 @@
     activeSpots().forEach(function (s, i) {
       queue.push({
         y: s.y,
-        draw: function () { drawPerson(s.x, s.y, s.coat, "#3e342c", i, false, s.id); }
+        draw: function () { drawPerson(s.x, s.y, i, false, s.id); }
       });
     });
     queue.push({
       y: player.y,
-      draw: function () { drawPerson(player.x, player.y, ROLE_COAT[role] || "#c4a36a", "#3e342c", 0, true); }
+      draw: function () { drawPerson(player.x, player.y, 0, true); }
     });
     queue.sort(function (a, b) { return a.y - b.y; });
     queue.forEach(function (item) { item.draw(); });
@@ -682,52 +676,41 @@
     ctx.fillRect(1016, 556, 4, 10);
   }
 
-  function drawPerson(x, y, coat, hair, index, isPlayer, scenarioId) {
-    const bob = reduceMotion ? 0 : Math.sin(time * 2 + index) * 1.1;
-    const sway = isPlayer ? Math.sin(player.walk * 10) * 3.2 : Math.sin(time * 2 + index) * 0.6;
+  function drawPerson(x, y, index, isPlayer, scenarioId) {
+    const id = isPlayer ? "player-" + role : scenarioId;
+    const pack = window.HEAN_CHARS.sheetFor(id);
+    if (!pack) return;
+    const moving = isPlayer && player.walk > 0.02 && !reduceMotion;
+    const frame = moving ? Math.floor(((player.walk % 0.56) / 0.56) * pack.frames) % pack.frames : 0;
+    const bob = !moving && !reduceMotion ? Math.sin(time * 1.7 + index) * 1.15 : 0;
+    const sw = window.HEAN_CHARS.SW;
+    const sh = window.HEAN_CHARS.SH;
+    const scale = window.HEAN_CHARS.SCALE;
     ctx.save();
-    ctx.translate(x, y + bob);
-    if (isPlayer && player.dir < 0) ctx.scale(-1, 1);
-    ctx.fillStyle = "rgba(80, 60, 40, 0.16)";
+    ctx.translate(x, y);
+    ctx.fillStyle = "rgba(90, 64, 40, 0.16)";
     ctx.beginPath();
-    ctx.ellipse(0, 4, 13, 5.5, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, 3, isPlayer ? 15 : 13, 5.2, 0, 0, Math.PI * 2);
     ctx.fill();
     if (isPlayer) {
-      ctx.strokeStyle = "rgba(165, 134, 90, 0.85)";
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = "rgba(165, 134, 90, 0.8)";
+      ctx.lineWidth = 1.6;
       ctx.beginPath();
-      ctx.ellipse(0, 4, 16, 7, 0, 0, Math.PI * 2);
+      ctx.ellipse(0, 3, 16, 6.2, 0, 0, Math.PI * 2);
       ctx.stroke();
     }
-    ctx.strokeStyle = "#5c4a3a";
-    ctx.lineWidth = 3;
-    ctx.lineCap = "round";
-    ctx.beginPath();
-    ctx.moveTo(-4, -8);
-    ctx.lineTo(-4 - sway, 2);
-    ctx.moveTo(4, -8);
-    ctx.lineTo(4 + sway, 2);
-    ctx.stroke();
-    roundRect(-11, -28, 22, 20, 8);
-    ctx.fillStyle = coat;
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(0, -34, 9, 0, Math.PI * 2);
-    ctx.fillStyle = "#f2d0b4";
-    ctx.fill();
-    ctx.fillStyle = hair;
-    ctx.beginPath();
-    ctx.arc(0, -37, 9, Math.PI * 1.05, Math.PI * 1.95);
-    ctx.fill();
+    ctx.translate(0, bob);
+    if (isPlayer && player.dir < 0) ctx.scale(-1, 1);
+    ctx.drawImage(pack.canvas, frame * sw * scale, 0, sw * scale, sh * scale, -sw / 2, -(sh - 8), sw, sh);
     if (!isPlayer && nearestSpot() && nearestSpot().id === scenarioId) {
-      ctx.strokeStyle = "#a5865a";
+      ctx.strokeStyle = "rgba(165, 134, 90, 0.9)";
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.arc(0, -18, 26, 0, Math.PI * 2);
+      ctx.ellipse(0, -34, 24, 32, 0, 0, Math.PI * 2);
       ctx.stroke();
     }
     ctx.restore();
-    if (!isPlayer) drawMark(x, y - 52, recordOf(scenarioId));
+    if (!isPlayer) drawMark(x, y - 86, recordOf(scenarioId));
   }
 
   function drawMark(x, y, rec) {
@@ -761,7 +744,7 @@
       const text = sc.speaker;
       const w = ctx.measureText(text).width + 16;
       const x = s.x - w / 2;
-      const y = s.y - 70;
+      const y = s.y - 102;
       roundRect(x, y, w, 20, 10);
       ctx.fillStyle = "rgba(255, 253, 249, 0.94)";
       ctx.fill();
@@ -865,6 +848,7 @@
     document.getElementById("dlg-place").textContent = sc.place;
     document.getElementById("dlg-title").textContent = sc.title;
     document.getElementById("dlg-speaker").textContent = sc.speaker;
+    window.HEAN_CHARS.paintPortrait(document.getElementById("dlg-portrait"), id);
     document.getElementById("dlg-body").textContent = sc.body;
     const options = document.getElementById("dlg-options");
     options.replaceChildren();

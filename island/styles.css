@@ -94,9 +94,9 @@ h1 {
   text-align: center;
   font-family: var(--serif);
   font-weight: 700;
-  font-size: clamp(40px, 8vw, 64px);
-  letter-spacing: 0.14em;
-  line-height: 1.15;
+  font-size: clamp(28px, 6.2vw, 48px);
+  letter-spacing: 0.06em;
+  line-height: 1.25;
 }
 
 .lede {
@@ -196,7 +196,8 @@ h1 {
 .hud-title {
   font-family: var(--serif);
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
+  font-size: 16px;
 }
 
 .hud-role, .hud-stat {
@@ -236,7 +237,7 @@ h1 {
   min-height: 0;
 }
 
-canvas {
+#view {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -405,6 +406,28 @@ body.ui-busy .toast { visibility: hidden; }
   flex: none;
 }
 
+.who {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+#dlg-portrait {
+  position: static;
+  width: 92px;
+  height: 108px;
+  flex: none;
+  border-radius: 18px;
+  background: #f6efe4;
+  display: block;
+}
+
+.who .speaker {
+  margin: 0;
+  font-size: 18px;
+}
+
 .speaker {
   margin: 10px 0 0;
   font-weight: 700;
@@ -504,10 +527,15 @@ body.ui-busy .toast { visibility: hidden; }
 .badge.best { background: #efe4c4; }
 .badge.seen { background: #f3e6dc; }
 
+@media (max-width: 520px) {
+  .hud-title { flex: 1 0 100%; }
+}
+
 @media (min-width: 800px) {
   .roles { grid-template-columns: repeat(3, 1fr); }
   .dialog { align-items: center; padding: 24px; }
   .shell { padding-top: 36px; }
+  #dlg-portrait { width: 120px; height: 140px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
