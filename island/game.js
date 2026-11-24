@@ -1,5 +1,5 @@
 (function () {
-  const VERSION = "1.6";
+  const VERSION = "1.7";
   const UPDATED = "2026年11月24日";
   const KEY = "hean-village-v1";
   const FONT = '"Noto Sans TC", "PingFang TC", "Microsoft JhengHei", "WenQuanYi Micro Hei", sans-serif';
@@ -155,6 +155,7 @@
   let roomName = "家";
   let doorLock = 0;
   let townLayer = null;
+  let townBakedWithArt = false;
   let hourOverride = null;
   window.HEAN_ASSETS = window.HEAN_ASSETS || { scenes: { town: null, home: null, map: null }, characters: {} };
   if (!window.HEAN_ASSETS.scenes) window.HEAN_ASSETS.scenes = {};
@@ -269,7 +270,6 @@
       return false;
     }
     if (x < rad + 10 || y < rad + 10 || x > WORLD.w - rad - 10 || y > WORLD.h - rad - 10) return true;
-    if (inPlaza(x, y)) return plazaBlocked(x, y);
     if (Math.hypot(x - 460, y - 1780) < 120 + rad) return true;
     if (x > WORLD.w - 70 - rad) return true;
     if (Math.hypot(x - 820, y - 640) < 22 + rad) return true;
@@ -590,10 +590,13 @@
     pen.translate(-cam.x * zoom, -cam.y * zoom);
     pen.scale(zoom, zoom);
     if (area === "town") {
-      if (!townLayer) townLayer = bakeTown();
-      pen.drawImage(townLayer, 0, 0);
       const townArt = window.HEAN_ASSETS && window.HEAN_ASSETS.scenes && window.HEAN_ASSETS.scenes.town;
-      if (townArt && townArt.complete && townArt.naturalWidth) pen.drawImage(townArt, PLAZA.x, PLAZA.y, PLAZA.w, PLAZA.h);
+      const artReady = !!(townArt && townArt.complete && townArt.naturalWidth);
+      if (!townLayer || (artReady && !townBakedWithArt)) {
+        townBakedWithArt = artReady;
+        townLayer = bakeTown();
+      }
+      pen.drawImage(townLayer, 0, 0);
       drawLife();
     } else {
       const homeArt = window.HEAN_ASSETS && window.HEAN_ASSETS.scenes && window.HEAN_ASSETS.scenes.home;
@@ -724,7 +727,7 @@
     viewW = WORLD.w;
     viewH = WORLD.h;
     zoom = 1;
-    drawGround();
+    drawTownBackdrop();
     drawPaths();
     drawPond();
     drawRiver();
@@ -746,6 +749,31 @@
     return c;
   }
 
+  function townImage() {
+    const scenes = window.HEAN_ASSETS && window.HEAN_ASSETS.scenes;
+    const image = scenes && scenes.town;
+    if (image && image.complete && image.naturalWidth) return image;
+    return null;
+  }
+
+  function coverTown(ctx, image) {
+    const scale = Math.max(WORLD.w / image.naturalWidth, WORLD.h / image.naturalHeight);
+    const dw = image.naturalWidth * scale;
+    const dh = image.naturalHeight * scale;
+    ctx.drawImage(image, (WORLD.w - dw) / 2, (WORLD.h - dh) / 2, dw, dh);
+  }
+
+  function drawTownBackdrop() {
+    const image = townImage();
+    if (image) {
+      coverTown(pen, image);
+      pen.fillStyle = "rgba(236, 224, 204, 0.18)";
+      pen.fillRect(0, 0, WORLD.w, WORLD.h);
+      return;
+    }
+    drawGround();
+  }
+
   function drawGround() {
     const size = 48;
     const x0 = Math.floor(cam.x / size) * size - size;
@@ -755,7 +783,7 @@
     for (let y = y0; y < y1; y += size) {
       for (let x = x0; x < x1; x += size) {
         const n = hash(x, y);
-        pen.fillStyle = n > 0.55 ? "#efe6d6" : "#e7decc";
+        pen.fillStyle = n > 0.55 ? "#e7d7bc" : "#d5c7a4";
         pen.fillRect(x, y, size + 1, size + 1);
         if (n > 0.86) {
           pen.fillStyle = "rgba(168, 140, 90, 0.16)";
@@ -768,7 +796,7 @@
   }
 
   function drawPaths() {
-    pen.fillStyle = "#e7d3b0";
+    pen.fillStyle = "rgba(226, 206, 166, 0.78)";
     PATHS.forEach(function (p) {
       roundRect(p.x, p.y, p.w, p.h, 18);
       pen.fill();
@@ -797,11 +825,11 @@
   }
 
   function drawRiver() {
-    pen.fillStyle = "rgba(186, 208, 170, 0.45)";
+    pen.fillStyle = "rgba(150, 176, 122, 0.16)";
     pen.fillRect(1840, 40, 440, 500);
-    pen.fillStyle = "rgba(198, 176, 142, 0.4)";
+    pen.fillStyle = "rgba(168, 140, 96, 0.14)";
     pen.fillRect(1840, 1572, 440, 360);
-    pen.fillStyle = "rgba(176, 204, 208, 0.28)";
+    pen.fillStyle = "rgba(120, 160, 170, 0.16)";
     pen.fillRect(40, 1572, 780, 360);
   }
 
@@ -848,11 +876,11 @@
     const w = b.w;
     const h = b.h;
     const wall = b.wall || "#fffaf3";
-    pen.fillStyle = "rgba(70, 48, 30, 0.2)";
+    pen.fillStyle = "rgba(62, 42, 24, 0.28)";
     pen.beginPath();
-    pen.ellipse(x + w / 2 + 10, y + h, w * 0.46, 11, 0, 0, Math.PI * 2);
+    pen.ellipse(x + w / 2 + 8, y + h + 2, w * 0.5, 16, 0, 0, Math.PI * 2);
     pen.fill();
-    pen.fillStyle = "#c4a07a";
+    pen.fillStyle = "#a67c52";
     pen.beginPath();
     pen.moveTo(x + w - 6, y + 46);
     pen.lineTo(x + w + 18, y + 58);
@@ -862,7 +890,11 @@
     roundRect(x, y + 34, w, h - 30, 8);
     pen.fillStyle = wall;
     pen.fill();
-    pen.strokeStyle = "rgba(90, 60, 40, 0.22)";
+    pen.fillStyle = "rgba(166, 124, 82, 0.2)";
+    pen.fill();
+    pen.fillStyle = "rgba(120, 78, 46, 0.28)";
+    pen.fillRect(x + 4, y + h - 22, w - 8, 12);
+    pen.strokeStyle = "rgba(90, 60, 40, 0.28)";
     pen.lineWidth = 2;
     pen.stroke();
     pen.fillStyle = "rgba(214, 190, 156, 0.35)";
@@ -1315,16 +1347,18 @@
     g.scale(mapGeom.scale, mapGeom.scale);
     if (art && art.complete && art.naturalWidth) g.drawImage(art, 0, 0, WORLD.w, WORLD.h);
     else {
-      g.fillStyle = "#efe6d6";
-      g.fillRect(0, 0, WORLD.w, WORLD.h);
-      g.fillStyle = "rgba(186, 208, 170, 0.45)";
-      g.fillRect(PLAZA.x, PLAZA.y, PLAZA.w, PLAZA.h);
-      g.fillStyle = "rgba(196, 214, 232, 0.55)";
-      g.fillRect(40, 1572, 780, 360);
-      g.fillStyle = "rgba(196, 176, 142, 0.45)";
-      g.fillRect(1840, 1572, 440, 360);
-      g.fillStyle = "#e7d3b0";
+      const town = townImage();
+      if (town) coverTown(g, town);
+      else {
+        g.fillStyle = "#e7d7bc";
+        g.fillRect(0, 0, WORLD.w, WORLD.h);
+      }
+      g.fillStyle = "rgba(226, 206, 166, 0.82)";
       PATHS.forEach(function (p) { g.fillRect(p.x, p.y, p.w, p.h); });
+      g.fillStyle = "rgba(120, 160, 170, 0.35)";
+      g.beginPath();
+      g.ellipse(460, 1780, 150, 88, 0, 0, Math.PI * 2);
+      g.fill();
     }
     BUILDINGS.forEach(function (b) {
       if (b.art) return;
