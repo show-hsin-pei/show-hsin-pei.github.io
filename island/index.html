@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="theme-color" content="#f6f2ec">
+  <meta name="format-detection" content="telephone=no">
+  <title>暖禾村｜保險觀念散步</title>
+  <meta name="description" content="暖禾村是原創的保險觀念教學小遊戲。實際是否給付，以保單條款為準。">
+  <link rel="icon" href="../favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=1.0">
+</head>
+<body>
+  <a class="skip" href="#title-main">跳至主要內容</a>
+  <section id="title-screen">
+    <div class="shell">
+      <svg class="skyline" viewBox="0 0 640 168" role="img" aria-label="暖禾村的房子、小路與樹">
+        <rect x="0" y="128" width="640" height="40" rx="20" fill="#e7d7bc"/>
+        <rect x="70" y="132" width="500" height="14" rx="7" fill="#f4ead8"/>
+        <ellipse cx="118" cy="92" rx="28" ry="26" fill="#c9d0be"/>
+        <rect x="112" y="108" width="10" height="22" rx="3" fill="#b08968"/>
+        <g>
+          <rect x="168" y="78" width="92" height="52" rx="12" fill="#fffdf9" stroke="#e3dacb"/>
+          <rect x="160" y="62" width="108" height="26" rx="10" fill="#c4a36a"/>
+          <rect x="204" y="100" width="18" height="30" rx="5" fill="#8d6b45"/>
+        </g>
+        <g>
+          <rect x="292" y="64" width="108" height="66" rx="14" fill="#fffdf9" stroke="#e3dacb"/>
+          <rect x="282" y="46" width="128" height="28" rx="12" fill="#c4896a"/>
+          <rect x="336" y="96" width="20" height="34" rx="6" fill="#8d6b45"/>
+        </g>
+        <g>
+          <rect x="430" y="80" width="86" height="50" rx="12" fill="#fffdf9" stroke="#e3dacb"/>
+          <rect x="422" y="66" width="102" height="24" rx="10" fill="#b98362"/>
+          <rect x="464" y="102" width="16" height="28" rx="5" fill="#8d6b45"/>
+        </g>
+        <circle cx="548" cy="108" r="11" fill="#f2d0b4"/>
+        <rect x="538" y="118" width="20" height="16" rx="7" fill="#a5865a"/>
+      </svg>
+      <p class="eyebrow">保險觀念散步</p>
+      <h1 id="title-main">暖禾村</h1>
+      <p class="lede">選一個身分，在村子裡走走。靠近住家或村民，聽一段保險爭議，再選一個看法。這是教學，不是測驗排名。</p>
+      <p class="version" id="version-line">版本 1.0 · 2026年11月24日更新</p>
+      <div class="roles" role="group" aria-label="選擇身分">
+        <button class="role-card" type="button" data-role="consumer">
+          <span class="kicker">走進村子</span>
+          <span class="role-name">客戶（消費者）</span>
+          <span class="role-desc">把理賠、告知、停效、契撤、受益人這些常在家裡發生的事，走成一條路。</span>
+          <span class="role-meta"><span id="count-consumer">12 則情境</span><span id="prog-consumer">還沒開始</span></span>
+        </button>
+        <button class="role-card" type="button" data-role="agent">
+          <span class="kicker">走進村子</span>
+          <span class="role-name">業務員</span>
+          <span class="role-desc">除了村民的保單問題，還會遇到親簽、退佣，以及說明必須和條款一致的界線。</span>
+          <span class="role-meta"><span id="count-agent">16 則情境</span><span id="prog-agent">還沒開始</span></span>
+        </button>
+        <button class="role-card" type="button" data-role="broker">
+          <span class="kicker">走進村子</span>
+          <span class="role-name">經紀人</span>
+          <span class="role-desc">除了保單爭議，也會遇到報酬怎麼收、利益衝突，以及要站在被保險人這一邊。</span>
+          <span class="role-meta"><span id="count-broker">16 則情境</span><span id="prog-broker">還沒開始</span></span>
+        </button>
+      </div>
+      <p class="legal">暖禾人壽與石橋產物皆為虛構。本內容僅供保險觀念教育，不構成招攬、法律意見或個別建議。實際是否承保或給付，以保險契約條款、投保內容與個案事實為準。</p>
+    </div>
+  </section>
+
+  <section id="play-screen" hidden>
+    <header class="hud">
+      <strong class="hud-title">暖禾村</strong>
+      <span class="hud-role" id="hud-role"></span>
+      <span class="hud-stat" id="hud-stat"></span>
+      <div class="hud-actions">
+        <button type="button" class="chip" id="btn-progress">進度</button>
+        <button type="button" class="chip" id="btn-role">換身分</button>
+        <button type="button" class="chip" id="btn-sound" aria-pressed="false">音效關</button>
+        <button type="button" class="chip" id="btn-music" aria-pressed="false">音樂關</button>
+      </div>
+    </header>
+    <div class="stage" id="stage">
+      <canvas id="view" aria-label="暖禾村。電腦可用滑鼠點地面移動，或用方向鍵與 WASD。靠近村民後按 E 或空白鍵對話。"></canvas>
+      <p class="desktop-hint" id="desktop-hint">點地面走路 · 方向鍵或 WASD · E 或空白鍵對話</p>
+      <p class="near-label" id="near-label" hidden></p>
+      <p class="toast" id="toast" hidden></p>
+    </div>
+    <footer class="legal">暖禾人壽與石橋產物皆為虛構。本內容僅供保險觀念教育，不構成招攬、法律意見或個別建議。實際是否承保或給付，以保險契約條款、投保內容與個案事實為準。</footer>
+    <div class="joystick" id="joystick" aria-hidden="true">
+      <div class="knob"></div>
+    </div>
+    <button type="button" class="talk-btn" id="talk-btn" disabled>對話</button>
+  </section>
+
+  <div class="dialog" id="dialog" hidden role="dialog" aria-modal="true" aria-labelledby="dlg-title">
+    <div class="sheet" tabindex="-1">
+      <div class="sheet-head">
+        <div>
+          <p class="place" id="dlg-place"></p>
+          <h2 id="dlg-title"></h2>
+        </div>
+        <button type="button" class="icon-btn" id="dlg-close" aria-label="關閉">×</button>
+      </div>
+      <p class="speaker" id="dlg-speaker"></p>
+      <p class="body-copy" id="dlg-body"></p>
+      <div class="options" id="dlg-options"></div>
+      <div class="feedback" id="dlg-feedback" hidden>
+        <p class="verdict" id="dlg-verdict"></p>
+        <p class="best-line" id="dlg-best"></p>
+        <p class="explain" id="dlg-explain"></p>
+        <div class="tip" id="dlg-tip">
+          <strong id="dlg-tip-label"></strong>
+          <p id="dlg-tip-body"></p>
+        </div>
+        <button type="button" class="primary" id="dlg-save">記下來</button>
+        <button type="button" class="ghost" id="dlg-retry" hidden>再選一次</button>
+      </div>
+      <p class="sheet-note">教學情境。實際是否給付，以保單條款、投保內容與個案事實為準。</p>
+    </div>
+  </div>
+
+  <div class="dialog" id="progress" hidden role="dialog" aria-modal="true" aria-labelledby="progress-title">
+    <div class="sheet" tabindex="-1">
+      <div class="sheet-head">
+        <div>
+          <p class="place">暖禾村</p>
+          <h2 id="progress-title">這個身分的進度</h2>
+        </div>
+        <button type="button" class="icon-btn" id="progress-close" aria-label="關閉">×</button>
+      </div>
+      <p class="body-copy" id="progress-summary"></p>
+      <ul class="progress-list" id="progress-list"></ul>
+      <button type="button" class="ghost" id="progress-clear">清除這個身分的紀錄</button>
+      <p class="sheet-note" id="progress-version"></p>
+    </div>
+  </div>
+
+  <noscript><p class="legal">暖禾村需要開啟 JavaScript 才能走動與對話。</p></noscript>
+  <script src="scenarios.js?v=1.0" defer></script>
+  <script src="game.js?v=1.0" defer></script>
+</body>
+</html>
