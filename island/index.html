@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=1.5">
+  <link rel="stylesheet" href="styles.css?v=1.6">
 </head>
 <body>
   <a class="skip" href="#title-main">跳至主要內容</a>
@@ -59,25 +59,25 @@
       <p class="eyebrow">保險觀念散步</p>
       <h1 id="title-main">藝世錄保險小鎮</h1>
       <p class="lede">選一個身分，在小鎮裡走走。靠近住家或村民，聽一段保險爭議，再選一個看法。這是教學，不是測驗排名。</p>
-      <p class="version" id="version-line">版本 1.4 · 2026年11月24日更新</p>
+      <p class="version" id="version-line">版本 1.5 · 2026年11月24日更新</p>
       <div class="roles" role="group" aria-label="選擇身分">
         <button class="role-card" type="button" data-role="consumer">
           <span class="kicker">走進小鎮</span>
           <span class="role-name">客戶（消費者）</span>
           <span class="role-desc">把理賠、告知、停效、契撤、受益人這些常在家裡發生的事，走成一條路。</span>
-          <span class="role-meta"><span id="count-consumer">12 則情境</span><span id="prog-consumer">還沒開始</span></span>
+          <span class="role-meta"><span id="count-consumer">18 則情境</span><span id="prog-consumer">還沒開始</span></span>
         </button>
         <button class="role-card" type="button" data-role="agent">
           <span class="kicker">走進小鎮</span>
           <span class="role-name">業務員</span>
           <span class="role-desc">除了村民的保單問題，還會遇到親簽、退佣，以及說明必須和條款一致的界線。</span>
-          <span class="role-meta"><span id="count-agent">16 則情境</span><span id="prog-agent">還沒開始</span></span>
+          <span class="role-meta"><span id="count-agent">22 則情境</span><span id="prog-agent">還沒開始</span></span>
         </button>
         <button class="role-card" type="button" data-role="broker">
           <span class="kicker">走進小鎮</span>
           <span class="role-name">經紀人</span>
           <span class="role-desc">除了保單爭議，也會遇到報酬怎麼收、利益衝突，以及要站在被保險人這一邊。</span>
-          <span class="role-meta"><span id="count-broker">16 則情境</span><span id="prog-broker">還沒開始</span></span>
+          <span class="role-meta"><span id="count-broker">22 則情境</span><span id="prog-broker">還沒開始</span></span>
         </button>
       </div>
       <p class="legal">暖禾人壽與石橋產物皆為虛構。本內容僅供保險觀念教育，不構成招攬、法律意見或個別建議。實際是否承保或給付，以保險契約條款、投保內容與個案事實為準。</p>
@@ -102,6 +102,14 @@
       <p class="desktop-hint" id="desktop-hint">點地面走路 · 方向鍵或 WASD · E 或空白鍵對話</p>
       <p class="near-label" id="near-label" hidden></p>
       <p class="toast" id="toast" hidden></p>
+      <div class="quest" id="quest">
+        <span id="quest-text">目標：走出家門</span>
+        <button type="button" id="quest-go">帶我去</button>
+      </div>
+      <div class="reward" id="reward" hidden>
+        <strong>獲得獎勵</strong>
+        <p id="reward-body"></p>
+      </div>
     </div>
     <footer class="legal">暖禾人壽與石橋產物皆為虛構。本內容僅供保險觀念教育，不構成招攬、法律意見或個別建議。實際是否承保或給付，以保險契約條款、投保內容與個案事實為準。</footer>
     <div class="joystick" id="joystick" aria-hidden="true">
@@ -150,9 +158,7 @@
         <button type="button" class="icon-btn" id="map-close" aria-label="關閉">×</button>
       </div>
       <p class="body-copy">從家裡的門走出去就是小鎮。走到房子門口會進到室內，室內下方的門可以回到小鎮。</p>
-      <ul class="map-list">
-        <li>家</li><li>衛生室</li><li>村辦公室</li><li>茶館</li><li>周家</li><li>書報攤</li><li>申訴亭</li><li>繳費亭</li><li>吳家</li><li>車行</li><li>河岸住家</li><li>郵務角</li><li>招攬角</li><li>事務所</li><li>我家</li>
-      </ul>
+      <ul class="map-list" id="map-list"></ul>
     </div>
   </div>
 
@@ -174,6 +180,19 @@
     </div>
   </div>
 
+  <div class="dialog" id="facility" hidden role="dialog" aria-modal="true" aria-labelledby="facility-title">
+    <div class="sheet" tabindex="-1">
+      <div class="sheet-head">
+        <div>
+          <p class="place">藝世錄保險小鎮</p>
+          <h2 id="facility-title"></h2>
+        </div>
+        <button type="button" class="icon-btn" id="facility-close" aria-label="關閉">×</button>
+      </div>
+      <div id="facility-body"></div>
+    </div>
+  </div>
+
   <div class="dialog" id="progress" hidden role="dialog" aria-modal="true" aria-labelledby="progress-title">
     <div class="sheet" tabindex="-1">
       <div class="sheet-head">
@@ -191,9 +210,9 @@
   </div>
 
   <noscript><p class="legal">藝世錄保險小鎮需要開啟 JavaScript 才能走動與對話。</p></noscript>
-  <script src="scenarios.js?v=1.5" defer></script>
-  <script src="characters.js?v=1.5" defer></script>
-  <script src="rooms.js?v=1.5" defer></script>
-  <script src="game.js?v=1.5" defer></script>
+  <script src="scenarios.js?v=1.6" defer></script>
+  <script src="characters.js?v=1.6" defer></script>
+  <script src="rooms.js?v=1.6" defer></script>
+  <script src="game.js?v=1.6" defer></script>
 </body>
 </html>

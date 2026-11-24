@@ -53,7 +53,14 @@
     "no-misstate": { skin: "#f6d4b8", hair: "#5c3030", hairStyle: "wavy", coat: "#a86a78", shirt: "#fff6f4", mouth: "worried", eyes: "bright", age: "young" },
     "no-guarantee": { skin: "#efc8aa", hair: "#4a3430", hairStyle: "bun", coat: "#c4926a", shirt: "#fff7f0", mouth: "worried", eyes: "kind", extra: "shawl", extraColor: "#f1d2bc" },
     "broker-conflict": { skin: "#e6c0a2", hair: "#6e6660", hairStyle: "side", coat: "#5d6e5c", shirt: "#f5f2ea", mouth: "calm", eyes: "narrow", age: "elder" },
-    "broker-scope": { skin: "#f2cdb0", hair: "#4a342e", hairStyle: "long", coat: "#b9916a", shirt: "#fff8f1", mouth: "calm", eyes: "kind", extra: "glasses" }
+    "broker-scope": { skin: "#f2cdb0", hair: "#4a342e", hairStyle: "long", coat: "#b9916a", shirt: "#fff8f1", mouth: "calm", eyes: "kind", extra: "glasses" },
+    "garage-voluntary": { skin: "#e8c2a4", hair: "#2a221c", hairStyle: "crop", coat: "#8a623e", shirt: "#f6f0e6", pants: "#3a342e", mouth: "calm", eyes: "kind", extra: "cap", extraColor: "#5c4636" },
+    "hospital-reimburse": { skin: "#f6d0b8", hair: "#241c1a", hairStyle: "ponytail", coat: "#d7e4ea", shirt: "#fff", pants: "#5c6a72", mouth: "smile", eyes: "bright" },
+    "pet-visit": { skin: "#f3c9aa", hair: "#5c3828", hairStyle: "short", coat: "#d7a05a", shirt: "#fff6ea", mouth: "bright", eyes: "bright", extra: "apron", extraColor: "#f4e7cf" },
+    "park-walk": { skin: "#e7c3a4", hair: "#3a3028", hairStyle: "side", coat: "#6e8a62", shirt: "#f7f3ea", pants: "#3e4638", mouth: "calm", eyes: "kind" },
+    "lake-rest": { skin: "#f0c6aa", hair: "#6a5348", hairStyle: "bob", coat: "#7aa0b0", shirt: "#f7f4ee", mouth: "soft", eyes: "kind" },
+    "trail-sign": { skin: "#e4bc98", hair: "#2c241e", hairStyle: "crop", coat: "#8d6a45", shirt: "#f6efe4", pants: "#3e342c", mouth: "calm", eyes: "narrow", extra: "cap", extraColor: "#6a4e34" },
+    "bank-counter": { skin: "#f4d0b4", hair: "#241c1a", hairStyle: "short", coat: "#3e5348", shirt: "#f7f5f0", pants: "#2c3330", mouth: "calm", eyes: "kind", extra: "tie", extraColor: "#8d5a3c" }
   };
 
   const LOOKS = {};
@@ -539,6 +546,30 @@
   const SCALE = 2;
   const PLAYER_FRAMES = 16;
   const sheets = {};
+  const imageSheets = {};
+
+  /*
+   * 之後若要換成圖：列的順序固定為 down, left, right, up，每一欄是一格走路。
+   * HEAN_CHARS.useImageSheet(id, image) 
+   * image 需已載入，寬度可被欄數整除、高度可被 4 整除。
+   * 場景底圖則指定 HEAN_ASSETS.scenes.town / .home（已載入的圖），會蓋過程式繪製。
+   */
+  function useImageSheet(id, image) {
+    imageSheets[id] = image;
+  }
+
+  function drawSheet(ctx, id, facing, frame, dx, dy, dw, dh) {
+    const image = imageSheets[id];
+    if (!image || !image.complete || !image.naturalWidth) return false;
+    const rowName = { down: 0, left: 1, right: 2, up: 3 };
+    const row = rowName[facing] == null ? 0 : rowName[facing];
+    const cols = Math.max(1, Math.round(image.naturalWidth / (image.naturalHeight / 4)));
+    const fw = image.naturalWidth / cols;
+    const fh = image.naturalHeight / 4;
+    const col = Math.abs(frame) % cols;
+    ctx.drawImage(image, col * fw, row * fh, fw, fh, dx, dy, dw, dh);
+    return true;
+  }
 
   function buildSheet(id, frames) {
     const look = LOOKS[id];
@@ -616,6 +647,8 @@
     SCALE: SCALE,
     sheetFor: sheetFor,
     paintPortrait: paintPortrait,
-    paintAvatar: paintAvatar
+    paintAvatar: paintAvatar,
+    useImageSheet: useImageSheet,
+    drawSheet: drawSheet
   };
 })();

@@ -1,9 +1,9 @@
 (function () {
-  const VERSION = "1.4";
+  const VERSION = "1.5";
   const UPDATED = "2026年11月24日";
   const KEY = "hean-village-v1";
   const FONT = '"Noto Sans TC", "PingFang TC", "Microsoft JhengHei", "WenQuanYi Micro Hei", sans-serif';
-  const WORLD = { w: 1720, h: 1500 };
+  const WORLD = { w: 2300, h: 1960 };
   const CS = 20;
   const SPEED = 176;
   const REACH = 64;
@@ -22,39 +22,50 @@
   const byId = Object.fromEntries(SCENARIOS.map(function (s) { return [s.id, s]; }));
 
   const BUILDINGS = [
-    { name: "衛生室", x: 70, y: 70, w: 210, h: 145, roof: "#c4896a", wall: "#f7f3ea", kind: "clinic", scenarios: ["clinic-necessity"] },
-    { name: "村辦公室", x: 620, y: 60, w: 250, h: 155, roof: "#c4a36a", wall: "#fffaf3", kind: "office", scenarios: ["free-look"] },
-    { name: "茶館", x: 1160, y: 70, w: 220, h: 145, roof: "#b98362", wall: "#fff6ee", kind: "tea", scenarios: ["waiting-period"] },
-    { name: "周家", x: 70, y: 390, w: 210, h: 145, roof: "#c4a36a", wall: "#fff8ef", kind: "house", scenarios: ["disclosure-form"] },
-    { name: "書報攤", x: 420, y: 420, w: 160, h: 115, roof: "#d2b48a", wall: "#f6efe2", kind: "stall", scenarios: ["exclusion-print"] },
-    { name: "申訴亭", x: 1230, y: 400, w: 200, h: 135, roof: "#c4896a", wall: "#f7f1e8", kind: "office", scenarios: ["complaint-path"] },
-    { name: "繳費亭", x: 70, y: 750, w: 190, h: 140, roof: "#c4a36a", wall: "#fffaf3", kind: "office", scenarios: ["lapse-reinstate"] },
-    { name: "吳家", x: 470, y: 740, w: 220, h: 150, roof: "#b98362", wall: "#fff6f0", kind: "house", scenarios: ["beneficiary-update"] },
-    { name: "車行", x: 980, y: 730, w: 240, h: 160, roof: "#c4a36a", wall: "#f3eee6", kind: "garage", scenarios: ["compulsory-auto"] },
-    { name: "河岸住家", x: 1360, y: 745, w: 210, h: 145, roof: "#c4896a", wall: "#fff8ef", kind: "house", scenarios: ["storm-flood"] },
-    { name: "郵務角", x: 230, y: 1088, w: 160, h: 112, roof: "#d2b48a", wall: "#f7f1e6", kind: "stall", scenarios: ["claim-docs"] },
-    { name: "招攬角", x: 500, y: 1076, w: 300, h: 118, roof: "#c4a36a", wall: "#fff6ea", kind: "office", scenarios: ["face-sign", "no-rebate", "no-proxy-sign", "health-blank", "no-misstate", "no-guarantee"] },
-    { name: "事務所", x: 1180, y: 1070, w: 320, h: 120, roof: "#b98362", wall: "#f6f1e6", kind: "office", scenarios: ["broker-fee", "broker-commission", "broker-conflict", "broker-scope"] },
-    { name: "我家", x: 1400, y: 250, w: 170, h: 120, roof: "#c4a36a", wall: "#fff8ef", kind: "home", scenarios: [] }
+    { name: "我家", zone: "住宅區", x: 80, y: 160, w: 180, h: 130, roof: "#c4a36a", wall: "#fff8ef", kind: "home", scenarios: [] },
+    { name: "鎮民中心", zone: "住宅區", x: 360, y: 150, w: 240, h: 140, roof: "#c4a36a", wall: "#fffaf3", kind: "office", scenarios: ["free-look", "rider-ends"] },
+    { name: "周家", zone: "住宅區", x: 680, y: 170, w: 180, h: 120, roof: "#b98362", wall: "#fff8ef", kind: "house", scenarios: ["disclosure-form"] },
+    { name: "吳家", zone: "住宅區", x: 80, y: 620, w: 200, h: 130, roof: "#c4896a", wall: "#fff6f0", kind: "house", scenarios: ["beneficiary-update"] },
+    { name: "銀行", zone: "商店街", x: 980, y: 160, w: 200, h: 130, roof: "#8d6b45", wall: "#f7f3ea", kind: "bank", scenarios: [] },
+    { name: "超商", zone: "商店街", x: 1260, y: 170, w: 180, h: 120, roof: "#d2b48a", wall: "#fffaf3", kind: "stall", scenarios: ["claim-docs"] },
+    { name: "車行", zone: "商店街", x: 1540, y: 150, w: 220, h: 140, roof: "#c4a36a", wall: "#f3eee6", kind: "garage", scenarios: ["compulsory-auto", "garage-voluntary"] },
+    { name: "寵物店", zone: "商店街", x: 980, y: 620, w: 180, h: 120, roof: "#c48a6a", wall: "#fff6ea", kind: "stall", scenarios: ["pet-visit"] },
+    { name: "事務所", zone: "商店街", x: 1260, y: 600, w: 280, h: 140, roof: "#b98362", wall: "#f6f1e6", kind: "office", scenarios: ["broker-fee", "broker-commission", "broker-conflict", "broker-scope"] },
+    { name: "小鎮公所", zone: "公家機關區", x: 80, y: 980, w: 260, h: 150, roof: "#a67c52", wall: "#f7f1e8", kind: "office", scenarios: ["complaint-path", "exclusion-print"] },
+    { name: "勞工服務站", zone: "公家機關區", x: 420, y: 1000, w: 230, h: 130, roof: "#c4a36a", wall: "#fffaf3", kind: "office", scenarios: ["lapse-reinstate"] },
+    { name: "暖禾人壽", zone: "公司區", x: 980, y: 980, w: 280, h: 150, roof: "#c4896a", wall: "#fff8ef", kind: "office", scenarios: ["clinic-necessity", "waiting-period", "face-sign", "no-rebate", "health-blank"] },
+    { name: "石橋產物", zone: "公司區", x: 1360, y: 980, w: 280, h: 150, roof: "#8d6b45", wall: "#f6f1e6", kind: "office", scenarios: ["storm-flood", "no-misstate", "no-guarantee", "no-proxy-sign"] },
+    { name: "醫院", zone: "醫院", x: 80, y: 1320, w: 260, h: 140, roof: "#d7e4ea", wall: "#f7fbff", kind: "clinic", scenarios: ["hospital-reimburse"] },
+    { name: "公園亭", zone: "公園", x: 1860, y: 180, w: 170, h: 120, roof: "#7f8f78", wall: "#f7f3ea", kind: "stall", level: 3, scenarios: ["park-walk"] },
+    { name: "湖畔亭", zone: "湖畔", x: 200, y: 1620, w: 180, h: 120, roof: "#7aa0b0", wall: "#f7f4ee", kind: "house", level: 5, scenarios: ["lake-rest"] },
+    { name: "步道牌", zone: "山上步道", x: 1860, y: 1620, w: 160, h: 110, roof: "#8d6a45", wall: "#f6efe4", kind: "stall", level: 8, scenarios: ["trail-sign"] }
   ];
 
   const PATHS = [
-    { x: 40, y: 228, w: 1560, h: 54 },
-    { x: 40, y: 548, w: 1560, h: 54 },
-    { x: 40, y: 900, w: 1560, h: 56 },
-    { x: 200, y: 1204, w: 1360, h: 50 },
-    { x: 200, y: 1364, w: 1360, h: 48 },
-    { x: 888, y: 40, w: 58, h: 1420 },
-    { x: 150, y: 40, w: 54, h: 1040 }
+    { x: 40, y: 360, w: 2100, h: 70 },
+    { x: 40, y: 860, w: 2100, h: 70 },
+    { x: 40, y: 1500, w: 2100, h: 64 },
+    { x: 240, y: 40, w: 70, h: 1760 },
+    { x: 900, y: 40, w: 70, h: 1760 },
+    { x: 1760, y: 40, w: 70, h: 1760 }
   ];
 
   const TREES = [
-    { x: 48, y: 48 }, { x: 400, y: 96 }, { x: 1060, y: 86 }, { x: 1560, y: 70 },
-    { x: 1688, y: 180 }, { x: 36, y: 320 }, { x: 1040, y: 340 }, { x: 1688, y: 420 },
-    { x: 360, y: 690 }, { x: 1688, y: 690 }, { x: 36, y: 980 }, { x: 900, y: 1020 },
-    { x: 1688, y: 1040 }, { x: 48, y: 1280 }, { x: 1680, y: 1320 }, { x: 700, y: 1472 },
-    { x: 1500, y: 1460 }, { x: 1100, y: 500 }
+    { x: 40, y: 80 }, { x: 860, y: 120 }, { x: 1700, y: 80 }, { x: 40, y: 700 },
+    { x: 860, y: 760 }, { x: 2100, y: 80 }, { x: 40, y: 1480 }, { x: 900, y: 1480 },
+    { x: 2100, y: 1480 }, { x: 2200, y: 400 }, { x: 600, y: 1500 }, { x: 1500, y: 700 }
   ];
+  const LAMPS = [
+    { x: 280, y: 390 }, { x: 940, y: 390 }, { x: 1500, y: 390 },
+    { x: 280, y: 900 }, { x: 1100, y: 900 }, { x: 300, y: 1540 }
+  ];
+  const ZONES = [
+    { name: "公園", level: 3, x: 1840, y: 40, w: 440, h: 500, back: { x: 1700, y: 390 } },
+    { name: "湖畔", level: 5, x: 40, y: 1572, w: 780, h: 360, back: { x: 240, y: 1460 } },
+    { name: "山上步道", level: 8, x: 1840, y: 1572, w: 440, h: 360, back: { x: 1600, y: 1460 } }
+  ];
+  const LEVEL_XP = [0, 20, 40, 80, 120, 160, 200, 260];
+  const DAY_MS = 30000;
 
   const FLOWERS = [];
   (function seedFlowers() {
@@ -77,30 +88,19 @@
     }
   })();
 
-  const SPOTS = [
-    { id: "clinic-necessity", x: 175, y: 258, coat: "#c46b5a" },
-    { id: "free-look", x: 745, y: 258, coat: "#d08a62" },
-    { id: "waiting-period", x: 1270, y: 258, coat: "#c47a8a" },
-    { id: "disclosure-form", x: 175, y: 578, coat: "#8d6b45" },
-    { id: "exclusion-print", x: 500, y: 578, coat: "#6e7d64" },
-    { id: "rider-ends", x: 1040, y: 560, coat: "#5f7f8a" },
-    { id: "complaint-path", x: 1330, y: 578, coat: "#a36b4a" },
-    { id: "lapse-reinstate", x: 165, y: 934, coat: "#9a7048" },
-    { id: "beneficiary-update", x: 580, y: 934, coat: "#b56b78" },
-    { id: "compulsory-auto", x: 1100, y: 934, coat: "#4f6d78" },
-    { id: "storm-flood", x: 1465, y: 934, coat: "#7d8f72" },
-    { id: "claim-docs", x: 310, y: 1244, coat: "#c48a6a" },
-    { id: "face-sign", x: 560, y: 1244, coat: "#a67c52" },
-    { id: "no-rebate", x: 760, y: 1244, coat: "#8a623e" },
-    { id: "no-proxy-sign", x: 990, y: 1244, coat: "#6d5a48" },
-    { id: "broker-fee", x: 1260, y: 1244, coat: "#6e8468" },
-    { id: "broker-commission", x: 1460, y: 1244, coat: "#5f6e62" },
-    { id: "health-blank", x: 560, y: 1404, coat: "#9c5c48" },
-    { id: "no-misstate", x: 760, y: 1404, coat: "#7a5a68" },
-    { id: "no-guarantee", x: 990, y: 1404, coat: "#86604a" },
-    { id: "broker-conflict", x: 1260, y: 1404, coat: "#4f6a58" },
-    { id: "broker-scope", x: 1460, y: 1404, coat: "#6a7050" }
-  ];
+  const SPOTS = [];
+  BUILDINGS.forEach(function (b) {
+    (b.scenarios || []).forEach(function (id, index) {
+      const n = b.scenarios.length;
+      SPOTS.push({
+        id: id,
+        x: b.x + b.w / 2 + (index - (n - 1) / 2) * 44,
+        y: b.y + b.h + 42
+      });
+    });
+  });
+  SPOTS.push({ id: "bank-counter", name: "櫃台", x: 1080, y: 332, facility: "bank" });
+  SPOTS.push({ id: "chest-park", name: "寶箱", x: 2060, y: 360, facility: "chest", zone: "公園" });
 
   const titleScreen = document.getElementById("title-screen");
   const playScreen = document.getElementById("play-screen");
@@ -123,7 +123,7 @@
   let zoom = 1;
   let dpr = 1;
   const cam = { x: 0, y: 0 };
-  const player = { x: 400, y: 320, dir: 1, walk: 0 };
+  const player = { x: 400, y: 320, dir: 1, walk: 0, facing: "down" };
   const ROOM = window.HEAN_ROOMS.ROOM;
   let area = "home";
   let roomKind = "home";
@@ -131,6 +131,8 @@
   let roomName = "家";
   let doorLock = 0;
   let townLayer = null;
+  let hourOverride = null;
+  window.HEAN_ASSETS = window.HEAN_ASSETS || { scenes: { town: null, home: null }, characters: {} };
   let path = null;
   let time = 0;
   let currentId = null;
@@ -149,7 +151,17 @@
   let blocked = null;
 
   function defaultState() {
-    return { sound: false, music: false, lastRole: null, progress: { consumer: {}, agent: {}, broker: {} } };
+    return {
+      sound: false,
+      music: false,
+      lastRole: null,
+      progress: { consumer: {}, agent: {}, broker: {} },
+      xp: { consumer: 0, agent: 0, broker: 0 },
+      bonus: 0,
+      deposits: [],
+      opened: {},
+      seenBank: false
+    };
   }
 
   function load() {
@@ -164,7 +176,13 @@
       ["consumer", "agent", "broker"].forEach(function (r) {
         const src = data.progress && data.progress[r];
         if (src && typeof src === "object") base.progress[r] = src;
+        const fromDone = Object.keys(base.progress[r]).length * 20;
+        base.xp[r] = Math.max(fromDone, data.xp && typeof data.xp[r] === "number" ? data.xp[r] : 0);
       });
+      base.bonus = typeof data.bonus === "number" ? data.bonus : 0;
+      base.deposits = Array.isArray(data.deposits) ? data.deposits : [];
+      base.opened = data.opened && typeof data.opened === "object" ? data.opened : {};
+      base.seenBank = !!data.seenBank;
       return base;
     } catch (err) {
       return defaultState();
@@ -210,8 +228,8 @@
       return false;
     }
     if (x < rad + 10 || y < rad + 10 || x > WORLD.w - rad - 10 || y > WORLD.h - rad - 10) return true;
-    if (Math.hypot(x - 190, y - 1368) < 86 + rad) return true;
-    if (x > 1636 - rad) return true;
+    if (Math.hypot(x - 460, y - 1780) < 120 + rad) return true;
+    if (x > WORLD.w - 70 - rad) return true;
     if (Math.hypot(x - 820, y - 640) < 22 + rad) return true;
     for (let i = 0; i < BUILDINGS.length; i++) {
       const b = BUILDINGS[i];
@@ -367,6 +385,7 @@
     if (!role) return [];
     if (area === "town") {
       return SPOTS.filter(function (s) {
+        if (s.facility) return true;
         const sc = byId[s.id];
         return sc && sc.roles.indexOf(role) !== -1;
       });
@@ -399,11 +418,22 @@
   function uiOpen() {
     const mapPanel = document.getElementById("map-panel");
     const menuPanel = document.getElementById("menu-panel");
-    return !dialog.hidden || !progress.hidden || (mapPanel && !mapPanel.hidden) || (menuPanel && !menuPanel.hidden);
+    const facility = document.getElementById("facility");
+    return !dialog.hidden || !progress.hidden || (mapPanel && !mapPanel.hidden) || (menuPanel && !menuPanel.hidden) || (facility && !facility.hidden);
+  }
+
+  function placeChrome() {
+    const status = document.getElementById("status");
+    const quest = document.getElementById("quest");
+    if (!status || !quest) return;
+    const top = status.offsetTop + status.offsetHeight + 6;
+    quest.style.top = top + "px";
+    if (toastEl) toastEl.style.top = (top + quest.offsetHeight + 6) + "px";
   }
 
   function resize() {
     if (playScreen.hidden) return;
+    placeChrome();
     const rect = stage.getBoundingClientRect();
     if (rect.width < 2 || rect.height < 2) return;
     viewW = rect.width;
@@ -457,7 +487,9 @@
         vy /= len;
         tryMove(vx * SPEED * scale * dt, vy * SPEED * scale * dt);
         player.walk += dt;
-        player.dir = vx < -0.05 ? -1 : vx > 0.05 ? 1 : player.dir;
+        if (Math.abs(vy) > Math.abs(vx) && vy) player.facing = vy < 0 ? "up" : "down";
+        else if (vx) player.facing = vx < 0 ? "left" : "right";
+        player.dir = player.facing === "left" ? -1 : 1;
         if (toastEl && !toastEl.hidden && player.walk > 0.4) hideToast();
       } else {
         player.walk = 0;
@@ -478,6 +510,10 @@
     }
     if (doorLock > 0) doorLock -= dt;
     else tryDoors();
+    if (area === "town") {
+      holdZones();
+      settleDeposits();
+    }
     const near = nearestSpot();
     if (!near) {
       nearLabel.hidden = true;
@@ -486,7 +522,7 @@
     } else {
       const sc = byId[near.id];
       nearLabel.hidden = false;
-      nearLabel.textContent = sc.speaker + " · 可以對話";
+      nearLabel.textContent = (sc ? sc.speaker : near.name) + " · 可以互動";
       talkBtn.disabled = false;
       talkBtn.classList.add("ready");
     }
@@ -510,10 +546,17 @@
     pen.translate(-cam.x * zoom, -cam.y * zoom);
     pen.scale(zoom, zoom);
     if (area === "town") {
-      if (!townLayer) townLayer = bakeTown();
-      pen.drawImage(townLayer, 0, 0);
+      const townArt = window.HEAN_ASSETS && window.HEAN_ASSETS.scenes && window.HEAN_ASSETS.scenes.town;
+      if (townArt && townArt.complete && townArt.naturalWidth) pen.drawImage(townArt, 0, 0, WORLD.w, WORLD.h);
+      else {
+        if (!townLayer) townLayer = bakeTown();
+        pen.drawImage(townLayer, 0, 0);
+      }
+      drawLife();
     } else {
-      window.HEAN_ROOMS.paint(pen, area === "home" ? "home" : roomKind, time);
+      const homeArt = window.HEAN_ASSETS && window.HEAN_ASSETS.scenes && window.HEAN_ASSETS.scenes.home;
+      if (area === "home" && homeArt && homeArt.complete && homeArt.naturalWidth) pen.drawImage(homeArt, 0, 0, ROOM.w, ROOM.h);
+      else window.HEAN_ROOMS.paint(pen, area === "home" ? "home" : roomKind, time);
     }
     const queue = [];
     activeSpots().forEach(function (s, i) {
@@ -538,6 +581,87 @@
       pen.stroke();
     }
     pen.restore();
+    drawSky();
+  }
+
+  function drawLife() {
+    drawDog(1120, 790);
+    drawCat(1040, 808);
+    const wing = Math.sin(time * 8);
+    const bx = 760 + Math.sin(time * 0.6) * 36;
+    const by = 300 + Math.sin(time * 1.1) * 8;
+    pen.strokeStyle = "#6a5344";
+    pen.lineWidth = 1.4;
+    pen.beginPath();
+    pen.moveTo(bx - 7, by);
+    pen.quadraticCurveTo(bx, by - 6 * wing, bx + 7, by);
+    pen.stroke();
+    pen.fillStyle = "#8d6b45";
+    pen.beginPath();
+    pen.arc(bx, by, 2.2, 0, Math.PI * 2);
+    pen.fill();
+  }
+
+  function drawDog(x, y) {
+    pen.fillStyle = "rgba(40,28,18,0.2)";
+    pen.beginPath();
+    pen.ellipse(x, y + 8, 14, 4, 0, 0, Math.PI * 2);
+    pen.fill();
+    pen.fillStyle = "#c4925a";
+    pen.beginPath();
+    pen.ellipse(x, y, 12, 7, 0, 0, Math.PI * 2);
+    pen.arc(x + 10, y - 4, 5, 0, Math.PI * 2);
+    pen.fill();
+    pen.fillStyle = "#5c4636";
+    pen.beginPath();
+    pen.arc(x + 12, y - 5, 1, 0, Math.PI * 2);
+    pen.fill();
+  }
+
+  function drawSky() {
+    const hour = taipeiHour();
+    const dark = hour >= 19 || hour < 5 ? 0.5 : (hour >= 17 || hour < 6 ? 0.22 : 0);
+    if (dark > 0 && area === "town") {
+      pen.fillStyle = "rgba(16, 22, 48, " + dark + ")";
+      pen.fillRect(0, 0, viewW, viewH);
+      pen.save();
+      pen.translate(-cam.x * zoom, -cam.y * zoom);
+      pen.scale(zoom, zoom);
+      pen.globalCompositeOperation = "lighter";
+      LAMPS.forEach(function (lamp) {
+        const glow = pen.createRadialGradient(lamp.x, lamp.y - 10, 4, lamp.x, lamp.y - 10, 70);
+        glow.addColorStop(0, "rgba(255, 214, 140, 0.9)");
+        glow.addColorStop(1, "rgba(255, 214, 140, 0)");
+        pen.fillStyle = glow;
+        pen.beginPath();
+        pen.arc(lamp.x, lamp.y - 10, 70, 0, Math.PI * 2);
+        pen.fill();
+      });
+      pen.restore();
+    }
+    const raining = Math.floor((time + 70) / 24) % 8 === 0;
+    if (raining && area === "town" && !reduceMotion) {
+      pen.strokeStyle = "rgba(180, 200, 220, 0.45)";
+      pen.lineWidth = 1.4;
+      for (let i = 0; i < 40; i++) {
+        const x = (i * 97 + time * 180) % (viewW + 40) - 20;
+        const y = (i * 53 + time * 320) % (viewH + 40) - 20;
+        pen.beginPath();
+        pen.moveTo(x, y);
+        pen.lineTo(x - 8, y + 16);
+        pen.stroke();
+      }
+    }
+  }
+
+  function taipeiHour() {
+    if (hourOverride != null) return hourOverride;
+    const text = new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Asia/Taipei",
+      hour: "2-digit",
+      hourCycle: "h23"
+    }).format(new Date());
+    return Number(text);
   }
 
   function bakeTown() {
@@ -563,6 +687,8 @@
     drawFlowers();
     BUILDINGS.forEach(drawBuilding);
     TREES.forEach(drawTree);
+    drawLamps();
+    drawCrate(1220, 340);
     drawWell();
     drawBench();
     pen = saved;
@@ -613,27 +739,43 @@
   }
 
   function drawPond() {
-    pen.fillStyle = "#d5ddd8";
+    pen.fillStyle = "#b7d0d4";
     pen.beginPath();
-    pen.ellipse(190, 1368, 108, 72, -0.2, 0, Math.PI * 2);
+    pen.ellipse(460, 1780, 150, 88, -0.1, 0, Math.PI * 2);
     pen.fill();
     pen.strokeStyle = "rgba(255,255,255,0.55)";
     pen.lineWidth = 2;
     pen.beginPath();
-    pen.ellipse(176, 1356, 46, 16, -0.4, 0.2, 2.2);
+    pen.ellipse(430, 1764, 54, 16, -0.4, 0.2, 2.2);
     pen.stroke();
   }
 
   function drawRiver() {
-    const shift = reduceMotion ? 0 : Math.sin(time * 0.8) * 4;
-    pen.fillStyle = "#d3ddd8";
-    pen.fillRect(1636, 0, WORLD.w - 1636, WORLD.h);
-    pen.strokeStyle = "rgba(255,255,255,0.45)";
-    pen.lineWidth = 2;
-    pen.beginPath();
-    pen.moveTo(1668, 0);
-    pen.bezierCurveTo(1652 + shift, 360, 1690 - shift, 780, 1664, WORLD.h);
-    pen.stroke();
+    pen.fillStyle = "rgba(186, 208, 170, 0.45)";
+    pen.fillRect(1840, 40, 440, 500);
+    pen.fillStyle = "rgba(198, 176, 142, 0.4)";
+    pen.fillRect(1840, 1572, 440, 360);
+    pen.fillStyle = "rgba(176, 204, 208, 0.28)";
+    pen.fillRect(40, 1572, 780, 360);
+  }
+
+  function drawLamps() {
+    LAMPS.forEach(function (lamp) {
+      pen.fillStyle = "#6a5344";
+      pen.fillRect(lamp.x - 3, lamp.y - 6, 6, 34);
+      pen.fillStyle = "#f6e7c0";
+      pen.beginPath();
+      pen.arc(lamp.x, lamp.y - 10, 7, 0, Math.PI * 2);
+      pen.fill();
+    });
+  }
+
+  function drawCrate(x, y) {
+    pen.fillStyle = "#c4923a";
+    roundRect(x, y, 22, 16, 3);
+    pen.fill();
+    pen.fillStyle = "#f3e2c4";
+    pen.fillRect(x, y + 6, 22, 3);
   }
 
   function drawFlowers() {
@@ -799,15 +941,35 @@
   }
 
   function drawPerson(x, y, index, isPlayer, scenarioId) {
+    if (!isPlayer && scenarioId === "chest-park") {
+      drawChest(x, y);
+      return;
+    }
     const id = isPlayer ? "player-" + role : scenarioId;
-    const pack = window.HEAN_CHARS.sheetFor(id);
-    if (!pack) return;
     const moving = isPlayer && player.walk > 0.02 && !reduceMotion;
-    const frame = moving ? Math.floor(((player.walk % 0.56) / 0.56) * pack.frames) % pack.frames : 0;
+    const frame = moving ? Math.floor(((player.walk % 0.56) / 0.56) * 16) % 16 : 0;
+    const facing = isPlayer ? (player.facing || "down") : "down";
+    pen.save();
+    pen.translate(x, y);
+    pen.fillStyle = "rgba(48, 32, 20, 0.22)";
+    pen.beginPath();
+    pen.ellipse(2, 5, isPlayer ? 18 : 16, 6.5, 0, 0, Math.PI * 2);
+    pen.fill();
     const bob = !moving && !reduceMotion ? Math.sin(time * 1.7 + index) * 1.15 : 0;
+    pen.translate(0, bob);
     const sw = window.HEAN_CHARS.SW;
     const sh = window.HEAN_CHARS.SH;
+    if (window.HEAN_CHARS.drawSheet(pen, id, facing, frame, -sw / 2, -(sh - 8), sw, sh)) {
+      pen.restore();
+      if (!isPlayer) markSpot(x, y, scenarioId);
+      return;
+    }
+    pen.restore();
+    const pack = window.HEAN_CHARS.sheetFor(id);
+    if (!pack) return;
+    const used = Math.min(frame, pack.frames - 1);
     const scale = window.HEAN_CHARS.SCALE;
+    const frameIndex = used;
     pen.save();
     pen.translate(x, y);
     pen.fillStyle = "rgba(48, 32, 20, 0.22)";
@@ -823,7 +985,7 @@
     }
     pen.translate(0, bob);
     if (isPlayer && player.dir < 0) pen.scale(-1, 1);
-    pen.drawImage(pack.canvas, frame * sw * scale, 0, sw * scale, sh * scale, -sw / 2, -(sh - 8), sw, sh);
+    pen.drawImage(pack.canvas, frameIndex * sw * scale, 0, sw * scale, sh * scale, -sw / 2, -(sh - 8), sw, sh);
     if (!isPlayer && nearestSpot() && nearestSpot().id === scenarioId) {
       pen.strokeStyle = "rgba(165, 134, 90, 0.9)";
       pen.lineWidth = 2;
@@ -832,7 +994,45 @@
       pen.stroke();
     }
     pen.restore();
-    if (!isPlayer) drawMark(x, y - 86, recordOf(scenarioId));
+    if (!isPlayer) markSpot(x, y, scenarioId);
+  }
+
+  function markSpot(x, y, scenarioId) {
+    const quest = currentQuest();
+    const bang = quest && quest.spot === scenarioId;
+    if (!byId[scenarioId] && scenarioId !== "chest-park" && scenarioId !== "bank-counter") return;
+    if (scenarioId !== "chest-park" && scenarioId !== "bank-counter" && recordOf(scenarioId)) {
+      drawMark(x, y - 96, recordOf(scenarioId));
+      return;
+    }
+    pen.save();
+    pen.translate(x, y - 100);
+    pen.fillStyle = bang ? "#e0b15a" : "#fffdf9";
+    pen.beginPath();
+    pen.arc(0, 0, 8, 0, Math.PI * 2);
+    pen.fill();
+    pen.strokeStyle = "#8a6230";
+    pen.lineWidth = 1.5;
+    pen.stroke();
+    pen.fillStyle = "#5c3a28";
+    pen.font = "700 12px " + FONT;
+    pen.textAlign = "center";
+    pen.textBaseline = "middle";
+    pen.fillText("!", 0, 0);
+    pen.restore();
+  }
+
+  function drawChest(x, y) {
+    pen.fillStyle = "rgba(40,28,18,0.2)";
+    pen.beginPath();
+    pen.ellipse(x, y + 4, 14, 4, 0, 0, Math.PI * 2);
+    pen.fill();
+    pen.fillStyle = state.opened["chest-park"] ? "#a89880" : "#c4923a";
+    roundRect(x - 12, y - 14, 24, 16, 3);
+    pen.fill();
+    pen.fillStyle = "#f3e2c4";
+    pen.fillRect(x - 12, y - 8, 24, 3);
+    if (!state.opened["chest-park"]) markSpot(x, y, "chest-park");
   }
 
   function drawMark(x, y, rec) {
@@ -863,7 +1063,7 @@
       const dist = Math.hypot(s.x - player.x, s.y - player.y);
       if (dist > 150 && !(near && near.id === s.id)) return;
       const sc = byId[s.id];
-      const text = sc.speaker;
+      const text = sc ? sc.speaker : (s.name || "這裡");
       const w = pen.measureText(text).width + 16;
       const x = s.x - w / 2;
       const y = s.y - 102;
@@ -885,7 +1085,9 @@
 
   function roomPad() {
     const phone = viewW < 760;
-    return { top: phone ? 86 : 20, bottom: phone ? 128 : 28 };
+    const quest = document.getElementById("quest");
+    const below = quest ? quest.offsetTop + quest.offsetHeight + 12 : 0;
+    return { top: Math.max(phone ? 128 : 78, below), bottom: phone ? 128 : 28 };
   }
 
   function roomZoom() {
@@ -913,6 +1115,9 @@
     doorLock = 0.85;
     buildNav();
     renderHud();
+    if (next === "room" && kind === "bank") openBank();
+    if (next === "room" && name === "醫院") openHospital();
+    if (next === "room" && name === "車行") openGarageCard();
   }
 
   function tryDoors() {
@@ -928,9 +1133,27 @@
         }
       }
     } else if (player.y > ROOM.h - 42 && Math.abs(player.x - ROOM.w / 2) < 42) {
-      if (area === "home") setArea("town", 1485, 450);
+      if (area === "home") setArea("town", 170, 360);
       else setArea("town", roomExit.x, roomExit.y);
     }
+  }
+
+  function renderMap() {
+    const list = document.getElementById("map-list");
+    list.replaceChildren();
+    const level = role ? levelOf() : 1;
+    BUILDINGS.forEach(function (building) {
+      const li = document.createElement("li");
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "chip";
+      const locked = building.level && level < building.level;
+      button.textContent = building.zone + " · " + building.name + (locked ? "（Lv." + building.level + "）" : "");
+      button.disabled = !!locked;
+      button.addEventListener("click", function () { guideTo(building.name); });
+      li.appendChild(button);
+      list.appendChild(li);
+    });
   }
 
   function renderTitle() {
@@ -946,6 +1169,114 @@
       if (state.lastRole === r) prog.textContent += " · 上次";
     });
   }
+
+  function xpOf() {
+    return (state.xp && state.xp[role]) || 0;
+  }
+
+  function levelOf() {
+    const xp = xpOf();
+    let level = 1;
+    LEVEL_XP.forEach(function (need, index) {
+      if (xp >= need) level = index + 1;
+    });
+    return level;
+  }
+
+  function cashOf(r) {
+    const locked = (state.deposits || []).reduce(function (sum, item) {
+      return sum + item.principal;
+    }, 0);
+    return Math.max(0, scoreOf(r || role) + (state.bonus || 0) - locked);
+  }
+
+  function currentQuest() {
+    const level = role ? levelOf() : 1;
+    const steps = [
+      { text: "走出家門，到商店街看看", building: "銀行", spot: "bank-counter", when: function () { return area === "home"; } },
+      { text: "到銀行看定存和流動性", building: "銀行", spot: "bank-counter", when: function () { return !state.seenBank; } },
+      { text: "到車行分清強制險和任意險", building: "車行", spot: "garage-voluntary", when: function () { return !recordOf("garage-voluntary"); } },
+      { text: "到醫院看醫療花費怎麼對條款", building: "醫院", spot: "hospital-reimburse", when: function () { return !recordOf("hospital-reimburse"); } },
+      { text: "到 Lv.3 後去公園亭", building: "公園亭", spot: "park-walk", when: function () { return level < 3 || !recordOf("park-walk"); } },
+      { text: "到 Lv.5 後去湖畔", building: "湖畔亭", spot: "lake-rest", when: function () { return level < 5 || !recordOf("lake-rest"); } },
+      { text: "到 Lv.8 後去山上步道", building: "步道牌", spot: "trail-sign", when: function () { return level < 8 || !recordOf("trail-sign"); } }
+    ];
+    for (let i = 0; i < steps.length; i++) if (steps[i].when()) return steps[i];
+    return { text: "這座小鎮的目標都看過了", building: "鎮民中心", spot: "free-look" };
+  }
+
+  function holdZones() {
+    const zone = ZONES.find(function (item) {
+      return player.x > item.x && player.x < item.x + item.w && player.y > item.y && player.y < item.y + item.h && levelOf() < item.level;
+    });
+    if (!zone) {
+      zoneNote = "";
+      return;
+    }
+    player.x = zone.back.x;
+    player.y = zone.back.y;
+    path = null;
+    if (zoneNote !== zone.name) {
+      zoneNote = zone.name;
+      showToast(zone.name + "要到 Lv." + zone.level + " 才進得去");
+    }
+  }
+
+  function settleDeposits() {
+    if (!state.deposits || !state.deposits.length) return;
+    const now = Date.now();
+    const keep = [];
+    let interest = 0;
+    state.deposits.forEach(function (item) {
+      if ((now - item.start) / DAY_MS >= item.days) interest += Math.floor(item.principal * item.rate);
+      else keep.push(item);
+    });
+    if (keep.length === state.deposits.length) return;
+    state.deposits = keep;
+    state.bonus = (state.bonus || 0) + interest;
+    save();
+    renderHud();
+    showReward("小鎮日到了。練習多給 " + interest + " 枚，已加進小鎮幣。這不是真實利息。");
+  }
+
+  function guideTo(name) {
+    const building = BUILDINGS.find(function (item) { return item.name === name; });
+    if (!building) return;
+    if (building.level && levelOf() < building.level) {
+      showToast(building.name + "要到 Lv." + building.level);
+      return;
+    }
+    const dest = { x: building.x + building.w / 2, y: building.y + building.h + 28 };
+    if (area !== "town") setArea("town", 170, 360);
+    path = findPath(player.x, player.y, dest.x, dest.y);
+    document.getElementById("map-panel").hidden = true;
+    const facility = document.getElementById("facility");
+    if (dialog.hidden && progress.hidden && facility.hidden) document.body.classList.remove("ui-busy");
+  }
+
+  function walkTo(x, y) {
+    if (area === "town") {
+      const building = BUILDINGS.find(function (item) {
+        return x > item.x - 8 && x < item.x + item.w + 8 && y > item.y - 16 && y < item.y + item.h + 36;
+      });
+      if (building) {
+        guideTo(building.name);
+        return;
+      }
+    }
+    path = findPath(player.x, player.y, x, y);
+  }
+
+  function showReward(text) {
+    const box = document.getElementById("reward");
+    document.getElementById("reward-body").textContent = text;
+    box.hidden = false;
+    clearTimeout(rewardTimer);
+    rewardTimer = setTimeout(function () { box.hidden = true; }, 2600);
+  }
+
+  let zoneNote = "";
+  let rewardTimer = 0;
 
   function seasonName() {
     const month = new Date().getMonth();
@@ -965,7 +1296,7 @@
     if (!role) return;
     const total = scenariosFor(role).length;
     const done = Object.keys(state.progress[role] || {}).length;
-    const level = 1 + Math.floor(done / 4);
+    const level = levelOf();
     const now = new Date();
     const clock = new Intl.DateTimeFormat("en-GB", {
       timeZone: "Asia/Taipei",
@@ -977,7 +1308,10 @@
     document.getElementById("st-time").textContent = clock;
     document.getElementById("st-place").textContent = placeName();
     document.getElementById("st-role").textContent = ROLE_NAME[role] + " Lv." + level;
-    document.getElementById("st-coin").textContent = "小鎮幣 " + scoreOf(role);
+    document.getElementById("st-coin").textContent = "小鎮幣 " + cashOf(role);
+    const quest = currentQuest();
+    document.getElementById("quest-text").textContent = "目標：" + quest.text;
+    placeChrome();
     document.getElementById("st-stam").textContent = "體力 100/100";
     const soundBtn = document.getElementById("btn-sound");
     const musicBtn = document.getElementById("btn-music");
@@ -1078,8 +1412,13 @@
     if (!opt) return;
     pendingBest = !!opt.best;
     const rec = state.progress[role];
+    const first = !rec[currentId];
     if (pendingBest) rec[currentId] = "best";
     else if (rec[currentId] !== "best") rec[currentId] = "seen";
+    if (first) {
+      state.xp[role] = (state.xp[role] || 0) + 20;
+      showReward(pendingBest ? "獲得獎勵：經驗 +20，答對的小鎮幣已計入" : "獲得獎勵：經驗 +20");
+    }
     save();
     renderHud();
     document.getElementById("dlg-options").hidden = true;
@@ -1188,7 +1527,179 @@
       showToast("再靠近門口或村民一點。");
       return;
     }
+    if (near.facility === "bank" || near.id === "bank-counter") {
+      openBank();
+      return;
+    }
+    if (near.facility === "chest") {
+      openChest(near);
+      return;
+    }
     openDialog(near.id);
+  }
+
+  function openChest(spot) {
+    const zone = ZONES.find(function (item) { return item.name === spot.zone; });
+    if (zone && levelOf() < zone.level) {
+      showToast(spot.zone + "要到 Lv." + zone.level);
+      return;
+    }
+    if (state.opened[spot.id]) {
+      showToast("這個寶箱已經打開了");
+      return;
+    }
+    state.opened[spot.id] = true;
+    state.bonus = (state.bonus || 0) + 15;
+    save();
+    renderHud();
+    showReward("獲得獎勵：小鎮幣 +15");
+  }
+
+  function fillFacility(title, nodes) {
+    document.getElementById("facility-title").textContent = title;
+    const body = document.getElementById("facility-body");
+    body.replaceChildren();
+    nodes.forEach(function (node) { body.appendChild(node); });
+    document.getElementById("facility").hidden = false;
+    document.body.classList.add("ui-busy");
+  }
+
+  function para(text) {
+    const p = document.createElement("p");
+    p.className = "body-copy";
+    p.textContent = text;
+    return p;
+  }
+
+  function openBank() {
+    state.seenBank = true;
+    save();
+    const amount = document.createElement("input");
+    amount.type = "number";
+    amount.min = "10";
+    amount.max = "200";
+    amount.value = "50";
+    amount.className = "chip";
+    amount.setAttribute("aria-label", "存入小鎮幣");
+    const put = document.createElement("button");
+    put.type = "button";
+    put.className = "primary";
+    put.textContent = "存 7 個小鎮日（練習利率每 50 枚多 1 枚）";
+    put.addEventListener("click", function () { deposit(Number(amount.value), 7, 0.02); });
+    const early = document.createElement("button");
+    early.type = "button";
+    early.className = "ghost";
+    early.textContent = "提前結束最早的一筆（只退本金）";
+    early.addEventListener("click", withdrawEarly);
+    const list = document.createElement("div");
+    (state.deposits || []).forEach(function (item, index) {
+      const left = Math.max(0, item.days - (Date.now() - item.start) / DAY_MS);
+      list.appendChild(para("第 " + (index + 1) + " 筆本金 " + item.principal + "，剩下約 " + left.toFixed(1) + " 個小鎮日"));
+    });
+    fillFacility("銀行櫃台", [
+      para("這裡只用小鎮幣練習，不能換成真實的錢，也不是任何一家銀行的存款。一個小鎮日大約三十秒，只為了讓練習看得到期滿。"),
+      para("名義上多出來的枚數如果追不上物價上漲，能買到的東西仍可能變少。定存期間錢拿去不了急用，就是流動性的代價。合計上限 200 枚。提前結束只退本金，練習多給的枚數不算。期滿才把多給的枚數加進小鎮幣，那也不是真實利息。"),
+      para("現在拿得到的小鎮幣：" + cashOf(role)),
+      amount,
+      put,
+      early,
+      list
+    ]);
+  }
+
+  function deposit(amount, days, rate) {
+    if (!amount || amount < 10) {
+      showToast("至少存 10 枚小鎮幣");
+      return;
+    }
+    const locked = (state.deposits || []).reduce(function (sum, item) { return sum + item.principal; }, 0);
+    if (locked + amount > 200) {
+      showToast("定存合計上限 200 枚");
+      return;
+    }
+    if (cashOf(role) < amount) {
+      showToast("拿得到的小鎮幣不夠");
+      return;
+    }
+    state.deposits.push({ principal: amount, days: days, rate: rate, start: Date.now() });
+    save();
+    renderHud();
+    openBank();
+  }
+
+  function withdrawEarly() {
+    if (!state.deposits.length) {
+      showToast("現在沒有定存");
+      return;
+    }
+    state.deposits.shift();
+    save();
+    renderHud();
+    showToast("已退回本金，練習用的多給枚數沒有計入");
+    openBank();
+  }
+
+  function openHospital() {
+    const height = document.createElement("input");
+    height.type = "number";
+    height.min = "100";
+    height.max = "220";
+    height.value = "160";
+    height.className = "chip";
+    height.setAttribute("aria-label", "身高公分");
+    const weight = document.createElement("input");
+    weight.type = "number";
+    weight.min = "30";
+    weight.max = "200";
+    weight.value = "55";
+    weight.className = "chip";
+    weight.setAttribute("aria-label", "體重公斤");
+    const result = para("輸入身高（公分）和體重（公斤）。");
+    const calc = document.createElement("button");
+    calc.type = "button";
+    calc.className = "primary";
+    calc.textContent = "計算 BMI";
+    calc.addEventListener("click", function () {
+      const meters = Number(height.value) / 100;
+      const kilos = Number(weight.value);
+      if (!meters || !kilos) return;
+      const bmi = kilos / (meters * meters);
+      let band = "多半落在常見範圍";
+      if (bmi < 18.5) band = "偏低一些";
+      else if (bmi >= 24) band = "偏高一些";
+      result.textContent = "BMI 約 " + bmi.toFixed(1) + "，" + band + "。這只是身高體重的比值，不是診斷，也不能決定保單賠不賠。";
+    });
+    const go = document.createElement("button");
+    go.type = "button";
+    go.className = "ghost";
+    go.textContent = "看醫療花費和條款怎麼對";
+    go.addEventListener("click", function () {
+      document.getElementById("facility").hidden = true;
+      openDialog("hospital-reimburse");
+    });
+    fillFacility("醫院", [
+      para("先算一個簡單的身高體重比值，再去看醫療契約怎麼寫花費。這裡不提供就醫建議，也不推薦任何醫療商品。"),
+      height,
+      weight,
+      calc,
+      result,
+      go
+    ]);
+  }
+
+  function openGarageCard() {
+    const go = document.createElement("button");
+    go.type = "button";
+    go.className = "primary";
+    go.textContent = "看強制險和任意險差在哪";
+    go.addEventListener("click", function () {
+      document.getElementById("facility").hidden = true;
+      openDialog("garage-voluntary");
+    });
+    fillFacility("車行", [
+      para("車行這裡先把類型分開：法定的強制責任保險著重受害人的傷害；另外的責任保險和車體損失才處理車子本身或對方的財物。這不是在推薦你買某一張產險。"),
+      go
+    ]);
   }
 
   function screenToWorld(clientX, clientY) {
@@ -1271,8 +1782,17 @@
     });
     document.getElementById("btn-role").addEventListener("click", backToTitle);
     document.getElementById("btn-map").addEventListener("click", function () {
+      renderMap();
       document.getElementById("map-panel").hidden = false;
       document.body.classList.add("ui-busy");
+    });
+    document.getElementById("quest-go").addEventListener("click", function () {
+      const quest = currentQuest();
+      if (quest && quest.building) guideTo(quest.building);
+    });
+    document.getElementById("facility-close").addEventListener("click", function () {
+      document.getElementById("facility").hidden = true;
+      if (dialog.hidden && progress.hidden) document.body.classList.remove("ui-busy");
     });
     document.getElementById("map-close").addEventListener("click", function () {
       document.getElementById("map-panel").hidden = true;
@@ -1336,6 +1856,10 @@
         if (!dialog.hidden) closeDialog(true);
         else if (!progress.hidden) closeProgress();
         else if (!document.getElementById("map-panel").hidden) document.getElementById("map-panel").hidden = true;
+        else if (!document.getElementById("facility").hidden) {
+          document.getElementById("facility").hidden = true;
+          if (dialog.hidden && progress.hidden) document.body.classList.remove("ui-busy");
+        }
         else if (!document.getElementById("menu-panel").hidden) document.getElementById("menu-panel").hidden = true;
         return;
       }
@@ -1360,7 +1884,7 @@
       if (uiOpen() || playScreen.hidden) return;
       if (e.pointerType === "mouse" && e.button !== 0) return;
       const world = screenToWorld(e.clientX, e.clientY);
-      path = findPath(player.x, player.y, world.x, world.y);
+      walkTo(world.x, world.y);
     });
     canvas.addEventListener("contextmenu", function (e) { e.preventDefault(); });
 
@@ -1461,6 +1985,9 @@
     VERSION: VERSION,
     setArea: setArea,
     cam: function () { return { x: cam.x, y: cam.y }; },
-    zoom: function () { return zoom; }
+    zoom: function () { return zoom; },
+    setHour: function (hour) { hourOverride = hour; },
+    pathLen: function () { return path ? path.length : 0; },
+    area: function () { return area; }
   };
 })();
