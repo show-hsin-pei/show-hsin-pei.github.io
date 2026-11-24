@@ -1,5 +1,5 @@
 (function () {
-  const VERSION = "1.3";
+  const VERSION = "1.4";
   const UPDATED = "2026年11月24日";
   const KEY = "hean-village-v1";
   const FONT = '"Noto Sans TC", "PingFang TC", "Microsoft JhengHei", "WenQuanYi Micro Hei", sans-serif';
@@ -378,7 +378,7 @@
       const sc = byId[id];
       return sc && sc.roles.indexOf(role) !== -1;
     }).map(function (id, index) {
-      return { id: id, x: 130 + (index % 4) * 150, y: 360 + Math.floor(index / 4) * 60 };
+      return { id: id, x: 120 + (index % 2) * 180, y: 500 + Math.floor(index / 2) * 52 };
     });
   }
 
@@ -408,7 +408,7 @@
     if (rect.width < 2 || rect.height < 2) return;
     viewW = rect.width;
     viewH = rect.height;
-    zoom = area === "town" ? (viewW < 760 ? 0.86 : 1) : (viewW < 760 ? 1.05 : 1.15);
+    zoom = area === "town" ? (viewW < 760 ? 0.86 : 1) : roomZoom();
     dpr = Math.min(2, window.devicePixelRatio || 1);
     canvas.width = Math.round(viewW * dpr);
     canvas.height = Math.round(viewH * dpr);
@@ -466,8 +466,16 @@
     const worldW = viewW / zoom;
     const worldH = viewH / zoom;
     const box = bounds();
-    cam.x = camAxis(player.x, worldW, box.w);
-    cam.y = camAxis(player.y, worldH, box.h);
+    if (area === "town") {
+      cam.x = camAxis(player.x, worldW, box.w);
+      cam.y = camAxis(player.y, worldH, box.h);
+    } else {
+      const pad = roomPad();
+      const drawnW = box.w * zoom;
+      const drawnH = box.h * zoom;
+      cam.x = -((viewW - drawnW) / 2) / zoom;
+      cam.y = -(pad.top + Math.max(0, viewH - pad.top - pad.bottom - drawnH) / 2) / zoom;
+    }
     if (doorLock > 0) doorLock -= dt;
     else tryDoors();
     const near = nearestSpot();
@@ -875,6 +883,19 @@
 
   function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
 
+  function roomPad() {
+    const phone = viewW < 760;
+    return { top: phone ? 86 : 20, bottom: phone ? 128 : 28 };
+  }
+
+  function roomZoom() {
+    const box = bounds();
+    const pad = roomPad();
+    const availW = Math.max(80, viewW - 12);
+    const availH = Math.max(80, viewH - pad.top - pad.bottom);
+    return Math.min(availW / box.w, availH / box.h);
+  }
+
   function camAxis(pos, view, size) {
     if (size <= view) return (size - view) / 2;
     return clamp(pos - view / 2, 0, size - view);
@@ -901,8 +922,8 @@
         const dx = b.x + b.w / 2;
         const dy = b.y + b.h + 18;
         if (Math.abs(player.x - dx) < 26 && Math.abs(player.y - dy) < 22) {
-          if (b.kind === "home") setArea("home", 400, 280);
-          else setArea("room", 400, 430, b.kind, { x: dx, y: dy + 50 }, b.name);
+          if (b.kind === "home") setArea("home", 220, 520);
+          else setArea("room", 220, 520, b.kind, { x: dx, y: dy + 50 }, b.name);
           return;
         }
       }
@@ -992,7 +1013,7 @@
     titleScreen.hidden = true;
     playScreen.hidden = false;
     document.body.classList.remove("ui-busy");
-    setArea("home", 400, 400);
+    setArea("home", 220, 520);
     resize();
     paintAvatar();
     renderHud();
@@ -1438,6 +1459,8 @@
     solidAt: solidAt,
     scenariosFor: scenariosFor,
     VERSION: VERSION,
-    setArea: setArea
+    setArea: setArea,
+    cam: function () { return { x: cam.x, y: cam.y }; },
+    zoom: function () { return zoom; }
   };
 })();

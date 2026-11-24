@@ -1,6 +1,6 @@
 /* 藝世錄保險小鎮的家與室內。全部是這支程式自己畫的，沒有外來圖片。 */
 (function () {
-  const ROOM = { w: 800, h: 560 };
+  const ROOM = { w: 440, h: 720 };
   const TIPS = [
     "先把每個月一定要花的錢寫下來",
     "緊急用的錢，放在取得方便的地方",
@@ -25,42 +25,39 @@
   function blocks(kind) {
     if (kind === "home") {
       return [
-        { x: 48, y: 86, w: 200, h: 118 },
-        { x: 530, y: 78, w: 220, h: 128 },
-        { x: 300, y: 248, w: 160, h: 78 },
-        { x: 64, y: 270, w: 54, h: 54 }
+        { x: 22, y: 168, w: 188, h: 116 },
+        { x: 224, y: 168, w: 196, h: 120 },
+        { x: 130, y: 400, w: 150, h: 72 },
+        { x: 28, y: 340, w: 48, h: 48 }
       ];
     }
     if (kind === "clinic") {
       return [
-        { x: 70, y: 90, w: 180, h: 90 },
-        { x: 520, y: 96, w: 200, h: 110 },
-        { x: 300, y: 250, w: 140, h: 70 }
+        { x: 24, y: 168, w: 180, h: 80 },
+        { x: 230, y: 176, w: 186, h: 110 }
       ];
     }
     if (kind === "tea") {
       return [
-        { x: 80, y: 120, w: 150, h: 80 },
-        { x: 520, y: 120, w: 150, h: 80 },
-        { x: 300, y: 250, w: 160, h: 80 }
+        { x: 24, y: 180, w: 150, h: 76 },
+        { x: 250, y: 180, w: 150, h: 76 }
       ];
     }
     if (kind === "garage") {
       return [
-        { x: 60, y: 90, w: 220, h: 100 },
-        { x: 520, y: 100, w: 200, h: 120 }
+        { x: 24, y: 170, w: 190, h: 80 },
+        { x: 280, y: 190, w: 120, h: 90 }
       ];
     }
     if (kind === "stall") {
       return [
-        { x: 80, y: 100, w: 200, h: 80 },
-        { x: 500, y: 110, w: 180, h: 90 }
+        { x: 24, y: 176, w: 190, h: 76 },
+        { x: 280, y: 200, w: 70, h: 70 }
       ];
     }
     return [
-      { x: 70, y: 96, w: 180, h: 100 },
-      { x: 530, y: 90, w: 190, h: 110 },
-      { x: 320, y: 250, w: 140, h: 64 }
+      { x: 24, y: 170, w: 180, h: 80 },
+      { x: 260, y: 176, w: 150, h: 80 }
     ];
   }
 
@@ -232,7 +229,7 @@
     ctx.stroke();
   }
 
-  function door(ctx, x, y) {
+  function door(ctx, x, y, label) {
     roundRect(ctx, x, y, 86, 70, 8);
     ctx.fillStyle = "#8d5a3a";
     ctx.fill();
@@ -246,36 +243,38 @@
     ctx.fillStyle = "#5c3a28";
     ctx.font = "600 14px \"Noto Sans TC\", \"Microsoft JhengHei\", \"WenQuanYi Micro Hei\", sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText("出門", x + 43, y - 8);
+    if (label) ctx.fillText(label, x + 43, y - 10);
   }
 
   function paintHome(ctx, now) {
     const w = ROOM.w;
     const h = ROOM.h;
     frame(ctx, w, h);
-    woodFloor(ctx, 22, 22, w - 44, h - 44);
-    wallpaper(ctx, 28, 28, w - 56, 150);
-    windowView(ctx, 250, 46, 150, 86);
-    bed(ctx, 48, 78);
-    tv(ctx, 540, 70);
-    rug(ctx, 250, 300, 280, 130);
-    table(ctx, 300, 248);
-    plant(ctx, 64, 250);
-    cushion(ctx, 620, 340);
-    door(ctx, 357, h - 86);
+    woodFloor(ctx, 18, 18, w - 36, h - 36);
+    wallpaper(ctx, 24, 24, w - 48, 150);
+    windowView(ctx, 120, 36, 200, 92);
+    bed(ctx, 22, 168);
+    tv(ctx, 224, 162);
+    plant(ctx, 28, 330);
+    rug(ctx, 70, 390, 300, 130);
+    table(ctx, 130, 400);
+    cushion(ctx, 340, 540);
+    door(ctx, (w - 86) / 2, h - 92, "出門");
     const shift = reduceShift(now);
+    const screenX = 260;
+    const screenY = 170;
     ctx.save();
-    roundRect(ctx, 576, 78, 124, 46, 4);
+    roundRect(ctx, screenX, screenY, 124, 46, 4);
     ctx.clip();
     ctx.fillStyle = "#d7f0c8";
-    ctx.font = "600 16px \"Noto Sans TC\", \"Microsoft JhengHei\", \"WenQuanYi Micro Hei\", sans-serif";
+    ctx.font = "600 15px \"Noto Sans TC\", \"Microsoft JhengHei\", \"WenQuanYi Micro Hei\", sans-serif";
     ctx.textAlign = "left";
     ctx.textBaseline = "middle";
     const line = TIPS.join("    ·    ") + "    ·    ";
     const width = ctx.measureText(line).width;
-    const x0 = 576 - (shift % width);
-    ctx.fillText(line, x0, 100);
-    ctx.fillText(line, x0 + width, 100);
+    const x0 = screenX - (shift % width);
+    ctx.fillText(line, x0, screenY + 23);
+    ctx.fillText(line, x0 + width, screenY + 23);
     ctx.restore();
   }
 
@@ -287,39 +286,35 @@
     const w = ROOM.w;
     const h = ROOM.h;
     frame(ctx, w, h);
-    woodFloor(ctx, 22, 22, w - 44, h - 44);
-    wallpaper(ctx, 28, 28, w - 56, 160);
-    windowView(ctx, 300, 42, 170, 96);
+    woodFloor(ctx, 18, 18, w - 36, h - 36);
+    wallpaper(ctx, 24, 24, w - 48, 150);
+    windowView(ctx, 120, 36, 200, 92);
     if (kind === "clinic") {
-      counter(ctx, 70, 110, "#f7f3ea", "藥櫃");
-      bed(ctx, 500, 90);
-      plant(ctx, 250, 250);
+      counter(ctx, 24, 168, "#f7f3ea", "藥櫃");
+      plant(ctx, 250, 200);
+      rug(ctx, 80, 360, 280, 120);
     } else if (kind === "tea") {
-      table(ctx, 80, 140);
-      table(ctx, 520, 140);
-      plant(ctx, 360, 200);
+      table(ctx, 24, 180);
+      table(ctx, 250, 180);
+      plant(ctx, 190, 300);
     } else if (kind === "garage") {
-      counter(ctx, 60, 110, "#d7d2c8", "工具");
+      counter(ctx, 24, 170, "#d7d2c8", "工具");
       ctx.fillStyle = "#4a4a4a";
       ctx.beginPath();
-      ctx.ellipse(620, 160, 36, 36, 0, 0, Math.PI * 2);
+      ctx.ellipse(340, 230, 34, 34, 0, 0, Math.PI * 2);
       ctx.fill();
       ctx.strokeStyle = "#c4a36a";
       ctx.lineWidth = 6;
       ctx.stroke();
     } else if (kind === "stall") {
-      counter(ctx, 80, 120, "#f3e6cf", "文件");
-      plant(ctx, 540, 140);
+      counter(ctx, 24, 176, "#f3e6cf", "文件");
+      plant(ctx, 300, 190);
     } else {
-      counter(ctx, 70, 110, "#f6f1e6", "桌子");
-      plant(ctx, 560, 120);
-      rug(ctx, 260, 300, 240, 100);
+      counter(ctx, 24, 170, "#f6f1e6", "桌子");
+      plant(ctx, 300, 180);
+      rug(ctx, 80, 360, 280, 120);
     }
-    door(ctx, 357, h - 86);
-    ctx.fillStyle = "#5c3a28";
-    ctx.font = "600 14px \"Noto Sans TC\", \"Microsoft JhengHei\", \"WenQuanYi Micro Hei\", sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText("回小鎮", 400, h - 98);
+    door(ctx, (w - 86) / 2, h - 92, "回小鎮");
   }
 
   function counter(ctx, x, y, color, label) {
