@@ -29,9 +29,9 @@
   }
 
   const RAW = {
-    "player-consumer": { skin: "#f4d2b4", hair: "#5a4034", hairStyle: "bob", coat: "#c4a36a", shirt: "#fff6ea", pants: "#6a5142", mouth: "smile", eyes: "kind", extra: "scarf", extraColor: "#f0d5b4" },
-    "player-agent": { skin: "#f0c8a6", hair: "#3a2e28", hairStyle: "side", coat: "#b98362", shirt: "#fffdf8", pants: "#4a3c34", mouth: "calm", eyes: "round", extra: "tie", extraColor: "#8d5a42", extra2: "clipboard" },
-    "player-broker": { skin: "#efc9aa", hair: "#4a3a32", hairStyle: "short", coat: "#7f8f78", shirt: "#f7f3ea", pants: "#3f4a42", mouth: "calm", eyes: "kind", extra: "glasses" },
+    "player-consumer": { skin: "#f6d3b6", hair: "#241c1a", hairStyle: "bob", coat: "#c4a36a", shirt: "#fff6ea", pants: "#4a3a32", shoes: "#2a2422", mouth: "smile", eyes: "bright", extra: "scarf", extraColor: "#f0d5b4" },
+    "player-agent": { skin: "#f3d0b2", hair: "#1c1614", hairStyle: "side", coat: "#3a4558", coatLight: "#546278", coatDeep: "#2a3344", shirt: "#f7f5f0", pants: "#242a32", shoes: "#161412", mouth: "calm", eyes: "bright", extra: "tie", extraColor: "#8d3434" },
+    "player-broker": { skin: "#f2cdb0", hair: "#1c1614", hairStyle: "short", coat: "#3d5348", coatLight: "#5d7568", coatDeep: "#2c3d34", shirt: "#f7f4ee", pants: "#24302c", shoes: "#161412", mouth: "calm", eyes: "bright", extra: "glasses" },
     "clinic-necessity": { skin: "#f0c6a4", hair: "#4a342c", hairStyle: "bun", coat: "#c46b5a", shirt: "#fff3ea", mouth: "worried", eyes: "kind", extra: "shawl", extraColor: "#f0c8bc", age: "mid" },
     "free-look": { skin: "#f6d6ba", hair: "#6a4634", hairStyle: "ponytail", coat: "#e0a070", shirt: "#fffaf3", mouth: "bright", eyes: "bright", extra: "bag", extraColor: "#f4e1c4", age: "young" },
     "waiting-period": { skin: "#f3cdb0", hair: "#5c382e", hairStyle: "wavy", coat: "#c47a8a", shirt: "#fff5f0", mouth: "smile", eyes: "kind", extra: "apron", extraColor: "#f6ead8" },
@@ -199,20 +199,20 @@
     g.addColorStop(1, look.skinDeep);
     ctx.fillStyle = g;
     ctx.beginPath();
-    ctx.arc(0, -49, 12.2, 0, Math.PI * 2);
+    ctx.arc(0, -50, 14, 0, Math.PI * 2);
     ctx.fill();
   }
 
   function ears(ctx, look) {
     ctx.fillStyle = look.skin;
     ctx.beginPath();
-    ctx.ellipse(-11.6, -49, 2.3, 3.1, 0, 0, Math.PI * 2);
-    ctx.ellipse(11.6, -49, 2.3, 3.1, 0, 0, Math.PI * 2);
+    ctx.ellipse(-13.2, -50, 2.4, 3.2, 0, 0, Math.PI * 2);
+    ctx.ellipse(13.2, -50, 2.4, 3.2, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.fillStyle = "rgba(196, 120, 104, 0.35)";
     ctx.beginPath();
-    ctx.ellipse(-11.7, -49, 1.05, 1.7, 0, 0, Math.PI * 2);
-    ctx.ellipse(11.7, -49, 1.05, 1.7, 0, 0, Math.PI * 2);
+    ctx.ellipse(-13.3, -50, 1.05, 1.7, 0, 0, Math.PI * 2);
+    ctx.ellipse(13.3, -50, 1.05, 1.7, 0, 0, Math.PI * 2);
     ctx.fill();
   }
 
@@ -266,7 +266,7 @@
       ctx.fill();
     } else {
       ctx.beginPath();
-      ctx.arc(0, -50.2, 12.4, Math.PI, Math.PI * 2);
+      ctx.arc(0, -51, 14.2, Math.PI, Math.PI * 2);
       ctx.fill();
       if (style === "side") {
         ctx.beginPath();
@@ -302,26 +302,29 @@
   }
 
   function face(ctx, look) {
-    const eyeY = -49.2;
+    const eyeY = -50.4;
     const narrow = look.eyes === "narrow";
-    const bright = look.eyes === "bright";
+    const bright = look.eyes === "bright" || look.eyes === "kind";
     const worried = look.mouth === "worried";
     [-1, 1].forEach(function (side) {
       ctx.fillStyle = "#fffdfb";
       ctx.beginPath();
-      ctx.ellipse(side * 4.3, eyeY, bright ? 2.55 : 2.25, narrow ? 1.45 : 2.55, 0, 0, Math.PI * 2);
+      ctx.ellipse(side * 4.8, eyeY, bright ? 3.35 : 2.9, narrow ? 2.1 : 3.55, 0, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = "#4a342c";
+      ctx.strokeStyle = "rgba(80,50,40,0.25)";
+      ctx.lineWidth = 0.6;
+      ctx.stroke();
+      ctx.fillStyle = "#2c241e";
       ctx.beginPath();
-      ctx.arc(side * 4.35, eyeY + 0.25, bright ? 1.45 : 1.2, 0, Math.PI * 2);
+      ctx.arc(side * 4.9, eyeY + 0.35, bright ? 1.85 : 1.5, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = "#2a211c";
+      ctx.fillStyle = "#14110f";
       ctx.beginPath();
-      ctx.arc(side * 4.35, eyeY + 0.35, 0.62, 0, Math.PI * 2);
+      ctx.arc(side * 4.9, eyeY + 0.45, 0.85, 0, Math.PI * 2);
       ctx.fill();
       ctx.fillStyle = "#fff";
       ctx.beginPath();
-      ctx.arc(side * 3.9, eyeY - 0.45, 0.48, 0, Math.PI * 2);
+      ctx.arc(side * 4.2, eyeY - 0.7, 0.7, 0, Math.PI * 2);
       ctx.fill();
       ctx.strokeStyle = look.hair;
       ctx.lineWidth = look.age === "elder" ? 1.15 : 1.25;
@@ -537,11 +540,28 @@
   Object.keys(LOOKS).forEach(function (id) { sheetFor(id); });
 
   window.HEAN_LOOKS = LOOKS;
+  function paintAvatar(canvas, id) {
+    const look = LOOKS[id];
+    if (!look) return;
+    const g = canvas.getContext("2d");
+    const w = canvas.width;
+    const h = canvas.height;
+    g.clearRect(0, 0, w, h);
+    g.fillStyle = "#f3e6d0";
+    g.fillRect(0, 0, w, h);
+    g.save();
+    g.translate(w / 2, h * 0.98);
+    g.scale(1.45, 1.45);
+    paintSprite(g, look, 0);
+    g.restore();
+  }
+
   window.HEAN_CHARS = {
     SW: SW,
     SH: SH,
     SCALE: SCALE,
     sheetFor: sheetFor,
-    paintPortrait: paintPortrait
+    paintPortrait: paintPortrait,
+    paintAvatar: paintAvatar
   };
 })();

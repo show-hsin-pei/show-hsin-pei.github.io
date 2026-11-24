@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=1.2">
+  <link rel="stylesheet" href="styles.css?v=1.3">
 </head>
 <body>
   <a class="skip" href="#title-main">跳至主要內容</a>
@@ -59,7 +59,7 @@
       <p class="eyebrow">保險觀念散步</p>
       <h1 id="title-main">藝世錄保險小鎮</h1>
       <p class="lede">選一個身分，在小鎮裡走走。靠近住家或村民，聽一段保險爭議，再選一個看法。這是教學，不是測驗排名。</p>
-      <p class="version" id="version-line">版本 1.1 · 2026年11月24日更新</p>
+      <p class="version" id="version-line">版本 1.2 · 2026年11月24日更新</p>
       <div class="roles" role="group" aria-label="選擇身分">
         <button class="role-card" type="button" data-role="consumer">
           <span class="kicker">走進小鎮</span>
@@ -85,19 +85,20 @@
   </section>
 
   <section id="play-screen" hidden>
-    <header class="hud">
-      <strong class="hud-title">藝世錄保險小鎮</strong>
-      <span class="hud-role" id="hud-role"></span>
-      <span class="hud-stat" id="hud-stat"></span>
-      <div class="hud-actions">
-        <button type="button" class="chip" id="btn-progress">進度</button>
-        <button type="button" class="chip" id="btn-role">換身分</button>
-        <button type="button" class="chip" id="btn-sound" aria-pressed="false">音效關</button>
-        <button type="button" class="chip" id="btn-music" aria-pressed="false">音樂關</button>
-      </div>
-    </header>
     <div class="stage" id="stage">
       <canvas id="view" aria-label="藝世錄保險小鎮。電腦可用滑鼠點地面移動，或用方向鍵與 WASD。靠近村民後按 E 或空白鍵對話。"></canvas>
+      <div class="status" id="status">
+        <span id="st-season">秋</span>
+        <span id="st-time">--:--</span>
+        <span id="st-place">家</span>
+        <span id="st-role">客戶 Lv.1</span>
+        <span id="st-coin">小鎮幣 0</span>
+        <span id="st-stam">體力 100/100</span>
+      </div>
+      <button type="button" class="orb map-btn" id="btn-map" aria-label="地圖">圖</button>
+      <button type="button" class="orb avatar-btn" id="btn-avatar" aria-label="主角">
+        <canvas id="avatar-face" width="96" height="96"></canvas>
+      </button>
       <p class="desktop-hint" id="desktop-hint">點地面走路 · 方向鍵或 WASD · E 或空白鍵對話</p>
       <p class="near-label" id="near-label" hidden></p>
       <p class="toast" id="toast" hidden></p>
@@ -139,6 +140,40 @@
     </div>
   </div>
 
+  <div class="dialog" id="map-panel" hidden role="dialog" aria-modal="true" aria-labelledby="map-title">
+    <div class="sheet" tabindex="-1">
+      <div class="sheet-head">
+        <div>
+          <p class="place">藝世錄保險小鎮</p>
+          <h2 id="map-title">地圖</h2>
+        </div>
+        <button type="button" class="icon-btn" id="map-close" aria-label="關閉">×</button>
+      </div>
+      <p class="body-copy">從家裡的門走出去就是小鎮。走到房子門口會進到室內，室內下方的門可以回到小鎮。</p>
+      <ul class="map-list">
+        <li>家</li><li>衛生室</li><li>村辦公室</li><li>茶館</li><li>周家</li><li>書報攤</li><li>申訴亭</li><li>繳費亭</li><li>吳家</li><li>車行</li><li>河岸住家</li><li>郵務角</li><li>招攬角</li><li>事務所</li><li>我家</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="dialog" id="menu-panel" hidden role="dialog" aria-modal="true" aria-labelledby="menu-title">
+    <div class="sheet" tabindex="-1">
+      <div class="sheet-head">
+        <div>
+          <p class="place">藝世錄保險小鎮</p>
+          <h2 id="menu-title">這個身分</h2>
+        </div>
+        <button type="button" class="icon-btn" id="menu-close" aria-label="關閉">×</button>
+      </div>
+      <div class="menu-actions">
+        <button type="button" class="chip" id="btn-progress">進度</button>
+        <button type="button" class="chip" id="btn-role">換身分</button>
+        <button type="button" class="chip" id="btn-sound" aria-pressed="false">音效關</button>
+        <button type="button" class="chip" id="btn-music" aria-pressed="false">音樂關</button>
+      </div>
+    </div>
+  </div>
+
   <div class="dialog" id="progress" hidden role="dialog" aria-modal="true" aria-labelledby="progress-title">
     <div class="sheet" tabindex="-1">
       <div class="sheet-head">
@@ -156,8 +191,9 @@
   </div>
 
   <noscript><p class="legal">藝世錄保險小鎮需要開啟 JavaScript 才能走動與對話。</p></noscript>
-  <script src="scenarios.js?v=1.2" defer></script>
-  <script src="characters.js?v=1.2" defer></script>
-  <script src="game.js?v=1.2" defer></script>
+  <script src="scenarios.js?v=1.3" defer></script>
+  <script src="characters.js?v=1.3" defer></script>
+  <script src="rooms.js?v=1.3" defer></script>
+  <script src="game.js?v=1.3" defer></script>
 </body>
 </html>

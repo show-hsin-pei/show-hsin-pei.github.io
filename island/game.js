@@ -1,5 +1,5 @@
 (function () {
-  const VERSION = "1.1";
+  const VERSION = "1.2";
   const UPDATED = "2026年11月24日";
   const KEY = "hean-village-v1";
   const FONT = '"Noto Sans TC", "PingFang TC", "Microsoft JhengHei", "WenQuanYi Micro Hei", sans-serif';
@@ -22,19 +22,20 @@
   const byId = Object.fromEntries(SCENARIOS.map(function (s) { return [s.id, s]; }));
 
   const BUILDINGS = [
-    { name: "衛生室", x: 70, y: 70, w: 210, h: 145, roof: "#c4896a" },
-    { name: "村辦公室", x: 620, y: 60, w: 250, h: 155, roof: "#c4a36a" },
-    { name: "茶館", x: 1160, y: 70, w: 220, h: 145, roof: "#b98362" },
-    { name: "周家", x: 70, y: 390, w: 210, h: 145, roof: "#c4a36a" },
-    { name: "書報攤", x: 420, y: 420, w: 160, h: 115, roof: "#d2b48a" },
-    { name: "申訴亭", x: 1230, y: 400, w: 200, h: 135, roof: "#c4896a" },
-    { name: "繳費亭", x: 70, y: 750, w: 190, h: 140, roof: "#c4a36a" },
-    { name: "吳家", x: 470, y: 740, w: 220, h: 150, roof: "#b98362" },
-    { name: "車行", x: 980, y: 730, w: 240, h: 160, roof: "#c4a36a" },
-    { name: "河岸住家", x: 1360, y: 745, w: 210, h: 145, roof: "#c4896a" },
-    { name: "郵務角", x: 230, y: 1088, w: 160, h: 112, roof: "#d2b48a" },
-    { name: "招攬角", x: 500, y: 1076, w: 300, h: 118, roof: "#c4a36a" },
-    { name: "事務所", x: 1180, y: 1070, w: 320, h: 120, roof: "#b98362" }
+    { name: "衛生室", x: 70, y: 70, w: 210, h: 145, roof: "#c4896a", wall: "#f7f3ea", kind: "clinic", scenarios: ["clinic-necessity"] },
+    { name: "村辦公室", x: 620, y: 60, w: 250, h: 155, roof: "#c4a36a", wall: "#fffaf3", kind: "office", scenarios: ["free-look"] },
+    { name: "茶館", x: 1160, y: 70, w: 220, h: 145, roof: "#b98362", wall: "#fff6ee", kind: "tea", scenarios: ["waiting-period"] },
+    { name: "周家", x: 70, y: 390, w: 210, h: 145, roof: "#c4a36a", wall: "#fff8ef", kind: "house", scenarios: ["disclosure-form"] },
+    { name: "書報攤", x: 420, y: 420, w: 160, h: 115, roof: "#d2b48a", wall: "#f6efe2", kind: "stall", scenarios: ["exclusion-print"] },
+    { name: "申訴亭", x: 1230, y: 400, w: 200, h: 135, roof: "#c4896a", wall: "#f7f1e8", kind: "office", scenarios: ["complaint-path"] },
+    { name: "繳費亭", x: 70, y: 750, w: 190, h: 140, roof: "#c4a36a", wall: "#fffaf3", kind: "office", scenarios: ["lapse-reinstate"] },
+    { name: "吳家", x: 470, y: 740, w: 220, h: 150, roof: "#b98362", wall: "#fff6f0", kind: "house", scenarios: ["beneficiary-update"] },
+    { name: "車行", x: 980, y: 730, w: 240, h: 160, roof: "#c4a36a", wall: "#f3eee6", kind: "garage", scenarios: ["compulsory-auto"] },
+    { name: "河岸住家", x: 1360, y: 745, w: 210, h: 145, roof: "#c4896a", wall: "#fff8ef", kind: "house", scenarios: ["storm-flood"] },
+    { name: "郵務角", x: 230, y: 1088, w: 160, h: 112, roof: "#d2b48a", wall: "#f7f1e6", kind: "stall", scenarios: ["claim-docs"] },
+    { name: "招攬角", x: 500, y: 1076, w: 300, h: 118, roof: "#c4a36a", wall: "#fff6ea", kind: "office", scenarios: ["face-sign", "no-rebate", "no-proxy-sign", "health-blank", "no-misstate", "no-guarantee"] },
+    { name: "事務所", x: 1180, y: 1070, w: 320, h: 120, roof: "#b98362", wall: "#f6f1e6", kind: "office", scenarios: ["broker-fee", "broker-commission", "broker-conflict", "broker-scope"] },
+    { name: "我家", x: 1400, y: 250, w: 170, h: 120, roof: "#c4a36a", wall: "#fff8ef", kind: "home", scenarios: [] }
   ];
 
   const PATHS = [
@@ -105,7 +106,7 @@
   const playScreen = document.getElementById("play-screen");
   const canvas = document.getElementById("view");
   const stage = document.getElementById("stage");
-  const ctx = canvas.getContext("2d");
+  let pen = canvas.getContext("2d");
   const nearLabel = document.getElementById("near-label");
   const talkBtn = document.getElementById("talk-btn");
   const toastEl = document.getElementById("toast");
@@ -122,7 +123,14 @@
   let zoom = 1;
   let dpr = 1;
   const cam = { x: 0, y: 0 };
-  const player = { x: 860, y: 800, dir: 1, walk: 0 };
+  const player = { x: 400, y: 320, dir: 1, walk: 0 };
+  const ROOM = window.HEAN_ROOMS.ROOM;
+  let area = "home";
+  let roomKind = "home";
+  let roomExit = { x: 1485, y: 450 };
+  let roomName = "家";
+  let doorLock = 0;
+  let townLayer = null;
   let path = null;
   let time = 0;
   let currentId = null;
@@ -184,7 +192,23 @@
     }, 0);
   }
 
+  function bounds() {
+    return area === "town" ? WORLD : ROOM;
+  }
+
   function solidAt(x, y, rad) {
+    const box = bounds();
+    if (area !== "town") {
+      const m = 30;
+      if (x < m + rad || y < m + rad || x > box.w - m - rad) return true;
+      if (y > box.h - m - rad && Math.abs(x - box.w / 2) > 48) return true;
+      const rects = window.HEAN_ROOMS.blocks(area === "home" ? "home" : roomKind);
+      for (let i = 0; i < rects.length; i++) {
+        const r = rects[i];
+        if (x > r.x - rad && x < r.x + r.w + rad && y > r.y - rad && y < r.y + r.h + rad) return true;
+      }
+      return false;
+    }
     if (x < rad + 10 || y < rad + 10 || x > WORLD.w - rad - 10 || y > WORLD.h - rad - 10) return true;
     if (Math.hypot(x - 190, y - 1368) < 86 + rad) return true;
     if (x > 1636 - rad) return true;
@@ -200,8 +224,9 @@
   }
 
   function buildNav() {
-    cols = Math.ceil(WORLD.w / CS);
-    rows = Math.ceil(WORLD.h / CS);
+    const box = bounds();
+    cols = Math.ceil(box.w / CS);
+    rows = Math.ceil(box.h / CS);
     blocked = new Uint8Array(cols * rows);
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < cols; c++) {
@@ -340,9 +365,20 @@
 
   function activeSpots() {
     if (!role) return [];
-    return SPOTS.filter(function (s) {
-      const sc = byId[s.id];
+    if (area === "town") {
+      return SPOTS.filter(function (s) {
+        const sc = byId[s.id];
+        return sc && sc.roles.indexOf(role) !== -1;
+      });
+    }
+    if (area === "home") return [];
+    const b = BUILDINGS.find(function (item) { return item.name === roomName; });
+    const ids = b && b.scenarios ? b.scenarios : [];
+    return ids.filter(function (id) {
+      const sc = byId[id];
       return sc && sc.roles.indexOf(role) !== -1;
+    }).map(function (id, index) {
+      return { id: id, x: 130 + (index % 4) * 150, y: 360 + Math.floor(index / 4) * 60 };
     });
   }
 
@@ -361,7 +397,9 @@
   }
 
   function uiOpen() {
-    return !dialog.hidden || !progress.hidden;
+    const mapPanel = document.getElementById("map-panel");
+    const menuPanel = document.getElementById("menu-panel");
+    return !dialog.hidden || !progress.hidden || (mapPanel && !mapPanel.hidden) || (menuPanel && !menuPanel.hidden);
   }
 
   function resize() {
@@ -370,7 +408,7 @@
     if (rect.width < 2 || rect.height < 2) return;
     viewW = rect.width;
     viewH = rect.height;
-    zoom = viewW < 760 ? 0.86 : 1;
+    zoom = area === "town" ? (viewW < 760 ? 0.86 : 1) : (viewW < 760 ? 1.05 : 1.15);
     dpr = Math.min(2, window.devicePixelRatio || 1);
     canvas.width = Math.round(viewW * dpr);
     canvas.height = Math.round(viewH * dpr);
@@ -379,8 +417,9 @@
   function tryMove(dx, dy) {
     if (!solidAt(player.x + dx, player.y, 12)) player.x += dx;
     if (!solidAt(player.x, player.y + dy, 12)) player.y += dy;
-    player.x = clamp(player.x, 24, WORLD.w - 24);
-    player.y = clamp(player.y, 24, WORLD.h - 24);
+    const box = bounds();
+    player.x = clamp(player.x, 24, box.w - 24);
+    player.y = clamp(player.y, 24, box.h - 24);
   }
 
   function update(dt) {
@@ -426,8 +465,11 @@
     }
     const worldW = viewW / zoom;
     const worldH = viewH / zoom;
-    cam.x = clamp(player.x - worldW / 2, 0, Math.max(0, WORLD.w - worldW));
-    cam.y = clamp(player.y - worldH / 2, 0, Math.max(0, WORLD.h - worldH));
+    const box = bounds();
+    cam.x = camAxis(player.x, worldW, box.w);
+    cam.y = camAxis(player.y, worldH, box.h);
+    if (doorLock > 0) doorLock -= dt;
+    else tryDoors();
     const near = nearestSpot();
     if (!near) {
       nearLabel.hidden = true;
@@ -444,35 +486,28 @@
 
   function roundRect(x, y, w, h, r) {
     const radius = Math.max(0, Math.min(r, w / 2, h / 2));
-    ctx.beginPath();
-    ctx.moveTo(x + radius, y);
-    ctx.arcTo(x + w, y, x + w, y + h, radius);
-    ctx.arcTo(x + w, y + h, x, y + h, radius);
-    ctx.arcTo(x, y + h, x, y, radius);
-    ctx.arcTo(x, y, x + w, y, radius);
-    ctx.closePath();
+    pen.beginPath();
+    pen.moveTo(x + radius, y);
+    pen.arcTo(x + w, y, x + w, y + h, radius);
+    pen.arcTo(x + w, y + h, x, y + h, radius);
+    pen.arcTo(x, y + h, x, y, radius);
+    pen.arcTo(x, y, x + w, y, radius);
+    pen.closePath();
   }
 
   function draw() {
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, viewW, viewH);
-    ctx.save();
-    ctx.translate(-cam.x * zoom, -cam.y * zoom);
-    ctx.scale(zoom, zoom);
-    drawGround();
-    drawPaths();
-    drawPond();
-    drawRiver();
-    drawFlowers();
+    pen.setTransform(dpr, 0, 0, dpr, 0, 0);
+    pen.clearRect(0, 0, viewW, viewH);
+    pen.save();
+    pen.translate(-cam.x * zoom, -cam.y * zoom);
+    pen.scale(zoom, zoom);
+    if (area === "town") {
+      if (!townLayer) townLayer = bakeTown();
+      pen.drawImage(townLayer, 0, 0);
+    } else {
+      window.HEAN_ROOMS.paint(pen, area === "home" ? "home" : roomKind, time);
+    }
     const queue = [];
-    BUILDINGS.forEach(function (b) {
-      queue.push({ y: b.y + b.h, draw: function () { drawBuilding(b); } });
-    });
-    TREES.forEach(function (t) {
-      queue.push({ y: t.y, draw: function () { drawTree(t); } });
-    });
-    queue.push({ y: 640, draw: drawWell });
-    queue.push({ y: 520, draw: drawBench });
     activeSpots().forEach(function (s, i) {
       queue.push({
         y: s.y,
@@ -488,13 +523,47 @@
     drawLabels();
     if (path && path.length && !reduceMotion) {
       const g = path[path.length - 1];
-      ctx.strokeStyle = "rgba(165, 134, 90, 0.85)";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.arc(g.x, g.y, 8 + Math.sin(time * 4) * 2, 0, Math.PI * 2);
-      ctx.stroke();
+      pen.strokeStyle = "rgba(165, 134, 90, 0.85)";
+      pen.lineWidth = 2;
+      pen.beginPath();
+      pen.arc(g.x, g.y, 8 + Math.sin(time * 4) * 2, 0, Math.PI * 2);
+      pen.stroke();
     }
-    ctx.restore();
+    pen.restore();
+  }
+
+  function bakeTown() {
+    const c = document.createElement("canvas");
+    c.width = WORLD.w;
+    c.height = WORLD.h;
+    const saved = pen;
+    const savedCamX = cam.x;
+    const savedCamY = cam.y;
+    const savedW = viewW;
+    const savedH = viewH;
+    const savedZ = zoom;
+    pen = c.getContext("2d");
+    cam.x = 0;
+    cam.y = 0;
+    viewW = WORLD.w;
+    viewH = WORLD.h;
+    zoom = 1;
+    drawGround();
+    drawPaths();
+    drawPond();
+    drawRiver();
+    drawFlowers();
+    BUILDINGS.forEach(drawBuilding);
+    TREES.forEach(drawTree);
+    drawWell();
+    drawBench();
+    pen = saved;
+    cam.x = savedCamX;
+    cam.y = savedCamY;
+    viewW = savedW;
+    viewH = savedH;
+    zoom = savedZ;
+    return c;
   }
 
   function drawGround() {
@@ -506,174 +575,219 @@
     for (let y = y0; y < y1; y += size) {
       for (let x = x0; x < x1; x += size) {
         const n = hash(x, y);
-        ctx.fillStyle = n > 0.55 ? "#efe6d6" : "#e7decc";
-        ctx.fillRect(x, y, size + 1, size + 1);
+        pen.fillStyle = n > 0.55 ? "#efe6d6" : "#e7decc";
+        pen.fillRect(x, y, size + 1, size + 1);
         if (n > 0.86) {
-          ctx.fillStyle = "rgba(168, 140, 90, 0.16)";
-          ctx.beginPath();
-          ctx.ellipse(x + 18, y + 26, 7, 3, 0.4, 0, Math.PI * 2);
-          ctx.fill();
+          pen.fillStyle = "rgba(168, 140, 90, 0.16)";
+          pen.beginPath();
+          pen.ellipse(x + 18, y + 26, 7, 3, 0.4, 0, Math.PI * 2);
+          pen.fill();
         }
       }
     }
   }
 
   function drawPaths() {
-    ctx.fillStyle = "#e7d3b0";
+    pen.fillStyle = "#e7d3b0";
     PATHS.forEach(function (p) {
       roundRect(p.x, p.y, p.w, p.h, 18);
-      ctx.fill();
+      pen.fill();
     });
-    ctx.fillStyle = "rgba(255, 250, 242, 0.45)";
+    pen.fillStyle = "rgba(255, 250, 242, 0.45)";
     PATHS.forEach(function (p) {
       if (p.w > p.h) {
         roundRect(p.x + 10, p.y + p.h / 2 - 3, p.w - 20, 6, 3);
       } else {
         roundRect(p.x + p.w / 2 - 3, p.y + 10, 6, p.h - 20, 3);
       }
-      ctx.fill();
+      pen.fill();
     });
   }
 
   function drawPond() {
-    ctx.fillStyle = "#d5ddd8";
-    ctx.beginPath();
-    ctx.ellipse(190, 1368, 108, 72, -0.2, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = "rgba(255,255,255,0.55)";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.ellipse(176, 1356, 46, 16, -0.4, 0.2, 2.2);
-    ctx.stroke();
+    pen.fillStyle = "#d5ddd8";
+    pen.beginPath();
+    pen.ellipse(190, 1368, 108, 72, -0.2, 0, Math.PI * 2);
+    pen.fill();
+    pen.strokeStyle = "rgba(255,255,255,0.55)";
+    pen.lineWidth = 2;
+    pen.beginPath();
+    pen.ellipse(176, 1356, 46, 16, -0.4, 0.2, 2.2);
+    pen.stroke();
   }
 
   function drawRiver() {
     const shift = reduceMotion ? 0 : Math.sin(time * 0.8) * 4;
-    ctx.fillStyle = "#d3ddd8";
-    ctx.fillRect(1636, 0, WORLD.w - 1636, WORLD.h);
-    ctx.strokeStyle = "rgba(255,255,255,0.45)";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(1668, 0);
-    ctx.bezierCurveTo(1652 + shift, 360, 1690 - shift, 780, 1664, WORLD.h);
-    ctx.stroke();
+    pen.fillStyle = "#d3ddd8";
+    pen.fillRect(1636, 0, WORLD.w - 1636, WORLD.h);
+    pen.strokeStyle = "rgba(255,255,255,0.45)";
+    pen.lineWidth = 2;
+    pen.beginPath();
+    pen.moveTo(1668, 0);
+    pen.bezierCurveTo(1652 + shift, 360, 1690 - shift, 780, 1664, WORLD.h);
+    pen.stroke();
   }
 
   function drawFlowers() {
     FLOWERS.forEach(function (f) {
       if (f.x < cam.x - 20 || f.y < cam.y - 20 || f.x > cam.x + viewW / zoom + 20 || f.y > cam.y + viewH / zoom + 20) return;
-      ctx.fillStyle = f.color;
+      pen.fillStyle = f.color;
       for (let i = 0; i < 4; i++) {
         const a = (i * Math.PI) / 2;
-        ctx.beginPath();
-        ctx.arc(f.x + Math.cos(a) * 3, f.y + Math.sin(a) * 3, 2.1, 0, Math.PI * 2);
-        ctx.fill();
+        pen.beginPath();
+        pen.arc(f.x + Math.cos(a) * 3, f.y + Math.sin(a) * 3, 2.1, 0, Math.PI * 2);
+        pen.fill();
       }
-      ctx.fillStyle = "#f6e7b2";
-      ctx.beginPath();
-      ctx.arc(f.x, f.y, 1.5, 0, Math.PI * 2);
-      ctx.fill();
+      pen.fillStyle = "#f6e7b2";
+      pen.beginPath();
+      pen.arc(f.x, f.y, 1.5, 0, Math.PI * 2);
+      pen.fill();
     });
   }
 
   function drawBuilding(b) {
-    ctx.fillStyle = "rgba(120, 90, 50, 0.12)";
-    ctx.beginPath();
-    ctx.ellipse(b.x + b.w / 2, b.y + b.h - 2, b.w * 0.4, 8, 0, 0, Math.PI * 2);
-    ctx.fill();
-    roundRect(b.x, b.y + 26, b.w, b.h - 26, 16);
-    ctx.fillStyle = "#fffdf8";
-    ctx.fill();
-    ctx.strokeStyle = "rgba(90, 70, 40, 0.18)";
-    ctx.lineWidth = 2;
-    ctx.stroke();
-    roundRect(b.x - 8, b.y, b.w + 16, 42, 14);
-    ctx.fillStyle = b.roof;
-    ctx.fill();
-    const doorW = 26;
-    const doorH = Math.min(40, b.h * 0.28);
-    roundRect(b.x + b.w / 2 - doorW / 2, b.y + b.h - doorH - 8, doorW, doorH, 8);
-    ctx.fillStyle = "#8d6b45";
-    ctx.fill();
-    ctx.fillStyle = "rgba(255, 236, 210, 0.9)";
+    const x = b.x;
+    const y = b.y;
+    const w = b.w;
+    const h = b.h;
+    const wall = b.wall || "#fffaf3";
+    pen.fillStyle = "rgba(70, 48, 30, 0.2)";
+    pen.beginPath();
+    pen.ellipse(x + w / 2 + 10, y + h, w * 0.46, 11, 0, 0, Math.PI * 2);
+    pen.fill();
+    pen.fillStyle = "#c4a07a";
+    pen.beginPath();
+    pen.moveTo(x + w - 6, y + 46);
+    pen.lineTo(x + w + 18, y + 58);
+    pen.lineTo(x + w + 18, y + h + 8);
+    pen.lineTo(x + w - 6, y + h - 6);
+    pen.fill();
+    roundRect(x, y + 34, w, h - 30, 8);
+    pen.fillStyle = wall;
+    pen.fill();
+    pen.strokeStyle = "rgba(90, 60, 40, 0.22)";
+    pen.lineWidth = 2;
+    pen.stroke();
+    pen.fillStyle = "rgba(214, 190, 156, 0.35)";
+    for (let i = 0; i < 3; i++) pen.fillRect(x + 14 + i * 16, y + 48, 5, h - 78);
+    pen.fillStyle = b.roof;
+    pen.beginPath();
+    pen.moveTo(x - 14, y + 48);
+    pen.lineTo(x + w * 0.46, y + 4);
+    pen.lineTo(x + w + 20, y + 48);
+    pen.closePath();
+    pen.fill();
+    pen.strokeStyle = "rgba(255,255,255,0.28)";
+    pen.lineWidth = 1;
+    for (let i = 1; i <= 4; i++) {
+      pen.beginPath();
+      const yy = y + 12 + i * 7;
+      pen.moveTo(x + i * 8, yy);
+      pen.lineTo(x + w - i * 6, yy);
+      pen.stroke();
+    }
+    const doorW = 28;
+    roundRect(x + w / 2 - doorW / 2, y + h - 46, doorW, 38, 6);
+    pen.fillStyle = "#7a4e32";
+    pen.fill();
+    pen.fillStyle = "#f3e2c4";
+    pen.beginPath();
+    pen.arc(x + w / 2 + 8, y + h - 26, 2.4, 0, Math.PI * 2);
+    pen.fill();
     [-1, 1].forEach(function (side) {
-      const wx = b.x + b.w / 2 + side * Math.min(48, b.w * 0.28) - 13;
-      if (wx > b.x + 8 && wx + 26 < b.x + b.w - 8) {
-        roundRect(wx, b.y + 52, 26, 20, 6);
-        ctx.fill();
+      const wx = x + w / 2 + side * Math.min(52, w * 0.28) - 16;
+      if (wx > x + 10 && wx + 30 < x + w - 8) {
+        roundRect(wx, y + 58, 30, 24, 4);
+        pen.fillStyle = "#9ec8e4";
+        pen.fill();
+        pen.strokeStyle = "#6a4632";
+        pen.lineWidth = 2;
+        pen.stroke();
+        pen.beginPath();
+        pen.moveTo(wx + 15, y + 58);
+        pen.lineTo(wx + 15, y + 82);
+        pen.moveTo(wx, y + 70);
+        pen.lineTo(wx + 30, y + 70);
+        pen.stroke();
       }
     });
-    ctx.font = "600 13px " + FONT;
-    const tw = ctx.measureText(b.name).width;
+    pen.fillStyle = "#6f8f62";
+    pen.beginPath();
+    pen.ellipse(x + 18, y + h - 8, 10, 7, 0, 0, Math.PI * 2);
+    pen.fill();
+    pen.fillStyle = "#c47a4a";
+    pen.fillRect(x + 14, y + h - 10, 8, 8);
+    pen.font = "600 13px " + FONT;
+    const tw = pen.measureText(b.name).width;
     const sw = tw + 18;
-    const sx = b.x + b.w / 2 - sw / 2;
-    const sy = b.y + 30;
+    const sx = x + w / 2 - sw / 2;
+    const sy = y + 40;
     roundRect(sx, sy, sw, 22, 11);
-    ctx.fillStyle = "rgba(255, 253, 249, 0.95)";
-    ctx.fill();
-    ctx.fillStyle = "#5c4a38";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(b.name, b.x + b.w / 2, sy + 11);
+    pen.fillStyle = "rgba(255, 253, 249, 0.95)";
+    pen.fill();
+    pen.fillStyle = "#5c4a38";
+    pen.textAlign = "center";
+    pen.textBaseline = "middle";
+    pen.fillText(b.name, x + w / 2, sy + 11);
     if (b.name === "茶館") drawCat(b.x + b.w - 36, b.y + 18);
   }
 
   function drawCat(x, y) {
-    ctx.fillStyle = "#d9c2a6";
-    ctx.beginPath();
-    ctx.ellipse(x, y + 8, 14, 7, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(x + 10, y + 2, 6, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "#f7e7c8";
-    ctx.beginPath();
-    ctx.moveTo(x + 6, y - 2);
-    ctx.lineTo(x + 8, y + 3);
-    ctx.lineTo(x + 12, y - 1);
-    ctx.fill();
+    pen.fillStyle = "#d9c2a6";
+    pen.beginPath();
+    pen.ellipse(x, y + 8, 14, 7, 0, 0, Math.PI * 2);
+    pen.fill();
+    pen.beginPath();
+    pen.arc(x + 10, y + 2, 6, 0, Math.PI * 2);
+    pen.fill();
+    pen.fillStyle = "#f7e7c8";
+    pen.beginPath();
+    pen.moveTo(x + 6, y - 2);
+    pen.lineTo(x + 8, y + 3);
+    pen.lineTo(x + 12, y - 1);
+    pen.fill();
   }
 
   function drawTree(t) {
-    ctx.fillStyle = "#b08968";
+    pen.fillStyle = "#b08968";
     roundRect(t.x - 4, t.y - 8, 8, 16, 3);
-    ctx.fill();
-    ctx.fillStyle = "#c5cbb6";
-    ctx.beginPath();
-    ctx.arc(t.x, t.y - 20, 16, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "#b7c0a8";
-    ctx.beginPath();
-    ctx.arc(t.x - 10, t.y - 14, 11, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(t.x + 9, t.y - 12, 10, 0, Math.PI * 2);
-    ctx.fill();
+    pen.fill();
+    pen.fillStyle = "#c5cbb6";
+    pen.beginPath();
+    pen.arc(t.x, t.y - 20, 16, 0, Math.PI * 2);
+    pen.fill();
+    pen.fillStyle = "#b7c0a8";
+    pen.beginPath();
+    pen.arc(t.x - 10, t.y - 14, 11, 0, Math.PI * 2);
+    pen.fill();
+    pen.beginPath();
+    pen.arc(t.x + 9, t.y - 12, 10, 0, Math.PI * 2);
+    pen.fill();
   }
 
   function drawWell() {
-    ctx.fillStyle = "#d7c4a4";
-    ctx.beginPath();
-    ctx.ellipse(820, 640, 22, 12, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = "#b08968";
-    ctx.lineWidth = 3;
-    ctx.stroke();
-    ctx.strokeStyle = "#8d6b45";
-    ctx.beginPath();
-    ctx.moveTo(804, 632);
-    ctx.lineTo(804, 612);
-    ctx.lineTo(836, 612);
-    ctx.lineTo(836, 632);
-    ctx.stroke();
+    pen.fillStyle = "#d7c4a4";
+    pen.beginPath();
+    pen.ellipse(820, 640, 22, 12, 0, 0, Math.PI * 2);
+    pen.fill();
+    pen.strokeStyle = "#b08968";
+    pen.lineWidth = 3;
+    pen.stroke();
+    pen.strokeStyle = "#8d6b45";
+    pen.beginPath();
+    pen.moveTo(804, 632);
+    pen.lineTo(804, 612);
+    pen.lineTo(836, 612);
+    pen.lineTo(836, 632);
+    pen.stroke();
   }
 
   function drawBench() {
-    ctx.fillStyle = "#c4a36a";
+    pen.fillStyle = "#c4a36a";
     roundRect(980, 548, 46, 10, 4);
-    ctx.fill();
-    ctx.fillRect(986, 556, 4, 10);
-    ctx.fillRect(1016, 556, 4, 10);
+    pen.fill();
+    pen.fillRect(986, 556, 4, 10);
+    pen.fillRect(1016, 556, 4, 10);
   }
 
   function drawPerson(x, y, index, isPlayer, scenarioId) {
@@ -686,70 +800,70 @@
     const sw = window.HEAN_CHARS.SW;
     const sh = window.HEAN_CHARS.SH;
     const scale = window.HEAN_CHARS.SCALE;
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.fillStyle = "rgba(90, 64, 40, 0.16)";
-    ctx.beginPath();
-    ctx.ellipse(0, 3, isPlayer ? 15 : 13, 5.2, 0, 0, Math.PI * 2);
-    ctx.fill();
+    pen.save();
+    pen.translate(x, y);
+    pen.fillStyle = "rgba(40, 28, 18, 0.28)";
+    pen.beginPath();
+    pen.ellipse(0, 4, isPlayer ? 16 : 14, 6, 0, 0, Math.PI * 2);
+    pen.fill();
     if (isPlayer) {
-      ctx.strokeStyle = "rgba(165, 134, 90, 0.8)";
-      ctx.lineWidth = 1.6;
-      ctx.beginPath();
-      ctx.ellipse(0, 3, 16, 6.2, 0, 0, Math.PI * 2);
-      ctx.stroke();
+      pen.strokeStyle = "rgba(165, 134, 90, 0.8)";
+      pen.lineWidth = 1.6;
+      pen.beginPath();
+      pen.ellipse(0, 3, 16, 6.2, 0, 0, Math.PI * 2);
+      pen.stroke();
     }
-    ctx.translate(0, bob);
-    if (isPlayer && player.dir < 0) ctx.scale(-1, 1);
-    ctx.drawImage(pack.canvas, frame * sw * scale, 0, sw * scale, sh * scale, -sw / 2, -(sh - 8), sw, sh);
+    pen.translate(0, bob);
+    if (isPlayer && player.dir < 0) pen.scale(-1, 1);
+    pen.drawImage(pack.canvas, frame * sw * scale, 0, sw * scale, sh * scale, -sw / 2, -(sh - 8), sw, sh);
     if (!isPlayer && nearestSpot() && nearestSpot().id === scenarioId) {
-      ctx.strokeStyle = "rgba(165, 134, 90, 0.9)";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.ellipse(0, -34, 24, 32, 0, 0, Math.PI * 2);
-      ctx.stroke();
+      pen.strokeStyle = "rgba(165, 134, 90, 0.9)";
+      pen.lineWidth = 2;
+      pen.beginPath();
+      pen.ellipse(0, -34, 24, 32, 0, 0, Math.PI * 2);
+      pen.stroke();
     }
-    ctx.restore();
+    pen.restore();
     if (!isPlayer) drawMark(x, y - 86, recordOf(scenarioId));
   }
 
   function drawMark(x, y, rec) {
-    ctx.beginPath();
-    ctx.arc(x, y, 7, 0, Math.PI * 2);
-    ctx.fillStyle = rec === "best" ? "#a5865a" : rec === "seen" ? "#e4d3b4" : "#fffdf9";
-    ctx.fill();
-    ctx.strokeStyle = "#a5865a";
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
+    pen.beginPath();
+    pen.arc(x, y, 7, 0, Math.PI * 2);
+    pen.fillStyle = rec === "best" ? "#a5865a" : rec === "seen" ? "#e4d3b4" : "#fffdf9";
+    pen.fill();
+    pen.strokeStyle = "#a5865a";
+    pen.lineWidth = 1.5;
+    pen.stroke();
     if (rec === "best") {
-      ctx.strokeStyle = "#fffdf9";
-      ctx.lineWidth = 1.6;
-      ctx.beginPath();
-      ctx.moveTo(x - 3, y);
-      ctx.lineTo(x - 1, y + 2.4);
-      ctx.lineTo(x + 3.4, y - 2.4);
-      ctx.stroke();
+      pen.strokeStyle = "#fffdf9";
+      pen.lineWidth = 1.6;
+      pen.beginPath();
+      pen.moveTo(x - 3, y);
+      pen.lineTo(x - 1, y + 2.4);
+      pen.lineTo(x + 3.4, y - 2.4);
+      pen.stroke();
     }
   }
 
   function drawLabels() {
     const near = nearestSpot();
-    ctx.font = "600 13px " + FONT;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
+    pen.font = "600 13px " + FONT;
+    pen.textAlign = "center";
+    pen.textBaseline = "middle";
     activeSpots().forEach(function (s) {
       const dist = Math.hypot(s.x - player.x, s.y - player.y);
       if (dist > 150 && !(near && near.id === s.id)) return;
       const sc = byId[s.id];
       const text = sc.speaker;
-      const w = ctx.measureText(text).width + 16;
+      const w = pen.measureText(text).width + 16;
       const x = s.x - w / 2;
       const y = s.y - 102;
       roundRect(x, y, w, 20, 10);
-      ctx.fillStyle = "rgba(255, 253, 249, 0.94)";
-      ctx.fill();
-      ctx.fillStyle = "#3f362e";
-      ctx.fillText(text, s.x, y + 10);
+      pen.fillStyle = "rgba(255, 253, 249, 0.94)";
+      pen.fill();
+      pen.fillStyle = "#3f362e";
+      pen.fillText(text, s.x, y + 10);
     });
   }
 
@@ -760,6 +874,43 @@
   }
 
   function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+  function camAxis(pos, view, size) {
+    if (size <= view) return (size - view) / 2;
+    return clamp(pos - view / 2, 0, size - view);
+  }
+
+  function setArea(next, x, y, kind, exit, name) {
+    area = next;
+    if (kind) roomKind = kind;
+    if (exit) roomExit = exit;
+    if (name) roomName = name;
+    if (next === "home") roomName = "家";
+    player.x = x;
+    player.y = y;
+    path = null;
+    doorLock = 0.85;
+    buildNav();
+    renderHud();
+  }
+
+  function tryDoors() {
+    if (area === "town") {
+      for (let i = 0; i < BUILDINGS.length; i++) {
+        const b = BUILDINGS[i];
+        const dx = b.x + b.w / 2;
+        const dy = b.y + b.h + 18;
+        if (Math.abs(player.x - dx) < 26 && Math.abs(player.y - dy) < 22) {
+          if (b.kind === "home") setArea("home", 400, 280);
+          else setArea("room", 400, 430, b.kind, { x: dx, y: dy + 50 }, b.name);
+          return;
+        }
+      }
+    } else if (player.y > ROOM.h - 42 && Math.abs(player.x - ROOM.w / 2) < 42) {
+      if (area === "home") setArea("town", 1485, 450);
+      else setArea("town", roomExit.x, roomExit.y);
+    }
+  }
 
   function renderTitle() {
     document.getElementById("version-line").textContent = "版本 " + VERSION + " · " + UPDATED + "更新";
@@ -775,18 +926,49 @@
     });
   }
 
+  function seasonName() {
+    const month = new Date().getMonth();
+    if (month < 2 || month === 11) return "冬";
+    if (month < 5) return "春";
+    if (month < 8) return "夏";
+    return "秋";
+  }
+
+  function placeName() {
+    if (area === "home") return "家";
+    if (area === "town") return "小鎮";
+    return roomName || "室內";
+  }
+
   function renderHud() {
+    if (!role) return;
     const total = scenariosFor(role).length;
-    const rec = state.progress[role] || {};
-    const done = Object.keys(rec).length;
-    document.getElementById("hud-role").textContent = ROLE_NAME[role];
-    document.getElementById("hud-stat").textContent = "完成 " + done + "／" + total + " · 分數 " + scoreOf(role);
+    const done = Object.keys(state.progress[role] || {}).length;
+    const level = 1 + Math.floor(done / 4);
+    const now = new Date();
+    const clock = new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Asia/Taipei",
+      hour: "2-digit",
+      minute: "2-digit",
+      hourCycle: "h23"
+    }).format(now);
+    document.getElementById("st-season").textContent = seasonName();
+    document.getElementById("st-time").textContent = clock;
+    document.getElementById("st-place").textContent = placeName();
+    document.getElementById("st-role").textContent = ROLE_NAME[role] + " Lv." + level;
+    document.getElementById("st-coin").textContent = "小鎮幣 " + scoreOf(role);
+    document.getElementById("st-stam").textContent = "體力 100/100";
     const soundBtn = document.getElementById("btn-sound");
     const musicBtn = document.getElementById("btn-music");
     soundBtn.textContent = state.sound ? "音效開" : "音效關";
     soundBtn.setAttribute("aria-pressed", state.sound ? "true" : "false");
     musicBtn.textContent = state.music ? "音樂開" : "音樂關";
     musicBtn.setAttribute("aria-pressed", state.music ? "true" : "false");
+  }
+
+  function paintAvatar() {
+    const canvasFace = document.getElementById("avatar-face");
+    if (canvasFace && role) window.HEAN_CHARS.paintAvatar(canvasFace, "player-" + role);
   }
 
   function showToast(text) {
@@ -805,16 +987,16 @@
     role = next;
     state.lastRole = next;
     save();
-    player.x = 860;
-    player.y = 800;
     player.walk = 0;
     path = null;
     titleScreen.hidden = true;
     playScreen.hidden = false;
     document.body.classList.remove("ui-busy");
+    setArea("home", 400, 400);
     resize();
+    paintAvatar();
     renderHud();
-    showToast(touchQuery.matches ? "用左下角搖桿移動，靠近村民後按對話。" : "點地面走到村民身邊，按 E 或空白鍵對話。");
+    showToast("往下方的門走出去，就是小鎮。靠近人或門口，再按對話。");
     if (state.music) startMusic();
     if (!loopStarted) {
       loopStarted = true;
@@ -963,6 +1145,7 @@
     const spot = SPOTS.find(function (s) { return s.id === id; });
     closeProgress();
     if (!spot) return;
+    if (area !== "town") setArea("town", spot.x, spot.y + 50);
     const candidates = [
       { x: spot.x, y: spot.y + 46 },
       { x: spot.x, y: spot.y - 46 },
@@ -1066,6 +1249,22 @@
       btn.addEventListener("click", function () { startRole(btn.getAttribute("data-role")); });
     });
     document.getElementById("btn-role").addEventListener("click", backToTitle);
+    document.getElementById("btn-map").addEventListener("click", function () {
+      document.getElementById("map-panel").hidden = false;
+      document.body.classList.add("ui-busy");
+    });
+    document.getElementById("map-close").addEventListener("click", function () {
+      document.getElementById("map-panel").hidden = true;
+      if (dialog.hidden && progress.hidden) document.body.classList.remove("ui-busy");
+    });
+    document.getElementById("btn-avatar").addEventListener("click", function () {
+      document.getElementById("menu-panel").hidden = false;
+      document.body.classList.add("ui-busy");
+    });
+    document.getElementById("menu-close").addEventListener("click", function () {
+      document.getElementById("menu-panel").hidden = true;
+      if (dialog.hidden && progress.hidden) document.body.classList.remove("ui-busy");
+    });
     document.getElementById("btn-progress").addEventListener("click", openProgress);
     document.getElementById("progress-close").addEventListener("click", closeProgress);
     document.getElementById("progress-clear").addEventListener("click", function () {
@@ -1106,7 +1305,7 @@
       const k = e.key.toLowerCase();
       const move = ["arrowup", "arrowdown", "arrowleft", "arrowright", "w", "a", "s", "d"].indexOf(k) !== -1;
       if (move) {
-        if (!playScreen.hidden && dialog.hidden && progress.hidden) {
+        if (!playScreen.hidden && !uiOpen()) {
           e.preventDefault();
           keys.add(k);
         }
@@ -1115,6 +1314,8 @@
       if (e.key === "Escape") {
         if (!dialog.hidden) closeDialog(true);
         else if (!progress.hidden) closeProgress();
+        else if (!document.getElementById("map-panel").hidden) document.getElementById("map-panel").hidden = true;
+        else if (!document.getElementById("menu-panel").hidden) document.getElementById("menu-panel").hidden = true;
         return;
       }
       if (playScreen.hidden) return;
@@ -1125,7 +1326,7 @@
         if (e.key === " " || e.code === "Space") e.preventDefault();
         return;
       }
-      if (!progress.hidden) return;
+      if (uiOpen()) return;
       if (e.key === "e" || e.key === "E" || e.key === " " || e.code === "Space") {
         e.preventDefault();
         talk();
@@ -1205,10 +1406,16 @@
   }
 
   validate();
+  area = "town";
   buildNav();
   SPOTS.forEach(function (s) {
     if (solidAt(s.x, s.y, 6)) console.warn("blocked spot", s.id, s.x, s.y);
   });
+  area = "home";
+  buildNav();
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(function () { townLayer = null; });
+  }
   bind();
   renderTitle();
   renderHudSafe();
@@ -1230,6 +1437,7 @@
     spot: function (id) { return SPOTS.find(function (s) { return s.id === id; }); },
     solidAt: solidAt,
     scenariosFor: scenariosFor,
-    VERSION: VERSION
+    VERSION: VERSION,
+    setArea: setArea
   };
 })();
