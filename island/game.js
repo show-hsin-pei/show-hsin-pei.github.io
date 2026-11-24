@@ -1,5 +1,5 @@
 (function () {
-  const VERSION = "1.7";
+  const VERSION = "1.8";
   const UPDATED = "2026年11月24日";
   const KEY = "hean-village-v1";
   const FONT = '"Noto Sans TC", "PingFang TC", "Microsoft JhengHei", "WenQuanYi Micro Hei", sans-serif';
@@ -22,29 +22,29 @@
   const byId = Object.fromEntries(SCENARIOS.map(function (s) { return [s.id, s]; }));
 
   const BUILDINGS = [
-    { name: "我家", zone: "住宅區", x: 266, y: 150, w: 140, h: 100, roof: "#c4a36a", wall: "#fff8ef", kind: "home", art: true, scenarios: [] },
-    { name: "鎮民中心", zone: "住宅區", x: 400, y: 1360, w: 220, h: 120, roof: "#c4a36a", wall: "#fffaf3", kind: "office", scenarios: [] },
-    { name: "周家", zone: "住宅區", x: 1880, y: 980, w: 180, h: 110, roof: "#b98362", wall: "#fff8ef", kind: "house", scenarios: [] },
-    { name: "吳家", zone: "住宅區", x: 1880, y: 1140, w: 180, h: 110, roof: "#c4896a", wall: "#fff6f0", kind: "house", scenarios: [] },
-    { name: "銀行", zone: "商店街", x: 980, y: 160, w: 200, h: 130, roof: "#8d6b45", wall: "#f7f3ea", kind: "bank", scenarios: [] },
-    { name: "超商", zone: "商店街", x: 1260, y: 170, w: 180, h: 120, roof: "#d2b48a", wall: "#fffaf3", kind: "stall", scenarios: [] },
-    { name: "車行", zone: "商店街", x: 1540, y: 150, w: 220, h: 140, roof: "#c4a36a", wall: "#f3eee6", kind: "garage", scenarios: [] },
-    { name: "寵物店", zone: "商店街", x: 980, y: 620, w: 180, h: 120, roof: "#c48a6a", wall: "#fff6ea", kind: "stall", scenarios: ["pet-visit"] },
-    { name: "事務所", zone: "商店街", x: 1260, y: 600, w: 280, h: 140, roof: "#b98362", wall: "#f6f1e6", kind: "office", scenarios: ["broker-fee", "broker-commission", "broker-conflict", "broker-scope"] },
-    { name: "小鎮公所", zone: "公家機關區", x: 1880, y: 640, w: 240, h: 130, roof: "#a67c52", wall: "#f7f1e8", kind: "office", scenarios: [] },
-    { name: "勞工服務站", zone: "公家機關區", x: 1880, y: 820, w: 220, h: 120, roof: "#c4a36a", wall: "#fffaf3", kind: "office", scenarios: [] },
-    { name: "暖禾人壽", zone: "壽險街", x: 990, y: 948, w: 168, h: 112, roof: "#c4896a", wall: "#fff4ea", sign: "#c4896a", theme: "醫療條款", motto: "這裡常把醫療條款和收據對在一起。", kind: "office", scenarios: ["clinic-necessity", "hospital-reimburse", "claim-docs", "face-sign", "no-rebate", "health-blank"] },
-    { name: "青畦人壽", zone: "壽險街", x: 1182, y: 948, w: 168, h: 112, roof: "#6e8a58", wall: "#f3f6ee", sign: "#6e8a58", theme: "重疾定義", motto: "這裡常把重疾定義和等待期攤開。", kind: "office", scenarios: ["waiting-period", "critical-name", "disclosure-form"] },
-    { name: "拾穗人壽", zone: "壽險街", x: 1374, y: 948, w: 168, h: 112, roof: "#c4a36a", wall: "#fff8ee", sign: "#c4a36a", theme: "契約步驟", motto: "這裡常把契撤、受益人、停效的步驟說完。", kind: "office", scenarios: ["free-look", "beneficiary-update", "lapse-reinstate", "rider-ends"] },
-    { name: "暮嵐人壽", zone: "壽險街", x: 1566, y: 948, w: 168, h: 112, roof: "#7f97a4", wall: "#f3f6f8", sign: "#7f97a4", theme: "失能定義", motto: "這裡常把失能和長期照顧的定義讀完。", kind: "office", scenarios: ["disability-define", "care-wait"] },
-    { name: "石橋產物", zone: "產險街", x: 990, y: 1204, w: 168, h: 112, roof: "#8d6b45", wall: "#f6f1e6", sign: "#8d6b45", theme: "住宅範圍", motto: "這裡常把住宅火險、地震和水災分開看。", kind: "office", scenarios: ["storm-flood", "home-contents", "no-misstate", "no-guarantee", "no-proxy-sign"] },
-    { name: "岸蒲產物", zone: "產險街", x: 1182, y: 1204, w: 168, h: 112, roof: "#5f7d62", wall: "#f2f6f1", sign: "#5f7d62", theme: "車險分項", motto: "這裡常把強制險、任意責任和車體分開。", kind: "office", scenarios: ["compulsory-auto", "garage-voluntary"] },
-    { name: "原麓產物", zone: "產險街", x: 1374, y: 1204, w: 168, h: 112, roof: "#a67c52", wall: "#f8f3ea", sign: "#a67c52", theme: "責任範圍", motto: "這裡常先問責任險保的是誰的責任。", kind: "office", scenarios: ["liability-who", "liability-cap"] },
-    { name: "澄川產物", zone: "產險街", x: 1566, y: 1204, w: 168, h: 112, roof: "#6d90a0", wall: "#f2f7f8", sign: "#6d90a0", theme: "意外定義", motto: "這裡常把意外和疾病的定義分開。", kind: "office", scenarios: ["exclusion-print", "complaint-path"] },
-    { name: "醫院", zone: "醫院", x: 80, y: 1320, w: 260, h: 140, roof: "#d7e4ea", wall: "#f7fbff", kind: "clinic", scenarios: [] },
-    { name: "公園亭", zone: "公園", x: 1860, y: 180, w: 170, h: 120, roof: "#7f8f78", wall: "#f7f3ea", kind: "stall", level: 3, scenarios: ["park-walk"] },
-    { name: "湖畔亭", zone: "湖畔", x: 200, y: 1620, w: 180, h: 120, roof: "#7aa0b0", wall: "#f7f4ee", kind: "house", level: 5, scenarios: ["lake-rest"] },
-    { name: "步道牌", zone: "山上步道", x: 1860, y: 1620, w: 160, h: 110, roof: "#8d6a45", wall: "#f6efe4", kind: "stall", level: 8, scenarios: ["trail-sign"] }
+    { name: "我家", zone: "住宅區", x: 160, y: 40, w: 270, h: 280, roof: "#c4a36a", wall: "#fff8ef", kind: "home", art: true, scenarios: [] },
+    { name: "鎮民中心", zone: "住宅區", x: 380, y: 1320, w: 250, h: 170, roof: "#c4a36a", wall: "#fffaf3", kind: "office", scenarios: [] },
+    { name: "周家", zone: "住宅區", x: 1860, y: 1160, w: 220, h: 160, roof: "#b98362", wall: "#fff8ef", kind: "house", scenarios: [] },
+    { name: "吳家", zone: "住宅區", x: 2100, y: 1180, w: 140, h: 130, roof: "#c4896a", wall: "#fff6f0", kind: "house", scenarios: [] },
+    { name: "銀行", zone: "商店街", x: 980, y: 90, w: 210, h: 200, roof: "#8d6b45", wall: "#f7f3ea", kind: "bank", scenarios: [] },
+    { name: "超商", zone: "商店街", x: 1230, y: 100, w: 200, h: 210, roof: "#d2b48a", wall: "#fffaf3", kind: "stall", scenarios: [] },
+    { name: "車行", zone: "商店街", x: 1500, y: 80, w: 230, h: 250, roof: "#c4a36a", wall: "#f3eee6", kind: "garage", scenarios: [] },
+    { name: "寵物店", zone: "商店街", x: 970, y: 590, w: 190, h: 210, roof: "#c48a6a", wall: "#fff6ea", kind: "stall", scenarios: ["pet-visit"] },
+    { name: "事務所", zone: "商店街", x: 1860, y: 490, w: 250, h: 290, roof: "#b98362", wall: "#f6f1e6", kind: "office", scenarios: ["broker-fee", "broker-commission", "broker-conflict", "broker-scope"] },
+    { name: "小鎮公所", zone: "公家機關區", x: 1180, y: 500, w: 380, h: 330, roof: "#c4a36a", wall: "#f7f1e8", kind: "office", scenarios: [] },
+    { name: "勞工服務站", zone: "公家機關區", x: 1860, y: 860, w: 240, h: 200, roof: "#c4a36a", wall: "#fffaf3", kind: "office", scenarios: [] },
+    { name: "暖禾人壽", zone: "壽險街", x: 975, y: 900, w: 175, h: 165, roof: "#c4896a", wall: "#fff4ea", sign: "#c4896a", theme: "醫療條款", motto: "這裡常把醫療條款和收據對在一起。", kind: "office", scenarios: ["clinic-necessity", "hospital-reimburse", "claim-docs", "face-sign", "no-rebate", "health-blank"] },
+    { name: "青畦人壽", zone: "壽險街", x: 1175, y: 900, w: 175, h: 165, roof: "#6e8a58", wall: "#f3f6ee", sign: "#6e8a58", theme: "重疾定義", motto: "這裡常把重疾定義和等待期攤開。", kind: "office", scenarios: ["waiting-period", "critical-name", "disclosure-form"] },
+    { name: "拾穗人壽", zone: "壽險街", x: 1380, y: 900, w: 170, h: 165, roof: "#c4a36a", wall: "#fff8ee", sign: "#c4a36a", theme: "契約步驟", motto: "這裡常把契撤、受益人、停效的步驟說完。", kind: "office", scenarios: ["free-look", "beneficiary-update", "lapse-reinstate", "rider-ends"] },
+    { name: "暮嵐人壽", zone: "壽險街", x: 1575, y: 900, w: 165, h: 165, roof: "#7f97a4", wall: "#f3f6f8", sign: "#7f97a4", theme: "失能定義", motto: "這裡常把失能和長期照顧的定義讀完。", kind: "office", scenarios: ["disability-define", "care-wait"] },
+    { name: "石橋產物", zone: "產險街", x: 975, y: 1165, w: 175, h: 155, roof: "#8d6b45", wall: "#f6f1e6", sign: "#8d6b45", theme: "住宅範圍", motto: "這裡常把住宅火險、地震和水災分開看。", kind: "office", scenarios: ["storm-flood", "home-contents", "no-misstate", "no-guarantee", "no-proxy-sign"] },
+    { name: "岸蒲產物", zone: "產險街", x: 1175, y: 1165, w: 175, h: 155, roof: "#5f7d62", wall: "#f2f6f1", sign: "#5f7d62", theme: "車險分項", motto: "這裡常把強制險、任意責任和車體分開。", kind: "office", scenarios: ["compulsory-auto", "garage-voluntary"] },
+    { name: "原麓產物", zone: "產險街", x: 1380, y: 1165, w: 170, h: 155, roof: "#a67c52", wall: "#f8f3ea", sign: "#a67c52", theme: "責任範圍", motto: "這裡常先問責任險保的是誰的責任。", kind: "office", scenarios: ["liability-who", "liability-cap"] },
+    { name: "澄川產物", zone: "產險街", x: 1575, y: 1165, w: 165, h: 155, roof: "#6d90a0", wall: "#f2f7f8", sign: "#6d90a0", theme: "意外定義", motto: "這裡常把意外和疾病的定義分開。", kind: "office", scenarios: ["exclusion-print", "complaint-path"] },
+    { name: "醫院", zone: "醫院", x: 50, y: 1280, w: 290, h: 180, roof: "#d7e4ea", wall: "#f7fbff", kind: "clinic", scenarios: [] },
+    { name: "公園亭", zone: "公園", x: 1900, y: 40, w: 200, h: 240, roof: "#7f8f78", wall: "#f7f3ea", kind: "stall", level: 3, scenarios: ["park-walk"] },
+    { name: "湖畔亭", zone: "湖畔", x: 150, y: 1630, w: 210, h: 160, roof: "#7aa0b0", wall: "#f7f4ee", kind: "house", level: 5, scenarios: ["lake-rest"] },
+    { name: "步道牌", zone: "山上步道", x: 1980, y: 1560, w: 120, h: 200, roof: "#8d6a45", wall: "#f6efe4", kind: "stall", level: 8, scenarios: ["trail-sign"] }
   ];
 
   const PATHS = [
@@ -155,7 +155,7 @@
   let roomName = "家";
   let doorLock = 0;
   let townLayer = null;
-  let townBakedWithArt = false;
+  let townBakedMode = "";
   let hourOverride = null;
   window.HEAN_ASSETS = window.HEAN_ASSETS || { scenes: { town: null, home: null, map: null }, characters: {} };
   if (!window.HEAN_ASSETS.scenes) window.HEAN_ASSETS.scenes = {};
@@ -270,16 +270,20 @@
       return false;
     }
     if (x < rad + 10 || y < rad + 10 || x > WORLD.w - rad - 10 || y > WORLD.h - rad - 10) return true;
-    if (Math.hypot(x - 460, y - 1780) < 120 + rad) return true;
+    const mapped = backdropMode() === "map";
+    if (mapped) {
+      if (y > 1690 && x < 780 && Math.hypot(x - 300, y - 1880) < 340) return true;
+    } else if (Math.hypot(x - 460, y - 1780) < 120 + rad) return true;
     if (x > WORLD.w - 70 - rad) return true;
-    if (Math.hypot(x - 820, y - 640) < 22 + rad) return true;
+    if (!mapped && Math.hypot(x - 820, y - 640) < 22 + rad) return true;
     for (let i = 0; i < BUILDINGS.length; i++) {
       const b = BUILDINGS[i];
-      if (b.art) continue;
       if (x > b.x - rad && x < b.x + b.w + rad && y > b.y - rad && y < b.y + b.h + rad) return true;
     }
-    for (let t = 0; t < TREES.length; t++) {
-      if (Math.hypot(x - TREES[t].x, y - TREES[t].y) < 16 + rad) return true;
+    if (!mapped) {
+      for (let t = 0; t < TREES.length; t++) {
+        if (Math.hypot(x - TREES[t].x, y - TREES[t].y) < 16 + rad) return true;
+      }
     }
     return false;
   }
@@ -590,10 +594,9 @@
     pen.translate(-cam.x * zoom, -cam.y * zoom);
     pen.scale(zoom, zoom);
     if (area === "town") {
-      const townArt = window.HEAN_ASSETS && window.HEAN_ASSETS.scenes && window.HEAN_ASSETS.scenes.town;
-      const artReady = !!(townArt && townArt.complete && townArt.naturalWidth);
-      if (!townLayer || (artReady && !townBakedWithArt)) {
-        townBakedWithArt = artReady;
+      const mode = backdropMode();
+      if (!townLayer || townBakedMode !== mode) {
+        townBakedMode = mode;
         townLayer = bakeTown();
       }
       pen.drawImage(townLayer, 0, 0);
@@ -727,19 +730,24 @@
     viewW = WORLD.w;
     viewH = WORLD.h;
     zoom = 1;
+    const mapped = backdropMode() === "map";
     drawTownBackdrop();
-    drawPaths();
-    drawPond();
-    drawRiver();
-    drawFlowers();
-    BUILDINGS.forEach(drawBuilding);
-    TREES.forEach(drawTree);
-    drawLamps();
-    drawStreetSign(930, 1040, "壽險街");
-    drawStreetSign(930, 1288, "產險街");
-    drawCrate(1220, 340);
-    drawWell();
-    drawBench();
+    if (mapped) {
+      BUILDINGS.forEach(drawPlaceLabel);
+    } else {
+      drawPaths();
+      drawPond();
+      drawRiver();
+      drawFlowers();
+      BUILDINGS.forEach(drawBuilding);
+      TREES.forEach(drawTree);
+      drawLamps();
+      drawStreetSign(930, 1040, "壽險街");
+      drawStreetSign(930, 1288, "產險街");
+      drawCrate(1220, 340);
+      drawWell();
+      drawBench();
+    }
     pen = saved;
     cam.x = savedCamX;
     cam.y = savedCamY;
@@ -763,7 +771,23 @@
     ctx.drawImage(image, (WORLD.w - dw) / 2, (WORLD.h - dh) / 2, dw, dh);
   }
 
+  function backdropMode() {
+    const scenes = window.HEAN_ASSETS && window.HEAN_ASSETS.scenes;
+    if (!scenes) return "";
+    const map = scenes.map;
+    if (map && map.complete && map.naturalWidth) return "map";
+    const town = scenes.town;
+    if (town && town.complete && town.naturalWidth) return "town";
+    return "";
+  }
+
   function drawTownBackdrop() {
+    const scenes = window.HEAN_ASSETS && window.HEAN_ASSETS.scenes;
+    const map = scenes && scenes.map;
+    if (map && map.complete && map.naturalWidth) {
+      pen.drawImage(map, 0, 0, WORLD.w, WORLD.h);
+      return;
+    }
     const image = townImage();
     if (image) {
       coverTown(pen, image);
@@ -772,6 +796,32 @@
       return;
     }
     drawGround();
+  }
+
+  function drawPlaceLabel(b) {
+    const x = b.x + b.w / 2;
+    const y = b.y + Math.min(36, b.h * 0.38);
+    pen.font = "700 15px " + FONT;
+    pen.textAlign = "center";
+    pen.textBaseline = "middle";
+    const tw = pen.measureText(b.name).width + 16;
+    roundRect(x - tw / 2, y - 12, tw, 22, 8);
+    pen.fillStyle = "rgba(255, 248, 236, 0.92)";
+    pen.fill();
+    pen.strokeStyle = "rgba(120, 84, 48, 0.35)";
+    pen.lineWidth = 1;
+    pen.stroke();
+    pen.fillStyle = "#4a3828";
+    pen.fillText(b.name, x, y);
+    if (b.theme) {
+      pen.font = "600 12px " + FONT;
+      const th = pen.measureText(b.theme).width + 12;
+      roundRect(x - th / 2, y + 14, th, 16, 6);
+      pen.fillStyle = b.sign || "#8d6b45";
+      pen.fill();
+      pen.fillStyle = "#fffdf9";
+      pen.fillText(b.theme, x, y + 22);
+    }
   }
 
   function drawGround() {
@@ -1267,7 +1317,7 @@
         }
       }
     } else if (player.y > bounds().h - (area === "home" ? 110 : 42) && Math.abs(player.x - bounds().w / 2) < (area === "home" ? 90 : 42)) {
-      if (area === "home") setArea("town", 400, 1160);
+      if (area === "home") setArea("town", 290, 400);
       else setArea("town", roomExit.x, roomExit.y);
     }
   }
@@ -1302,7 +1352,7 @@
 
   function playerMapPoint() {
     if (area === "town") return { x: player.x, y: player.y };
-    if (area === "home") return { x: 336, y: 280 };
+    if (area === "home") return { x: 290, y: 390 };
     return { x: roomExit.x, y: roomExit.y };
   }
 
@@ -1360,13 +1410,16 @@
       g.ellipse(460, 1780, 150, 88, 0, 0, Math.PI * 2);
       g.fill();
     }
-    BUILDINGS.forEach(function (b) {
-      if (b.art) return;
-      g.fillStyle = b.roof || "#c4a36a";
-      g.fillRect(b.x, b.y, b.w, b.h);
-      g.fillStyle = "rgba(255,253,249,0.92)";
-      g.fillRect(b.x + 8, b.y + b.h * 0.35, b.w - 16, b.h * 0.45);
-    });
+    const mapDrawn = art && art.complete && art.naturalWidth;
+    if (!mapDrawn) {
+      BUILDINGS.forEach(function (b) {
+        if (b.art) return;
+        g.fillStyle = b.roof || "#c4a36a";
+        g.fillRect(b.x, b.y, b.w, b.h);
+        g.fillStyle = "rgba(255,253,249,0.92)";
+        g.fillRect(b.x + 8, b.y + b.h * 0.35, b.w - 16, b.h * 0.45);
+      });
+    }
     const level = role ? levelOf() : 1;
     ZONES.forEach(function (zone) {
       if (level >= zone.level) return;
@@ -1387,6 +1440,9 @@
       const p = toScreen(b.x + b.w / 2, b.y + b.h / 2);
       if (p.x < -40 || p.y < -20 || p.x > box.w + 40 || p.y > box.h + 20) return;
       const label = b.name.replace("人壽", "").replace("產物", "");
+      const tw = g.measureText(label).width + 10;
+      g.fillStyle = "rgba(255, 248, 236, 0.9)";
+      g.fillRect(p.x - tw / 2, p.y - 8, tw, 16);
       g.fillStyle = "#3f362e";
       g.fillText(label, p.x, p.y);
       if (b.level && level < b.level) {

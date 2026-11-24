@@ -15,7 +15,7 @@
   window.HEAN_ASSETS.scenes = Object.assign(scenes, window.HEAN_ASSETS.scenes || {});
   if (!window.HEAN_ASSETS.scenes.home) window.HEAN_ASSETS.scenes.home = scenes.home;
   if (!window.HEAN_ASSETS.scenes.town) window.HEAN_ASSETS.scenes.town = scenes.town;
-  if (!("map" in window.HEAN_ASSETS.scenes)) window.HEAN_ASSETS.scenes.map = null;
+  window.HEAN_ASSETS.scenes.map = load(root + "scenes/map.webp");
   window.HEAN_ASSETS.full = {};
   window.HEAN_ASSETS.portraits = {};
 
@@ -25,7 +25,7 @@
     sheets[id] = load(root + "sprites/" + id + "_walk.webp");
     window.HEAN_ASSETS.full[id] = load(root + "characters/" + id + ".webp");
   });
-  ["agent", "broker", "client", "npc_grandma", "npc_shopkeeper"].forEach(function (id) {
+  ["agent", "broker", "client", "npc_grandma", "npc_mom", "npc_office", "npc_shopkeeper", "npc_grandpa"].forEach(function (id) {
     window.HEAN_ASSETS.portraits[id] = load(root + "portraits/" + id + ".webp");
   });
 
