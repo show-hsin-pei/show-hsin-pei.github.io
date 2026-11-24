@@ -1,5 +1,5 @@
 (function () {
-  const VERSION = "1.8";
+  const VERSION = "1.9";
   const UPDATED = "2026年11月24日";
   const KEY = "hean-village-v1";
   const FONT = '"Noto Sans TC", "PingFang TC", "Microsoft JhengHei", "WenQuanYi Micro Hei", sans-serif';
@@ -549,6 +549,22 @@
     if (area === "town") {
       cam.x = camAxis(player.x, worldW, box.w);
       cam.y = camAxis(player.y, worldH, box.h);
+    } else if (area === "home" && viewW < 760) {
+      const pad = roomPad();
+      const drawnH = box.h * zoom;
+      const pinned = viewH - pad.bottom - drawnH;
+      if (pinned >= pad.top) {
+        cam.x = 0;
+        cam.y = -pinned / zoom;
+      } else {
+        const focus = (pad.top + viewH - pad.bottom) / 2;
+        let cy = player.y - focus / zoom;
+        const minCam = -pad.top / zoom;
+        const maxCam = box.h - (viewH - pad.bottom) / zoom;
+        cy = minCam <= maxCam ? clamp(cy, minCam, maxCam) : clamp(cy, maxCam, minCam);
+        cam.x = 0;
+        cam.y = cy;
+      }
     } else {
       const pad = roomPad();
       const drawnW = box.w * zoom;
@@ -1130,7 +1146,7 @@
     const id = isPlayer ? "player-" + role : scenarioId;
     const moving = isPlayer && player.walk > 0.02 && !reduceMotion;
     const facing = isPlayer ? (player.facing || "down") : "down";
-    const aiH = area === "town" ? 150 : 108;
+    const aiH = area === "home" ? 210 : area === "town" ? 124 : 108;
     const aiW = aiH * 256 / 320;
     const aiFrame = moving ? Math.floor(player.walk * 8) % 4 : 1;
     pen.save();
@@ -1279,7 +1295,9 @@
     const pad = roomPad();
     const availW = Math.max(80, viewW - 12);
     const availH = Math.max(80, viewH - pad.top - pad.bottom);
-    return Math.min(availW / box.w, availH / box.h);
+    const contain = Math.min(availW / box.w, availH / box.h);
+    if (area === "home" && viewW < 760) return viewW / box.w;
+    return contain;
   }
 
   function camAxis(pos, view, size) {
