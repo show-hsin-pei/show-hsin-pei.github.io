@@ -60,7 +60,13 @@
     "park-walk": { skin: "#e7c3a4", hair: "#3a3028", hairStyle: "side", coat: "#6e8a62", shirt: "#f7f3ea", pants: "#3e4638", mouth: "calm", eyes: "kind" },
     "lake-rest": { skin: "#f0c6aa", hair: "#6a5348", hairStyle: "bob", coat: "#7aa0b0", shirt: "#f7f4ee", mouth: "soft", eyes: "kind" },
     "trail-sign": { skin: "#e4bc98", hair: "#2c241e", hairStyle: "crop", coat: "#8d6a45", shirt: "#f6efe4", pants: "#3e342c", mouth: "calm", eyes: "narrow", extra: "cap", extraColor: "#6a4e34" },
-    "bank-counter": { skin: "#f4d0b4", hair: "#241c1a", hairStyle: "short", coat: "#3e5348", shirt: "#f7f5f0", pants: "#2c3330", mouth: "calm", eyes: "kind", extra: "tie", extraColor: "#8d5a3c" }
+    "bank-counter": { skin: "#f4d0b4", hair: "#241c1a", hairStyle: "short", coat: "#3e5348", shirt: "#f7f5f0", pants: "#2c3330", mouth: "calm", eyes: "kind", extra: "tie", extraColor: "#8d5a3c" },
+    "critical-name": { skin: "#f0c8a8", hair: "#3a2c28", hairStyle: "side", coat: "#6e8a58", shirt: "#f4f7ef", mouth: "worried", eyes: "kind" },
+    "disability-define": { skin: "#e4bc98", hair: "#6a5348", hairStyle: "crop", coat: "#7f97a4", shirt: "#f4f7f8", mouth: "calm", eyes: "narrow", age: "elder" },
+    "care-wait": { skin: "#f3c9aa", hair: "#5c4038", hairStyle: "bob", coat: "#8aa0b0", shirt: "#f7f4ee", mouth: "soft", eyes: "kind" },
+    "home-contents": { skin: "#e8c2a4", hair: "#8a8078", hairStyle: "side", coat: "#8d6b45", shirt: "#f6f1e6", mouth: "worried", eyes: "kind", age: "elder" },
+    "liability-who": { skin: "#e7c3a4", hair: "#2c241e", hairStyle: "crop", coat: "#a67c52", shirt: "#f8f3ea", mouth: "calm", eyes: "kind" },
+    "liability-cap": { skin: "#f0c6aa", hair: "#3a3028", hairStyle: "short", coat: "#a67c52", shirt: "#fff8ef", mouth: "worried", eyes: "narrow" }
   };
 
   const LOOKS = {};
@@ -563,9 +569,19 @@
     if (!image || !image.complete || !image.naturalWidth) return false;
     const rowName = { down: 0, left: 1, right: 2, up: 3 };
     const row = rowName[facing] == null ? 0 : rowName[facing];
-    const cols = Math.max(1, Math.round(image.naturalWidth / (image.naturalHeight / 4)));
-    const fw = image.naturalWidth / cols;
     const fh = image.naturalHeight / 4;
+    let cols = 1;
+    let best = Infinity;
+    for (let c = 1; c <= 8; c++) {
+      if (image.naturalWidth % c) continue;
+      const fwTry = image.naturalWidth / c;
+      const err = Math.abs(fwTry / fh - 256 / 320);
+      if (err < best) {
+        best = err;
+        cols = c;
+      }
+    }
+    const fw = image.naturalWidth / cols;
     const col = Math.abs(frame) % cols;
     ctx.drawImage(image, col * fw, row * fh, fw, fh, dx, dy, dw, dh);
     return true;

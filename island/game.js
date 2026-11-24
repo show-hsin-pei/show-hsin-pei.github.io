@@ -1,5 +1,5 @@
 (function () {
-  const VERSION = "1.5";
+  const VERSION = "1.6";
   const UPDATED = "2026年11月24日";
   const KEY = "hean-village-v1";
   const FONT = '"Noto Sans TC", "PingFang TC", "Microsoft JhengHei", "WenQuanYi Micro Hei", sans-serif';
@@ -22,20 +22,26 @@
   const byId = Object.fromEntries(SCENARIOS.map(function (s) { return [s.id, s]; }));
 
   const BUILDINGS = [
-    { name: "我家", zone: "住宅區", x: 80, y: 160, w: 180, h: 130, roof: "#c4a36a", wall: "#fff8ef", kind: "home", scenarios: [] },
-    { name: "鎮民中心", zone: "住宅區", x: 360, y: 150, w: 240, h: 140, roof: "#c4a36a", wall: "#fffaf3", kind: "office", scenarios: ["free-look", "rider-ends"] },
-    { name: "周家", zone: "住宅區", x: 680, y: 170, w: 180, h: 120, roof: "#b98362", wall: "#fff8ef", kind: "house", scenarios: ["disclosure-form"] },
-    { name: "吳家", zone: "住宅區", x: 80, y: 620, w: 200, h: 130, roof: "#c4896a", wall: "#fff6f0", kind: "house", scenarios: ["beneficiary-update"] },
+    { name: "我家", zone: "住宅區", x: 266, y: 150, w: 140, h: 100, roof: "#c4a36a", wall: "#fff8ef", kind: "home", art: true, scenarios: [] },
+    { name: "鎮民中心", zone: "住宅區", x: 400, y: 1360, w: 220, h: 120, roof: "#c4a36a", wall: "#fffaf3", kind: "office", scenarios: [] },
+    { name: "周家", zone: "住宅區", x: 1880, y: 980, w: 180, h: 110, roof: "#b98362", wall: "#fff8ef", kind: "house", scenarios: [] },
+    { name: "吳家", zone: "住宅區", x: 1880, y: 1140, w: 180, h: 110, roof: "#c4896a", wall: "#fff6f0", kind: "house", scenarios: [] },
     { name: "銀行", zone: "商店街", x: 980, y: 160, w: 200, h: 130, roof: "#8d6b45", wall: "#f7f3ea", kind: "bank", scenarios: [] },
-    { name: "超商", zone: "商店街", x: 1260, y: 170, w: 180, h: 120, roof: "#d2b48a", wall: "#fffaf3", kind: "stall", scenarios: ["claim-docs"] },
-    { name: "車行", zone: "商店街", x: 1540, y: 150, w: 220, h: 140, roof: "#c4a36a", wall: "#f3eee6", kind: "garage", scenarios: ["compulsory-auto", "garage-voluntary"] },
+    { name: "超商", zone: "商店街", x: 1260, y: 170, w: 180, h: 120, roof: "#d2b48a", wall: "#fffaf3", kind: "stall", scenarios: [] },
+    { name: "車行", zone: "商店街", x: 1540, y: 150, w: 220, h: 140, roof: "#c4a36a", wall: "#f3eee6", kind: "garage", scenarios: [] },
     { name: "寵物店", zone: "商店街", x: 980, y: 620, w: 180, h: 120, roof: "#c48a6a", wall: "#fff6ea", kind: "stall", scenarios: ["pet-visit"] },
     { name: "事務所", zone: "商店街", x: 1260, y: 600, w: 280, h: 140, roof: "#b98362", wall: "#f6f1e6", kind: "office", scenarios: ["broker-fee", "broker-commission", "broker-conflict", "broker-scope"] },
-    { name: "小鎮公所", zone: "公家機關區", x: 80, y: 980, w: 260, h: 150, roof: "#a67c52", wall: "#f7f1e8", kind: "office", scenarios: ["complaint-path", "exclusion-print"] },
-    { name: "勞工服務站", zone: "公家機關區", x: 420, y: 1000, w: 230, h: 130, roof: "#c4a36a", wall: "#fffaf3", kind: "office", scenarios: ["lapse-reinstate"] },
-    { name: "暖禾人壽", zone: "公司區", x: 980, y: 980, w: 280, h: 150, roof: "#c4896a", wall: "#fff8ef", kind: "office", scenarios: ["clinic-necessity", "waiting-period", "face-sign", "no-rebate", "health-blank"] },
-    { name: "石橋產物", zone: "公司區", x: 1360, y: 980, w: 280, h: 150, roof: "#8d6b45", wall: "#f6f1e6", kind: "office", scenarios: ["storm-flood", "no-misstate", "no-guarantee", "no-proxy-sign"] },
-    { name: "醫院", zone: "醫院", x: 80, y: 1320, w: 260, h: 140, roof: "#d7e4ea", wall: "#f7fbff", kind: "clinic", scenarios: ["hospital-reimburse"] },
+    { name: "小鎮公所", zone: "公家機關區", x: 1880, y: 640, w: 240, h: 130, roof: "#a67c52", wall: "#f7f1e8", kind: "office", scenarios: [] },
+    { name: "勞工服務站", zone: "公家機關區", x: 1880, y: 820, w: 220, h: 120, roof: "#c4a36a", wall: "#fffaf3", kind: "office", scenarios: [] },
+    { name: "暖禾人壽", zone: "壽險街", x: 990, y: 948, w: 168, h: 112, roof: "#c4896a", wall: "#fff4ea", sign: "#c4896a", theme: "醫療條款", motto: "這裡常把醫療條款和收據對在一起。", kind: "office", scenarios: ["clinic-necessity", "hospital-reimburse", "claim-docs", "face-sign", "no-rebate", "health-blank"] },
+    { name: "青畦人壽", zone: "壽險街", x: 1182, y: 948, w: 168, h: 112, roof: "#6e8a58", wall: "#f3f6ee", sign: "#6e8a58", theme: "重疾定義", motto: "這裡常把重疾定義和等待期攤開。", kind: "office", scenarios: ["waiting-period", "critical-name", "disclosure-form"] },
+    { name: "拾穗人壽", zone: "壽險街", x: 1374, y: 948, w: 168, h: 112, roof: "#c4a36a", wall: "#fff8ee", sign: "#c4a36a", theme: "契約步驟", motto: "這裡常把契撤、受益人、停效的步驟說完。", kind: "office", scenarios: ["free-look", "beneficiary-update", "lapse-reinstate", "rider-ends"] },
+    { name: "暮嵐人壽", zone: "壽險街", x: 1566, y: 948, w: 168, h: 112, roof: "#7f97a4", wall: "#f3f6f8", sign: "#7f97a4", theme: "失能定義", motto: "這裡常把失能和長期照顧的定義讀完。", kind: "office", scenarios: ["disability-define", "care-wait"] },
+    { name: "石橋產物", zone: "產險街", x: 990, y: 1204, w: 168, h: 112, roof: "#8d6b45", wall: "#f6f1e6", sign: "#8d6b45", theme: "住宅範圍", motto: "這裡常把住宅火險、地震和水災分開看。", kind: "office", scenarios: ["storm-flood", "home-contents", "no-misstate", "no-guarantee", "no-proxy-sign"] },
+    { name: "岸蒲產物", zone: "產險街", x: 1182, y: 1204, w: 168, h: 112, roof: "#5f7d62", wall: "#f2f6f1", sign: "#5f7d62", theme: "車險分項", motto: "這裡常把強制險、任意責任和車體分開。", kind: "office", scenarios: ["compulsory-auto", "garage-voluntary"] },
+    { name: "原麓產物", zone: "產險街", x: 1374, y: 1204, w: 168, h: 112, roof: "#a67c52", wall: "#f8f3ea", sign: "#a67c52", theme: "責任範圍", motto: "這裡常先問責任險保的是誰的責任。", kind: "office", scenarios: ["liability-who", "liability-cap"] },
+    { name: "澄川產物", zone: "產險街", x: 1566, y: 1204, w: 168, h: 112, roof: "#6d90a0", wall: "#f2f7f8", sign: "#6d90a0", theme: "意外定義", motto: "這裡常把意外和疾病的定義分開。", kind: "office", scenarios: ["exclusion-print", "complaint-path"] },
+    { name: "醫院", zone: "醫院", x: 80, y: 1320, w: 260, h: 140, roof: "#d7e4ea", wall: "#f7fbff", kind: "clinic", scenarios: [] },
     { name: "公園亭", zone: "公園", x: 1860, y: 180, w: 170, h: 120, roof: "#7f8f78", wall: "#f7f3ea", kind: "stall", level: 3, scenarios: ["park-walk"] },
     { name: "湖畔亭", zone: "湖畔", x: 200, y: 1620, w: 180, h: 120, roof: "#7aa0b0", wall: "#f7f4ee", kind: "house", level: 5, scenarios: ["lake-rest"] },
     { name: "步道牌", zone: "山上步道", x: 1860, y: 1620, w: 160, h: 110, roof: "#8d6a45", wall: "#f6efe4", kind: "stall", level: 8, scenarios: ["trail-sign"] }
@@ -44,6 +50,8 @@
   const PATHS = [
     { x: 40, y: 360, w: 2100, h: 70 },
     { x: 40, y: 860, w: 2100, h: 70 },
+    { x: 40, y: 1088, w: 2100, h: 62 },
+    { x: 400, y: 1338, w: 1760, h: 58 },
     { x: 40, y: 1500, w: 2100, h: 64 },
     { x: 240, y: 40, w: 70, h: 1760 },
     { x: 900, y: 40, w: 70, h: 1760 },
@@ -57,7 +65,8 @@
   ];
   const LAMPS = [
     { x: 280, y: 390 }, { x: 940, y: 390 }, { x: 1500, y: 390 },
-    { x: 280, y: 900 }, { x: 1100, y: 900 }, { x: 300, y: 1540 }
+    { x: 280, y: 900 }, { x: 1100, y: 900 }, { x: 1460, y: 1118 },
+    { x: 1100, y: 1368 }, { x: 1500, y: 1368 }, { x: 300, y: 1540 }
   ];
   const ZONES = [
     { name: "公園", level: 3, x: 1840, y: 40, w: 440, h: 500, back: { x: 1700, y: 390 } },
@@ -90,6 +99,7 @@
 
   const SPOTS = [];
   BUILDINGS.forEach(function (b) {
+    if (b.motto) return;
     (b.scenarios || []).forEach(function (id, index) {
       const n = b.scenarios.length;
       SPOTS.push({
@@ -125,6 +135,20 @@
   const cam = { x: 0, y: 0 };
   const player = { x: 400, y: 320, dir: 1, walk: 0, facing: "down" };
   const ROOM = window.HEAN_ROOMS.ROOM;
+  const HOME = { w: 720, h: 1280 };
+  const PLAZA = { x: 0, y: 0, w: 720, h: 1280 };
+  let plazaBits = null;
+  let plazaCW = 45;
+  let plazaCH = 80;
+  let plazaCell = 16;
+  fetch("assets/scenes/town-walk.txt").then(function (res) { return res.text(); }).then(function (text) {
+    const lines = text.trim().split("\n");
+    const head = lines[0].split(" ");
+    plazaCW = Number(head[0]);
+    plazaCH = Number(head[1]);
+    plazaCell = Number(head[2]);
+    plazaBits = lines[1];
+  }).catch(function () { plazaBits = null; });
   let area = "home";
   let roomKind = "home";
   let roomExit = { x: 1485, y: 450 };
@@ -132,7 +156,9 @@
   let doorLock = 0;
   let townLayer = null;
   let hourOverride = null;
-  window.HEAN_ASSETS = window.HEAN_ASSETS || { scenes: { town: null, home: null }, characters: {} };
+  window.HEAN_ASSETS = window.HEAN_ASSETS || { scenes: { town: null, home: null, map: null }, characters: {} };
+  if (!window.HEAN_ASSETS.scenes) window.HEAN_ASSETS.scenes = {};
+  if (!("map" in window.HEAN_ASSETS.scenes)) window.HEAN_ASSETS.scenes.map = null;
   let path = null;
   let time = 0;
   let currentId = null;
@@ -211,7 +237,21 @@
   }
 
   function bounds() {
-    return area === "town" ? WORLD : ROOM;
+    if (area === "town") return WORLD;
+    if (area === "home") return HOME;
+    return ROOM;
+  }
+
+  function inPlaza(x, y) {
+    return x >= PLAZA.x && y >= PLAZA.y && x < PLAZA.x + PLAZA.w && y < PLAZA.y + PLAZA.h;
+  }
+
+  function plazaBlocked(x, y) {
+    if (!plazaBits) return false;
+    const cx = Math.floor((x - PLAZA.x) / plazaCell);
+    const cy = Math.floor((y - PLAZA.y) / plazaCell);
+    if (cx < 0 || cy < 0 || cx >= plazaCW || cy >= plazaCH) return true;
+    return plazaBits[cy * plazaCW + cx] !== "1";
   }
 
   function solidAt(x, y, rad) {
@@ -219,7 +259,8 @@
     if (area !== "town") {
       const m = 30;
       if (x < m + rad || y < m + rad || x > box.w - m - rad) return true;
-      if (y > box.h - m - rad && Math.abs(x - box.w / 2) > 48) return true;
+      const doorHalf = area === "home" ? 90 : 48;
+      if (y > box.h - m - rad && Math.abs(x - box.w / 2) > doorHalf) return true;
       const rects = window.HEAN_ROOMS.blocks(area === "home" ? "home" : roomKind);
       for (let i = 0; i < rects.length; i++) {
         const r = rects[i];
@@ -228,11 +269,13 @@
       return false;
     }
     if (x < rad + 10 || y < rad + 10 || x > WORLD.w - rad - 10 || y > WORLD.h - rad - 10) return true;
+    if (inPlaza(x, y)) return plazaBlocked(x, y);
     if (Math.hypot(x - 460, y - 1780) < 120 + rad) return true;
     if (x > WORLD.w - 70 - rad) return true;
     if (Math.hypot(x - 820, y - 640) < 22 + rad) return true;
     for (let i = 0; i < BUILDINGS.length; i++) {
       const b = BUILDINGS[i];
+      if (b.art) continue;
       if (x > b.x - rad && x < b.x + b.w + rad && y > b.y - rad && y < b.y + b.h + rad) return true;
     }
     for (let t = 0; t < TREES.length; t++) {
@@ -397,7 +440,8 @@
       const sc = byId[id];
       return sc && sc.roles.indexOf(role) !== -1;
     }).map(function (id, index) {
-      return { id: id, x: 120 + (index % 2) * 180, y: 500 + Math.floor(index / 2) * 52 };
+      const top = b.motto ? 560 : 360;
+      return { id: id, x: 130 + (index % 2) * 180, y: top + Math.floor(index / 2) * 70 };
     });
   }
 
@@ -546,17 +590,16 @@
     pen.translate(-cam.x * zoom, -cam.y * zoom);
     pen.scale(zoom, zoom);
     if (area === "town") {
+      if (!townLayer) townLayer = bakeTown();
+      pen.drawImage(townLayer, 0, 0);
       const townArt = window.HEAN_ASSETS && window.HEAN_ASSETS.scenes && window.HEAN_ASSETS.scenes.town;
-      if (townArt && townArt.complete && townArt.naturalWidth) pen.drawImage(townArt, 0, 0, WORLD.w, WORLD.h);
-      else {
-        if (!townLayer) townLayer = bakeTown();
-        pen.drawImage(townLayer, 0, 0);
-      }
+      if (townArt && townArt.complete && townArt.naturalWidth) pen.drawImage(townArt, PLAZA.x, PLAZA.y, PLAZA.w, PLAZA.h);
       drawLife();
     } else {
       const homeArt = window.HEAN_ASSETS && window.HEAN_ASSETS.scenes && window.HEAN_ASSETS.scenes.home;
-      if (area === "home" && homeArt && homeArt.complete && homeArt.naturalWidth) pen.drawImage(homeArt, 0, 0, ROOM.w, ROOM.h);
+      if (area === "home" && homeArt && homeArt.complete && homeArt.naturalWidth) pen.drawImage(homeArt, 0, 0, HOME.w, HOME.h);
       else window.HEAN_ROOMS.paint(pen, area === "home" ? "home" : roomKind, time);
+      if (area === "room") drawCompanyBoard();
     }
     const queue = [];
     activeSpots().forEach(function (s, i) {
@@ -582,6 +625,7 @@
     }
     pen.restore();
     drawSky();
+    paintTownMap();
   }
 
   function drawLife() {
@@ -688,6 +732,8 @@
     BUILDINGS.forEach(drawBuilding);
     TREES.forEach(drawTree);
     drawLamps();
+    drawStreetSign(930, 1040, "壽險街");
+    drawStreetSign(930, 1288, "產險街");
     drawCrate(1220, 340);
     drawWell();
     drawBench();
@@ -796,6 +842,7 @@
   }
 
   function drawBuilding(b) {
+    if (b.art) return;
     const x = b.x;
     const y = b.y;
     const w = b.w;
@@ -879,7 +926,60 @@
     pen.textAlign = "center";
     pen.textBaseline = "middle";
     pen.fillText(b.name, x + w / 2, sy + 11);
+    if (b.theme) {
+      pen.font = "600 11px " + FONT;
+      const themeW = pen.measureText(b.theme).width + 14;
+      roundRect(x + w / 2 - themeW / 2, y + h - 18, themeW, 16, 8);
+      pen.fillStyle = b.sign || b.roof;
+      pen.fill();
+      pen.fillStyle = "#fffdf9";
+      pen.fillText(b.theme, x + w / 2, y + h - 10);
+    }
     if (b.name === "茶館") drawCat(b.x + b.w - 36, b.y + 18);
+  }
+
+  function drawStreetSign(x, y, text) {
+    pen.fillStyle = "#6a5344";
+    pen.fillRect(x - 3, y - 28, 6, 36);
+    pen.font = "700 14px " + FONT;
+    const w = pen.measureText(text).width + 16;
+    roundRect(x + 6, y - 36, w, 22, 6);
+    pen.fillStyle = "#fff8ee";
+    pen.fill();
+    pen.strokeStyle = "#8d6b45";
+    pen.lineWidth = 1.5;
+    pen.stroke();
+    pen.fillStyle = "#5c4636";
+    pen.textAlign = "left";
+    pen.textBaseline = "middle";
+    pen.fillText(text, x + 14, y - 25);
+  }
+
+  function drawCompanyBoard() {
+    const building = BUILDINGS.find(function (item) { return item.name === roomName; });
+    if (!building || !building.motto) return;
+    const lines = (building.scenarios || []).filter(function (id) {
+      const sc = byId[id];
+      return sc && role && sc.roles.indexOf(role) !== -1;
+    });
+    const boardH = 58 + lines.length * 28;
+    roundRect(28, 250, ROOM.w - 56, boardH, 12);
+    pen.fillStyle = "rgba(255, 248, 238, 0.94)";
+    pen.fill();
+    pen.strokeStyle = "#c4a36a";
+    pen.lineWidth = 2;
+    pen.stroke();
+    pen.fillStyle = "#6a4632";
+    pen.font = "700 14px " + FONT;
+    pen.textAlign = "left";
+    pen.textBaseline = "middle";
+    pen.fillText(building.motto, 44, 272);
+    lines.forEach(function (id, index) {
+      const sc = byId[id];
+      pen.fillStyle = "#3f362e";
+      pen.font = "600 13px " + FONT;
+      pen.fillText((index + 1) + ". " + sc.speaker + " · " + sc.title, 44, 302 + index * 28);
+    });
   }
 
   function drawCat(x, y) {
@@ -947,26 +1047,28 @@
     }
     const id = isPlayer ? "player-" + role : scenarioId;
     const moving = isPlayer && player.walk > 0.02 && !reduceMotion;
-    const frame = moving ? Math.floor(((player.walk % 0.56) / 0.56) * 16) % 16 : 0;
     const facing = isPlayer ? (player.facing || "down") : "down";
+    const aiH = area === "town" ? 150 : 108;
+    const aiW = aiH * 256 / 320;
+    const aiFrame = moving ? Math.floor(player.walk * 8) % 4 : 1;
     pen.save();
     pen.translate(x, y);
     pen.fillStyle = "rgba(48, 32, 20, 0.22)";
     pen.beginPath();
-    pen.ellipse(2, 5, isPlayer ? 18 : 16, 6.5, 0, 0, Math.PI * 2);
+    pen.ellipse(2, 5, 16, 6, 0, 0, Math.PI * 2);
     pen.fill();
-    const bob = !moving && !reduceMotion ? Math.sin(time * 1.7 + index) * 1.15 : 0;
-    pen.translate(0, bob);
-    const sw = window.HEAN_CHARS.SW;
-    const sh = window.HEAN_CHARS.SH;
-    if (window.HEAN_CHARS.drawSheet(pen, id, facing, frame, -sw / 2, -(sh - 8), sw, sh)) {
+    if (window.HEAN_CHARS.drawSheet(pen, id, facing, aiFrame, -aiW / 2, -aiH + 6, aiW, aiH)) {
       pen.restore();
       if (!isPlayer) markSpot(x, y, scenarioId);
       return;
     }
     pen.restore();
+    const frame = moving ? Math.floor(((player.walk % 0.56) / 0.56) * 16) % 16 : 0;
+    const bob = !moving && !reduceMotion ? Math.sin(time * 1.7 + index) * 1.15 : 0;
     const pack = window.HEAN_CHARS.sheetFor(id);
     if (!pack) return;
+    const sw = window.HEAN_CHARS.SW;
+    const sh = window.HEAN_CHARS.SH;
     const used = Math.min(frame, pack.frames - 1);
     const scale = window.HEAN_CHARS.SCALE;
     const frameIndex = used;
@@ -1127,33 +1229,186 @@
         const dx = b.x + b.w / 2;
         const dy = b.y + b.h + 18;
         if (Math.abs(player.x - dx) < 26 && Math.abs(player.y - dy) < 22) {
-          if (b.kind === "home") setArea("home", 220, 520);
-          else setArea("room", 220, 520, b.kind, { x: dx, y: dy + 50 }, b.name);
+          if (b.kind === "home") setArea("home", 360, 820);
+          else setArea("room", 220, 400, b.kind, { x: dx, y: dy + 50 }, b.name);
           return;
         }
       }
-    } else if (player.y > ROOM.h - 42 && Math.abs(player.x - ROOM.w / 2) < 42) {
-      if (area === "home") setArea("town", 170, 360);
+    } else if (player.y > bounds().h - (area === "home" ? 110 : 42) && Math.abs(player.x - bounds().w / 2) < (area === "home" ? 90 : 42)) {
+      if (area === "home") setArea("town", 400, 1160);
       else setArea("town", roomExit.x, roomExit.y);
     }
   }
 
+  let mapGeom = { x: 0, y: 0, scale: 0.18 };
+  let mapDrag = null;
+  const mapPts = new Map();
+  let mapPinch = null;
+
+  function mapBox() {
+    const canvas = document.getElementById("town-map");
+    const rect = canvas.getBoundingClientRect();
+    return { canvas: canvas, rect: rect, w: rect.width, h: rect.height };
+  }
+
+  function mapFitScale() {
+    const box = mapBox();
+    if (box.w < 2 || box.h < 2) return 0.15;
+    return Math.min(box.w / WORLD.w, box.h / WORLD.h) * 0.94;
+  }
+
+  function mapFocus(wx, wy, scale) {
+    const box = mapBox();
+    mapGeom.scale = scale;
+    mapGeom.x = wx - box.w / scale / 2;
+    mapGeom.y = wy - box.h / scale / 2;
+  }
+
+  function mapFit() {
+    mapFocus(WORLD.w / 2, WORLD.h / 2, mapFitScale());
+  }
+
+  function playerMapPoint() {
+    if (area === "town") return { x: player.x, y: player.y };
+    if (area === "home") return { x: 336, y: 280 };
+    return { x: roomExit.x, y: roomExit.y };
+  }
+
+  function mapOnPlayer() {
+    const here = playerMapPoint();
+    const box = mapBox();
+    const scale = Math.max(mapFitScale() * 2.6, (box.w || 320) / 900);
+    mapFocus(here.x, here.y, Math.min(scale, 0.85));
+  }
+
   function renderMap() {
-    const list = document.getElementById("map-list");
-    list.replaceChildren();
-    const level = role ? levelOf() : 1;
-    BUILDINGS.forEach(function (building) {
-      const li = document.createElement("li");
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "chip";
-      const locked = building.level && level < building.level;
-      button.textContent = building.zone + " · " + building.name + (locked ? "（Lv." + building.level + "）" : "");
-      button.disabled = !!locked;
-      button.addEventListener("click", function () { guideTo(building.name); });
-      li.appendChild(button);
-      list.appendChild(li);
+    const panel = document.getElementById("map-panel");
+    panel.hidden = false;
+    document.body.classList.add("ui-busy");
+    requestAnimationFrame(function () {
+      mapOnPlayer();
+      paintTownMap();
     });
+  }
+
+  function paintTownMap() {
+    const panel = document.getElementById("map-panel");
+    const box = mapBox();
+    if (!panel || panel.hidden || box.w < 2) return;
+    const canvas = box.canvas;
+    const ratio = Math.min(2, window.devicePixelRatio || 1);
+    const bw = Math.round(box.w * ratio);
+    const bh = Math.round(box.h * ratio);
+    if (canvas.width !== bw || canvas.height !== bh) {
+      canvas.width = bw;
+      canvas.height = bh;
+    }
+    const g = canvas.getContext("2d");
+    g.setTransform(ratio, 0, 0, ratio, 0, 0);
+    g.clearRect(0, 0, box.w, box.h);
+    const art = window.HEAN_ASSETS && window.HEAN_ASSETS.scenes && window.HEAN_ASSETS.scenes.map;
+    g.save();
+    g.beginPath();
+    g.rect(0, 0, box.w, box.h);
+    g.clip();
+    g.translate(-mapGeom.x * mapGeom.scale, -mapGeom.y * mapGeom.scale);
+    g.scale(mapGeom.scale, mapGeom.scale);
+    if (art && art.complete && art.naturalWidth) g.drawImage(art, 0, 0, WORLD.w, WORLD.h);
+    else {
+      g.fillStyle = "#efe6d6";
+      g.fillRect(0, 0, WORLD.w, WORLD.h);
+      g.fillStyle = "rgba(186, 208, 170, 0.45)";
+      g.fillRect(PLAZA.x, PLAZA.y, PLAZA.w, PLAZA.h);
+      g.fillStyle = "rgba(196, 214, 232, 0.55)";
+      g.fillRect(40, 1572, 780, 360);
+      g.fillStyle = "rgba(196, 176, 142, 0.45)";
+      g.fillRect(1840, 1572, 440, 360);
+      g.fillStyle = "#e7d3b0";
+      PATHS.forEach(function (p) { g.fillRect(p.x, p.y, p.w, p.h); });
+    }
+    BUILDINGS.forEach(function (b) {
+      if (b.art) return;
+      g.fillStyle = b.roof || "#c4a36a";
+      g.fillRect(b.x, b.y, b.w, b.h);
+      g.fillStyle = "rgba(255,253,249,0.92)";
+      g.fillRect(b.x + 8, b.y + b.h * 0.35, b.w - 16, b.h * 0.45);
+    });
+    const level = role ? levelOf() : 1;
+    ZONES.forEach(function (zone) {
+      if (level >= zone.level) return;
+      g.fillStyle = "rgba(63, 54, 46, 0.28)";
+      g.fillRect(zone.x, zone.y, zone.w, zone.h);
+    });
+    g.restore();
+    function toScreen(x, y) {
+      return {
+        x: (x - mapGeom.x) * mapGeom.scale,
+        y: (y - mapGeom.y) * mapGeom.scale
+      };
+    }
+    g.font = "700 11px " + FONT;
+    g.textAlign = "center";
+    g.textBaseline = "middle";
+    BUILDINGS.forEach(function (b) {
+      const p = toScreen(b.x + b.w / 2, b.y + b.h / 2);
+      if (p.x < -40 || p.y < -20 || p.x > box.w + 40 || p.y > box.h + 20) return;
+      const label = b.name.replace("人壽", "").replace("產物", "");
+      g.fillStyle = "#3f362e";
+      g.fillText(label, p.x, p.y);
+      if (b.level && level < b.level) {
+        g.fillStyle = "#8a6230";
+        g.fillText("鎖 Lv." + b.level, p.x, p.y + 14);
+      }
+    });
+    ZONES.forEach(function (zone) {
+      if (level >= zone.level) return;
+      const p = toScreen(zone.x + zone.w / 2, zone.y + 28);
+      g.fillStyle = "#fffdf9";
+      g.fillText(zone.name + " 鎖 Lv." + zone.level, p.x, p.y);
+    });
+    const quest = role ? currentQuest() : null;
+    if (quest) {
+      const target = BUILDINGS.find(function (b) { return b.name === quest.building; });
+      if (target) {
+        const p = toScreen(target.x + target.w / 2, target.y - 8);
+        g.fillStyle = "#c47a2a";
+        g.beginPath();
+        g.arc(p.x, p.y, 6, 0, Math.PI * 2);
+        g.fill();
+        g.fillText("目標", p.x, p.y - 12);
+      }
+    }
+    const here = playerMapPoint();
+    const pin = toScreen(here.x, here.y);
+    const blink = 0.55 + Math.abs(Math.sin(time * 5)) * 0.45;
+    g.globalAlpha = blink;
+    g.fillStyle = "#c4554a";
+    g.beginPath();
+    g.arc(pin.x, pin.y, 8, 0, Math.PI * 2);
+    g.fill();
+    g.globalAlpha = 1;
+    g.strokeStyle = "#fffdf9";
+    g.lineWidth = 2;
+    g.stroke();
+    g.fillStyle = "#3f362e";
+    g.textAlign = "left";
+    g.fillText("你在這裡", pin.x + 12, pin.y);
+  }
+
+  function mapWorld(clientX, clientY) {
+    const box = mapBox();
+    return {
+      x: mapGeom.x + (clientX - box.rect.left) / mapGeom.scale,
+      y: mapGeom.y + (clientY - box.rect.top) / mapGeom.scale
+    };
+  }
+
+  function mapClick(clientX, clientY) {
+    const world = mapWorld(clientX, clientY);
+    const hit = BUILDINGS.find(function (b) {
+      return world.x > b.x - 12 && world.x < b.x + b.w + 12 && world.y > b.y - 12 && world.y < b.y + b.h + 12;
+    });
+    if (hit) guideTo(hit.name);
   }
 
   function renderTitle() {
@@ -1323,7 +1578,43 @@
 
   function paintAvatar() {
     const canvasFace = document.getElementById("avatar-face");
-    if (canvasFace && role) window.HEAN_CHARS.paintAvatar(canvasFace, "player-" + role);
+    if (!canvasFace || !role) return;
+    const portrait = window.HEAN_ART && window.HEAN_ART.portrait("player-" + role);
+    if (portrait && window.HEAN_ART.ready(portrait)) {
+      const g = canvasFace.getContext("2d");
+      g.clearRect(0, 0, canvasFace.width, canvasFace.height);
+      const scale = Math.max(canvasFace.width / portrait.naturalWidth, canvasFace.height / portrait.naturalHeight);
+      const w = portrait.naturalWidth * scale;
+      const h = portrait.naturalHeight * scale;
+      g.drawImage(portrait, (canvasFace.width - w) / 2, (canvasFace.height - h) / 2, w, h);
+      return;
+    }
+    window.HEAN_CHARS.paintAvatar(canvasFace, "player-" + role);
+  }
+
+  function paintDialogArt(id) {
+    const canvas = document.getElementById("dlg-portrait");
+    const bust = document.getElementById("dlg-bust");
+    const portrait = window.HEAN_ART && window.HEAN_ART.portrait(id);
+    const full = window.HEAN_ART && window.HEAN_ART.full(id);
+    if (bust) {
+      if (full && full.src) {
+        bust.src = full.src;
+        bust.hidden = false;
+      } else bust.hidden = true;
+    }
+    function drawPortrait() {
+      if (portrait && window.HEAN_ART.ready(portrait)) {
+        const ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const scale = Math.min(canvas.width / portrait.naturalWidth, canvas.height / portrait.naturalHeight);
+        const w = portrait.naturalWidth * scale;
+        const h = portrait.naturalHeight * scale;
+        ctx.drawImage(portrait, (canvas.width - w) / 2, (canvas.height - h) / 2, w, h);
+      } else window.HEAN_CHARS.paintPortrait(canvas, id);
+    }
+    drawPortrait();
+    if (portrait && !window.HEAN_ART.ready(portrait)) portrait.addEventListener("load", drawPortrait, { once: true });
   }
 
   function showToast(text) {
@@ -1347,7 +1638,7 @@
     titleScreen.hidden = true;
     playScreen.hidden = false;
     document.body.classList.remove("ui-busy");
-    setArea("home", 220, 520);
+    setArea("home", 360, 820);
     resize();
     paintAvatar();
     renderHud();
@@ -1385,7 +1676,7 @@
     document.getElementById("dlg-place").textContent = sc.place;
     document.getElementById("dlg-title").textContent = sc.title;
     document.getElementById("dlg-speaker").textContent = sc.speaker;
-    window.HEAN_CHARS.paintPortrait(document.getElementById("dlg-portrait"), id);
+    paintDialogArt(id);
     document.getElementById("dlg-body").textContent = sc.body;
     const options = document.getElementById("dlg-options");
     options.replaceChildren();
@@ -1783,9 +2074,72 @@
     document.getElementById("btn-role").addEventListener("click", backToTitle);
     document.getElementById("btn-map").addEventListener("click", function () {
       renderMap();
-      document.getElementById("map-panel").hidden = false;
-      document.body.classList.add("ui-busy");
     });
+    document.getElementById("map-fit").addEventListener("click", function () {
+      mapFit();
+      paintTownMap();
+    });
+    (function bindTownMap() {
+      const canvas = document.getElementById("town-map");
+      canvas.addEventListener("pointerdown", function (e) {
+        canvas.setPointerCapture(e.pointerId);
+        mapPts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        mapDrag = { x: e.clientX, y: e.clientY, moved: false, geom: { x: mapGeom.x, y: mapGeom.y, scale: mapGeom.scale } };
+        if (mapPts.size === 2) {
+          const pts = Array.from(mapPts.values());
+          mapPinch = { dist: Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y) || 1, scale: mapGeom.scale };
+        }
+        e.preventDefault();
+      });
+      canvas.addEventListener("pointermove", function (e) {
+        if (!mapPts.has(e.pointerId)) return;
+        mapPts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        if (mapPts.size >= 2 && mapPinch) {
+          const pts = Array.from(mapPts.values());
+          const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y) || 1;
+          const rect = canvas.getBoundingClientRect();
+          const mx = (pts[0].x + pts[1].x) / 2 - rect.left;
+          const my = (pts[0].y + pts[1].y) / 2 - rect.top;
+          const next = clamp(mapPinch.scale * dist / mapPinch.dist, mapFitScale() * 0.85, 1.1);
+          const wx = mapGeom.x + mx / mapGeom.scale;
+          const wy = mapGeom.y + my / mapGeom.scale;
+          mapGeom.scale = next;
+          mapGeom.x = wx - mx / next;
+          mapGeom.y = wy - my / next;
+          if (mapDrag) mapDrag.moved = true;
+        } else if (mapDrag) {
+          const dx = e.clientX - mapDrag.x;
+          const dy = e.clientY - mapDrag.y;
+          if (Math.hypot(dx, dy) > 6) mapDrag.moved = true;
+          mapGeom.x = mapDrag.geom.x - dx / mapGeom.scale;
+          mapGeom.y = mapDrag.geom.y - dy / mapGeom.scale;
+        }
+        paintTownMap();
+        e.preventDefault();
+      });
+      function endPtr(e) {
+        const click = mapDrag && !mapDrag.moved && mapPts.size === 1;
+        mapPts.delete(e.pointerId);
+        if (mapPts.size < 2) mapPinch = null;
+        if (click) mapClick(e.clientX, e.clientY);
+        if (!mapPts.size) mapDrag = null;
+      }
+      canvas.addEventListener("pointerup", endPtr);
+      canvas.addEventListener("pointercancel", endPtr);
+      canvas.addEventListener("wheel", function (e) {
+        e.preventDefault();
+        const rect = canvas.getBoundingClientRect();
+        const mx = e.clientX - rect.left;
+        const my = e.clientY - rect.top;
+        const wx = mapGeom.x + mx / mapGeom.scale;
+        const wy = mapGeom.y + my / mapGeom.scale;
+        const next = clamp(mapGeom.scale * (e.deltaY > 0 ? 0.9 : 1.1), mapFitScale() * 0.85, 1.1);
+        mapGeom.scale = next;
+        mapGeom.x = wx - mx / next;
+        mapGeom.y = wy - my / next;
+        paintTownMap();
+      }, { passive: false });
+    })();
     document.getElementById("quest-go").addEventListener("click", function () {
       const quest = currentQuest();
       if (quest && quest.building) guideTo(quest.building);
@@ -1946,7 +2300,10 @@
       s.roles.forEach(function (r) {
         if (!s.tips[r]) console.error("tip", s.id, r);
       });
-      if (!SPOTS.some(function (spot) { return spot.id === s.id; })) console.error("spot", s.id);
+      const placed = SPOTS.some(function (spot) { return spot.id === s.id; }) || BUILDINGS.some(function (b) {
+        return (b.scenarios || []).indexOf(s.id) !== -1;
+      });
+      if (!placed) console.error("spot", s.id);
     });
   }
 

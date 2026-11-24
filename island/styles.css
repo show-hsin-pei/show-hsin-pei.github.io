@@ -134,6 +134,13 @@ h1 {
   transition: border-color 0.15s ease, transform 0.15s ease;
 }
 
+.role-full {
+  width: 88px;
+  height: 120px;
+  object-fit: contain;
+  align-self: center;
+}
+
 .role-card:hover,
 .role-card:focus-visible {
   border-color: var(--gold);
@@ -387,11 +394,23 @@ h1 {
   padding: 0;
 }
 
-.map-list .chip {
-  min-height: 30px;
-  padding: 4px 10px;
-  font-size: 12px;
+.map-sheet {
+  display: flex;
+  flex-direction: column;
+  height: min(86dvh, 780px);
+  overflow: hidden;
 }
+
+#town-map {
+  width: 100%;
+  flex: 1;
+  min-height: 280px;
+  touch-action: none;
+  border-radius: 16px;
+  background: #efe6d6;
+}
+
+#map-fit { margin-top: 8px; align-self: flex-start; }
 
 .map-list .chip:disabled {
   opacity: 0.55;
@@ -531,9 +550,17 @@ body.ui-busy .toast { visibility: hidden; }
 
 .who {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: 12px;
   margin-top: 12px;
+}
+
+.bust {
+  width: 108px;
+  height: 156px;
+  object-fit: contain;
+  object-position: bottom;
+  flex: none;
 }
 
 #dlg-portrait {
