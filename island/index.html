@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=2.10">
+  <link rel="stylesheet" href="styles.css?v=2.11">
 </head>
 <body>
   <a class="skip" href="#title-main">跳至主要內容</a>
@@ -59,7 +59,7 @@
       <p class="eyebrow">保險觀念散步</p>
       <h1 id="title-main">藝世錄保險小鎮</h1>
       <p class="lede">選一個身分，在小鎮裡走走。靠近住家或村民，聽一段保險爭議，再選一個看法。這是教學，不是測驗排名。</p>
-      <p class="version" id="version-line">版本 2.10 · 2026年11月25日更新</p>
+      <p class="version" id="version-line">版本 2.11 · 2026年11月25日更新</p>
       <div class="roles" role="group" aria-label="選擇身分">
         <button class="role-card" type="button" data-role="consumer">
           <img class="role-full" alt="" data-art="client" width="88" height="120">
@@ -114,7 +114,9 @@
         <span id="st-place">家</span>
         <span id="st-role">客戶 Lv.1</span>
         <span class="xp-wrap" aria-hidden="true"><span id="xp-fill"></span></span>
-        <span id="st-coin">小鎮幣 0</span>
+        <span id="st-day">第 1 天</span>
+        <span id="st-coin">現金 0</span>
+        <span id="st-save">存款 0</span>
         <span id="st-stam">體力 100/100</span>
       </div>
       <button type="button" class="orb map-btn" id="btn-map" aria-label="地圖">圖</button>
@@ -212,6 +214,7 @@
         <button type="button" class="icon-btn" id="menu-close" aria-label="關閉">×</button>
       </div>
       <div class="menu-actions">
+        <button type="button" class="chip" id="btn-finance">我的財務</button>
         <button type="button" class="chip" id="btn-progress">進度</button>
         <button type="button" class="chip" id="btn-role">換身分</button>
         <button type="button" class="chip" id="btn-sound" aria-pressed="false">音效關</button>
@@ -220,6 +223,20 @@
         <button type="button" class="chip" data-font="lg">大</button>
         <button type="button" class="chip" data-font="xl">特大</button>
       </div>
+    </div>
+  </div>
+
+  <div class="dialog" id="finance" hidden role="dialog" aria-modal="true" aria-labelledby="finance-title">
+    <div class="sheet" tabindex="-1">
+      <div class="sheet-head">
+        <div>
+          <p class="place">藝世錄保險小鎮</p>
+          <h2 id="finance-title">我的財務</h2>
+        </div>
+        <button type="button" class="icon-btn" id="finance-close" aria-label="關閉">×</button>
+      </div>
+      <div id="finance-body"></div>
+      <p class="sheet-note">遊戲數值，非真實利率，也不是真實的保費或給付。</p>
     </div>
   </div>
 
@@ -253,10 +270,10 @@
   </div>
 
   <noscript><p class="legal">藝世錄保險小鎮需要開啟 JavaScript 才能走動與對話。</p></noscript>
-  <script src="scenarios.js?v=2.10" defer></script>
-  <script src="characters.js?v=2.10" defer></script>
-  <script src="rooms.js?v=2.10" defer></script>
-  <script src="art.js?v=2.10" defer></script>
-  <script src="game.js?v=2.10" defer></script>
+  <script src="scenarios.js?v=2.11" defer></script>
+  <script src="characters.js?v=2.11" defer></script>
+  <script src="rooms.js?v=2.11" defer></script>
+  <script src="art.js?v=2.11" defer></script>
+  <script src="game.js?v=2.11" defer></script>
 </body>
 </html>

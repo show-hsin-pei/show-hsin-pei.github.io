@@ -924,5 +924,33 @@ body.landscape .quest { font-size: 12px; }
 
 #facility-body a { display: block; margin-top: 8px; color: var(--gold-deep); }
 
+#facility-body .primary,
+#facility-body .ghost,
+.passbook .ghost {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.finance-h {
+  margin: 14px 0 4px;
+  font-size: 16px;
+}
+
+.compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.compare p {
+  margin: 0;
+  background: #f7f1e6;
+  border-radius: 16px;
+  padding: 10px;
+}
+
+.passbook { margin-top: 8px; }
+
 .gender-roles { grid-template-columns: 1fr 1fr; }
 .gender-roles .role-full { width: 120px; height: 168px; object-fit: contain; }

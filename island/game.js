@@ -1,5 +1,5 @@
 (function () {
-  const VERSION = "2.10";
+  const VERSION = "2.11";
   const UPDATED = "2026年11月25日";
   const KEY = "hean-village-v1";
   const FONT = '"Noto Sans TC", "PingFang TC", "Microsoft JhengHei", "WenQuanYi Micro Hei", sans-serif';
@@ -535,7 +535,10 @@
     }
     if (area === "home") {
       const screen = window.HEAN_ROOMS.homeTv;
-      return [{ id: "home-tv", name: "電視", x: screen.x + screen.w / 2, y: screen.y + screen.h + 120, facility: "tv" }];
+      return [
+        { id: "home-tv", name: "電視", x: screen.x + screen.w / 2, y: screen.y + screen.h + 120, facility: "tv" },
+        { id: "home-sleep", name: "床", x: 70, y: 530, facility: "sleep" }
+      ];
     }
     const b = BUILDINGS.find(function (item) { return item.name === roomName; });
     const ids = (b && b.scenarios ? b.scenarios : []).filter(function (id) {
@@ -547,6 +550,11 @@
     });
     if (b && b.card === "office" && !ids.length) spots.push({ id: "info-office", name: "櫃台", x: 150, y: 340, facility: "card" });
     if (b && b.card && b.card !== "office") spots.push({ id: "info-" + (b.card === "center" ? "center" : b.card === "shop" ? "shop" : b.card === "zhou" ? "zhou" : b.card === "wu" ? "wu" : "center"), name: "說明", x: 150, y: 340, facility: "card" });
+    if (b && isWorkplace(b.name)) spots.push({ id: "punch", name: "打卡", x: 480, y: 400, facility: "punch" });
+    if (b && b.name === "超商") spots.push({ id: "shop-shelf", name: "貨架", x: 220, y: 460, facility: "shop" });
+    if (b && b.name === "寵物店") spots.push({ id: "pet-shelf", name: "用品", x: 220, y: 460, facility: "pet" });
+    const cover = b && coverSoldHere(b.name);
+    if (cover) spots.push({ id: "cover-" + cover, name: "練習保單", x: 560, y: 400, facility: "cover", cover: cover });
     return spots;
   }
 
@@ -569,7 +577,8 @@
     const mapPanel = document.getElementById("map-panel");
     const menuPanel = document.getElementById("menu-panel");
     const facility = document.getElementById("facility");
-    return !dialog.hidden || !progress.hidden || (mapPanel && !mapPanel.hidden) || (menuPanel && !menuPanel.hidden) || (facility && !facility.hidden);
+    const finance = document.getElementById("finance");
+    return !dialog.hidden || !progress.hidden || (mapPanel && !mapPanel.hidden) || (menuPanel && !menuPanel.hidden) || (facility && !facility.hidden) || (finance && !finance.hidden);
   }
 
   function placeChrome() {
@@ -800,7 +809,10 @@
       drawLife();
     } else {
       window.HEAN_ROOMS.paint(pen, area === "home" ? "home" : roomKind, time);
-      if (area === "home") drawHomeTv();
+      if (area === "home") {
+        drawHomeTv();
+        drawHomeStuff();
+      }
       if (area === "room") drawCompanyBoard();
     }
     const queue = [];
@@ -1957,13 +1969,18 @@
     el.style.animation = "";
   }
 
+  function lockedOf(who) {
+    const data = state.byRole[who] || emptyRole();
+    const term = (data.deposits || []).reduce(function (sum, item) {
+      return sum + (item.principal || 0);
+    }, 0);
+    return term + (data.savings || 0);
+  }
+
   function cashOf(r) {
     const who = r || role;
     const data = state.byRole[who] || emptyRole();
-    const locked = (data.deposits || []).reduce(function (sum, item) {
-      return sum + item.principal;
-    }, 0);
-    return Math.max(0, scoreOf(who) + (data.bonus || 0) - locked);
+    return Math.max(0, scoreOf(who) + (data.bonus || 0) - lockedOf(who));
   }
 
   function currentQuest() {
@@ -2005,20 +2022,14 @@
 
   function settleDeposits() {
     const data = bag();
-    if (!data.deposits || !data.deposits.length) return;
-    const now = Date.now();
-    const keep = [];
-    let interest = 0;
-    data.deposits.forEach(function (item) {
-      if ((now - item.start) / DAY_MS >= item.days) interest += Math.floor(item.principal / 50);
-      else keep.push(item);
+    let changed = false;
+    (data.deposits || []).forEach(function (item) {
+      if (item.startDay == null) {
+        item.startDay = data.day || 1;
+        changed = true;
+      }
     });
-    if (keep.length === data.deposits.length) return;
-    data.deposits = keep;
-    if (interest > 0) data.bonus = (data.bonus || 0) + interest;
-    save();
-    renderHud();
-    showReward(interest > 0 ? "練習多給 " + interest + " 枚，已加進這個身分的小鎮幣。這不是真實利息。" : "這筆未滿 50 枚，期滿沒有多給，本金已解鎖。");
+    if (changed) save();
   }
 
   function guideTo(name) {
@@ -2093,7 +2104,9 @@
     document.getElementById("st-place").textContent = placeName();
     document.getElementById("st-role").textContent = ROLE_NAME[role] + " Lv." + level;
     paintXp(false);
-    document.getElementById("st-coin").textContent = "小鎮幣 " + cashOf(role);
+    document.getElementById("st-day").textContent = "第 " + (bag().day || 1) + " 天";
+    document.getElementById("st-coin").textContent = "現金 " + cashOf(role);
+    document.getElementById("st-save").textContent = "存款 " + lockedOf(role);
     const quest = currentQuest();
     document.getElementById("quest-text").textContent = "目標：" + quest.text;
     placeChrome();
@@ -2656,6 +2669,10 @@
     if (!near) return "對話";
     if (near.animal) return "摸摸";
     if (near.facility === "chest") return "查看";
+    if (near.facility === "sleep") return "睡覺";
+    if (near.facility === "punch") return "打卡";
+    if (near.facility === "shop" || near.facility === "pet") return "購買";
+    if (near.facility === "cover") return "投保";
     if (near.facility === "tv") return "看電視";
     if (near.facility === "card" || near.facility === "bank") return "查看";
     const building = BUILDINGS.find(function (b) {
@@ -2784,6 +2801,26 @@
       openChest(near);
       return;
     }
+    if (near.facility === "sleep") {
+      sleepNight();
+      return;
+    }
+    if (near.facility === "punch") {
+      openPunch();
+      return;
+    }
+    if (near.facility === "shop") {
+      openShop();
+      return;
+    }
+    if (near.facility === "pet") {
+      openPetShelf();
+      return;
+    }
+    if (near.facility === "cover") {
+      openCover(near.cover);
+      return;
+    }
     openDialog(near.id);
   }
 
@@ -2800,6 +2837,7 @@
     rec.x = spot.x;
     rec.y = spot.y;
     bag().bonus = (bag().bonus || 0) + 8;
+    noteMoney("in", "寶箱", 8);
     const before = levelOf();
     state.xp[role] = (state.xp[role] || 0) + 20;
     const after = levelOf();
@@ -2831,78 +2869,406 @@
     return p;
   }
 
+  const LIFE_COVERS = {
+    medical: { name: "醫療練習", premium: 4, deductible: 6, sellers: ["暖禾人壽", "青畦人壽", "拾穗人壽", "暮嵐人壽"] },
+    accident: { name: "意外練習", premium: 3, deductible: 5, sellers: ["澄川產物"] },
+    home: { name: "住宅練習", premium: 3, deductible: 8, sellers: ["石橋產物"] },
+    auto: { name: "車險練習", premium: 4, deductible: 6, sellers: ["岸蒲產物"] }
+  };
+  const LIFE_EVENTS = [
+    { id: "ill", cover: "medical", title: "有點不舒服", full: 24, line: "看病的花費先自己墊。練習中的醫療約定這次只扣自負額。真實契約還要對條款裡的費用、上限和除外，不是看診就一定回來。" },
+    { id: "fall", cover: "accident", title: "路上跌倒", full: 18, line: "意外和疾病的定義常常分開。這次用意外練習來比較自己付和只付自負額。條款沒寫的項目，不會因為發生了就算有。" },
+    { id: "storm", cover: "home", title: "颱風打到家", full: 30, line: "住宅火災的約定，不會自動連颱風、淹水一起算。這次練習把住宅收成一筆簡化保費，讓你比較全額和自負額。真實要看那張條款有沒有寫風和雨。" },
+    { id: "bump", cover: "auto", title: "巷口小擦撞", full: 26, line: "擦撞先分成人的傷害、別人的車、自己的車。這次練習只處理自己的車這一筆簡化費用。強制險著重人的傷害，不會因為有它，車門就自動算進去。" }
+  ];
+  const LIFE_GOODS = [
+    { id: "plant", name: "窗邊盆栽", price: 16 },
+    { id: "clock", name: "圓鐘", price: 18 },
+    { id: "cushion", name: "坐墊", price: 14 }
+  ];
+  const TERM_PAY = { 3: 4, 7: 10, 14: 18 };
+
+  function townDay() {
+    return bag().day || 1;
+  }
+
+  function isWorkplace(name) {
+    if (role === "consumer") return name === "超商";
+    if (role === "broker") return name === "事務所";
+    if (role === "agent") return name === "事務所" || /人壽$/.test(name);
+    return false;
+  }
+
+  function coverSoldHere(name) {
+    const keys = Object.keys(LIFE_COVERS);
+    for (let i = 0; i < keys.length; i++) {
+      if (LIFE_COVERS[keys[i]].sellers.indexOf(name) !== -1) return keys[i];
+    }
+    return "";
+  }
+
+  function noteMoney(kind, text, amount) {
+    const data = bag();
+    if (!data.ledger) data.ledger = [];
+    data.ledger.unshift({ day: townDay(), kind: kind, text: text, amount: amount });
+    if (data.ledger.length > 40) data.ledger.length = 40;
+  }
+
+  function earnCash(amount, text) {
+    bag().bonus = (bag().bonus || 0) + amount;
+    noteMoney("in", text, amount);
+  }
+
+  function payCash(amount, text) {
+    if (cashOf(role) < amount) return false;
+    bag().bonus = (bag().bonus || 0) - amount;
+    noteMoney("out", text, amount);
+    return true;
+  }
+
+  function policiesOf() {
+    const data = bag();
+    if (!data.policies) data.policies = {};
+    return data.policies;
+  }
+
+  function drawHomeStuff() {
+    if (!role) return;
+    const owned = bag().furniture || {};
+    if (owned.plant) {
+      pen.fillStyle = "#6f8f62";
+      pen.beginPath();
+      pen.ellipse(250, 300, 16, 18, 0, 0, Math.PI * 2);
+      pen.fill();
+      pen.fillStyle = "#c47a4a";
+      pen.fillRect(242, 312, 16, 14);
+    }
+    if (owned.clock) {
+      pen.fillStyle = "#f7f1e6";
+      pen.beginPath();
+      pen.arc(400, 190, 16, 0, Math.PI * 2);
+      pen.fill();
+      pen.strokeStyle = "#6a4632";
+      pen.lineWidth = 2;
+      pen.stroke();
+    }
+    if (owned.cushion) {
+      pen.fillStyle = "#d7b07a";
+      pen.beginPath();
+      pen.ellipse(210, 640, 28, 14, 0, 0, Math.PI * 2);
+      pen.fill();
+    }
+  }
+
+  function button(label, className, onClick) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = className;
+    btn.textContent = label;
+    btn.addEventListener("click", onClick);
+    return btn;
+  }
+
   function openBank() {
     bag().seenBank = true;
     save();
     renderHud();
+    const data = bag();
     const amount = document.createElement("input");
     amount.type = "number";
     amount.min = "10";
-    amount.max = "200";
+    amount.max = "500";
     amount.value = "50";
     amount.className = "chip";
-    amount.setAttribute("aria-label", "存入小鎮幣");
-    const put = document.createElement("button");
-    put.type = "button";
-    put.className = "primary";
-    put.textContent = "存 7 個小鎮日（練習利率每 50 枚多 1 枚）";
-    put.addEventListener("click", function () { deposit(Number(amount.value), 7, 0.02); });
-    const early = document.createElement("button");
-    early.type = "button";
-    early.className = "ghost";
-    early.textContent = "提前結束最早的一筆（只退本金）";
-    early.addEventListener("click", withdrawEarly);
-    const list = document.createElement("div");
-    (bag().deposits || []).forEach(function (item, index) {
-      const left = Math.max(0, item.days - (Date.now() - item.start) / DAY_MS);
-      list.appendChild(para("第 " + (index + 1) + " 筆本金 " + item.principal + "，剩下約 " + left.toFixed(1) + " 個小鎮日"));
+    amount.setAttribute("aria-label", "金額");
+    const rows = document.createElement("div");
+    rows.className = "passbook";
+    (data.deposits || []).forEach(function (item, index) {
+      const left = Math.max(0, item.days - (townDay() - (item.startDay || townDay())));
+      const line = document.createElement("p");
+      line.className = "body-copy";
+      line.textContent = "定存 " + item.days + " 天 · 本金 " + item.principal + " · 還剩 " + left + " 天";
+      const early = button("提前解約", "ghost", function () { breakTerm(index); });
+      rows.appendChild(line);
+      rows.appendChild(early);
+    });
+    const book = (data.ledger || []).filter(function (item) { return item.text.indexOf("活存") !== -1 || item.text.indexOf("定存") !== -1; }).slice(0, 6);
+    book.forEach(function (item) {
+      rows.appendChild(para("第 " + item.day + " 天 · " + item.text + " " + (item.kind === "out" ? "-" : "+") + item.amount));
     });
     fillFacility("銀行櫃台", [
-      para("這裡只用小鎮幣練習，不能換成真實的錢，也不是任何一家銀行的存款。一個小鎮日大約三十秒，只為了讓練習看得到期滿。"),
-      para("名義上多出來的枚數如果追不上物價上漲，能買到的東西仍可能變少。定存期間錢不能拿去急用，就是流動性的代價。每滿 50 枚，期滿多給 1 枚練習幣；未滿 50 枚不會多給。合計上限 200 枚。提前結束只退本金。那不是真實利息。"),
-      para("現在拿得到的小鎮幣：" + cashOf(role)),
+      para("遊戲數值，非真實利率。小鎮幣不能換成真實的錢，也不是任何一家銀行的存款。利息若追不上物價，能買到的東西仍可能變少。"),
+      para("現金 " + cashOf(role) + " · 活存 " + (data.savings || 0) + " · 定存本金 " + ((data.deposits || []).reduce(function (sum, item) { return sum + item.principal; }, 0))),
+      para("活存隨時存提。每過一個小鎮日，每滿 100 枚多 1 枚，未滿 100 當日不計。定存 3 天每百枚期滿 +4、7 天 +10、14 天 +18，期間不能拿去花。提前解約利息只給一半。"),
       amount,
-      put,
-      early,
-      list
+      button("存入活存", "primary", function () { moveSavings(Number(amount.value), true); }),
+      button("提出活存", "ghost", function () { moveSavings(Number(amount.value), false); }),
+      button("定存 3 天", "primary", function () { lockTerm(Number(amount.value), 3); }),
+      button("定存 7 天", "primary", function () { lockTerm(Number(amount.value), 7); }),
+      button("定存 14 天", "primary", function () { lockTerm(Number(amount.value), 14); }),
+      rows
     ]);
   }
 
-  function deposit(amount, days, rate) {
+  function moveSavings(amount, into) {
+    const data = bag();
     if (!amount || amount < 10) {
-      showToast("至少存 10 枚小鎮幣");
+      showToast("至少 10 枚");
+      return;
+    }
+    if (into) {
+      if (cashOf(role) < amount) {
+        showToast("現金不夠");
+        return;
+      }
+      data.savings = (data.savings || 0) + amount;
+      noteMoney("out", "存入活存", amount);
+    } else {
+      if ((data.savings || 0) < amount) {
+        showToast("活存不夠");
+        return;
+      }
+      data.savings -= amount;
+      noteMoney("in", "提出活存", amount);
+    }
+    save();
+    renderHud();
+    openBank();
+  }
+
+  function lockTerm(amount, days) {
+    if (!amount || amount < 10) {
+      showToast("至少 10 枚");
       return;
     }
     const data = bag();
     const locked = (data.deposits || []).reduce(function (sum, item) { return sum + item.principal; }, 0);
-    if (locked + amount > 200) {
-      showToast("定存合計上限 200 枚");
+    if (locked + amount > 500) {
+      showToast("定存合計先到 500 枚");
       return;
     }
     if (cashOf(role) < amount) {
-      showToast("拿得到的小鎮幣不夠");
+      showToast("現金不夠");
       return;
     }
-    const extra = Math.floor(amount / 50);
-    data.deposits.push({ principal: amount, days: days, rate: rate, start: Date.now() });
+    data.deposits.push({ principal: amount, days: days, startDay: townDay() });
+    noteMoney("out", "定存 " + days + " 天", amount);
     save();
     renderHud();
-    showToast(extra > 0 ? "期滿練習多給 " + extra + " 枚。這不是真實利息。" : "未滿 50 枚，期滿不會多給，只是把錢鎖住練習。");
+    showToast("鎖 " + days + " 個小鎮日。期滿每百枚 +" + TERM_PAY[days] + "。遊戲數值，非真實利率。");
     openBank();
   }
 
-  function withdrawEarly() {
+  function breakTerm(index) {
     const data = bag();
-    if (!data.deposits.length) {
-      showToast("現在沒有定存");
-      return;
-    }
-    data.deposits.shift();
+    const item = (data.deposits || [])[index];
+    if (!item) return;
+    const full = Math.floor(item.principal / 100) * (TERM_PAY[item.days] || 0);
+    const pay = Math.floor(full / 2);
+    data.deposits.splice(index, 1);
+    if (pay > 0) earnCash(pay, "定存提前解約利息");
+    else noteMoney("in", "定存提前解約，本金退回", item.principal);
     save();
     renderHud();
-    showToast("已退回本金，練習用的多給枚數沒有計入");
+    showToast("本金已退回。約定利息只給一半，這次是 " + pay + " 枚。遊戲數值，非真實利率。");
     openBank();
   }
+
+  function openPunch() {
+    const data = bag();
+    const pay = role === "agent" ? 18 : role === "broker" ? 16 : 12;
+    if (data.workedDay === townDay()) {
+      fillFacility("打卡", [para("今天這份工作已經領過了。明天睡醒再來。")]);
+      return;
+    }
+    fillFacility("打卡", [
+      para(role === "consumer" ? "超商這班，今天可以領 " + pay + " 枚小鎮幣。" : role === "broker" ? "事務所這天的委託整理，可以領 " + pay + " 枚。" : "壽險街或事務所的班，今天可以領 " + pay + " 枚。"),
+      para("這是小鎮的薪水，不是真實的工資，也不代表哪一種工作比較好。"),
+      button("領今天的薪水", "primary", function () {
+        if (bag().workedDay === townDay()) return;
+        bag().workedDay = townDay();
+        earnCash(pay, "工作打卡");
+        save();
+        renderHud();
+        showReward("領到 " + pay + " 枚。明天還可以再打一次卡。");
+        document.getElementById("facility").hidden = true;
+        document.body.classList.remove("ui-busy");
+      })
+    ]);
+  }
+
+  function openShop() {
+    const nodes = [
+      para("超商只賣小鎮自己的吃食和幾件能擺回家的東西。"),
+      button("飯糰 6 枚 · 心情 +12", "primary", function () { buyFood(); })
+    ];
+    LIFE_GOODS.forEach(function (item) {
+      const owned = bag().furniture && bag().furniture[item.id];
+      nodes.push(button(item.name + " " + item.price + " 枚" + (owned ? " · 已買" : ""), "ghost", function () { buyGoods(item); }));
+    });
+    fillFacility("超商貨架", nodes);
+  }
+
+  function buyFood() {
+    if (!payCash(6, "超商飯糰")) {
+      showToast("現金不夠");
+      return;
+    }
+    bag().mood = Math.min(100, (bag().mood || 80) + 12);
+    save();
+    renderHud();
+    showReward("吃了飯糰。心情 " + bag().mood + "。這不是真實的食物。");
+  }
+
+  function buyGoods(item) {
+    const data = bag();
+    if (!data.furniture) data.furniture = {};
+    if (data.furniture[item.id]) {
+      showToast("家裡已經有這件");
+      return;
+    }
+    if (!payCash(item.price, item.name)) {
+      showToast("現金不夠");
+      return;
+    }
+    data.furniture[item.id] = true;
+    save();
+    renderHud();
+    showReward(item.name + " 會出現在家裡。");
+  }
+
+  function openPetShelf() {
+    fillFacility("寵物用品", [
+      para("小玩具 10 枚，心情 +6。店裡不代辦寵物保險，也不留電話。"),
+      button("買小玩具", "primary", function () {
+        if (!payCash(10, "寵物店小玩具")) {
+          showToast("現金不夠");
+          return;
+        }
+        bag().mood = Math.min(100, (bag().mood || 80) + 6);
+        save();
+        renderHud();
+        showReward("玩具帶回家了。心情 " + bag().mood + "。");
+      })
+    ]);
+  }
+
+  function openCover(kind) {
+    const spec = LIFE_COVERS[kind];
+    const on = !!policiesOf()[kind];
+    const nodes = [
+      para(spec.name + "。每個小鎮日扣 " + spec.premium + " 枚。出事時沒有這張，自己付全額；有的話只付自負額 " + spec.deductible + " 枚。"),
+      para("遊戲數值，非真實保費，也不是推薦哪一張真實的保單。實際是否給付，以保單條款為準。")
+    ];
+    if (on) nodes.push(button("先不續這張", "ghost", function () { policiesOf()[kind] = false; save(); openCover(kind); }));
+    else nodes.push(button("參加這個練習", "primary", function () { policiesOf()[kind] = true; noteMoney("out", "參加" + spec.name, 0); save(); openCover(kind); }));
+    fillFacility(spec.name, nodes);
+  }
+
+  function openFinance() {
+    const data = bag();
+    document.getElementById("menu-panel").hidden = true;
+    const income = document.createElement("div");
+    const spend = document.createElement("div");
+    (data.ledger || []).forEach(function (item) {
+      const line = para("第 " + item.day + " 天 · " + item.text + " " + (item.kind === "out" ? "-" : "+") + item.amount);
+      if (item.kind === "out") spend.appendChild(line);
+      else income.appendChild(line);
+    });
+    if (!income.childNodes.length) income.appendChild(para("還沒有收入。"));
+    if (!spend.childNodes.length) spend.appendChild(para("還沒有支出。"));
+    const covers = document.createElement("div");
+    Object.keys(LIFE_COVERS).forEach(function (key) {
+      const spec = LIFE_COVERS[key];
+      covers.appendChild(para(spec.name + (policiesOf()[key] ? " · 每天 " + spec.premium + " 枚 · 自負額 " + spec.deductible : " · 沒參加")));
+    });
+    covers.appendChild(para("情境答對累計 " + scoreOf(role) + " 枚，算在現金裡。心情 " + (data.mood || 80) + "。"));
+    const panel = document.getElementById("finance");
+    const body = document.getElementById("finance-body");
+    body.replaceChildren(
+      para("現金 " + cashOf(role) + " · 存款 " + lockedOf(role) + " · 第 " + townDay() + " 天"),
+      headingEl("收入"),
+      income,
+      headingEl("支出"),
+      spend,
+      headingEl("保單"),
+      covers
+    );
+    panel.hidden = false;
+    document.body.classList.add("ui-busy");
+  }
+
+  function headingEl(text) {
+    const h = document.createElement("h3");
+    h.className = "finance-h";
+    h.textContent = text;
+    return h;
+  }
+
+  function sleepNight(forceId) {
+    if (area !== "home") {
+      showToast("回床上才能睡。");
+      return;
+    }
+    const data = bag();
+    data.day = townDay() + 1;
+    data.mood = Math.max(20, (data.mood || 80) - 8);
+    const interest = Math.floor((data.savings || 0) / 100);
+    if (interest > 0) {
+      data.savings += interest;
+      noteMoney("in", "活存一天的利息", interest);
+    }
+    const keep = [];
+    (data.deposits || []).forEach(function (item) {
+      const start = item.startDay || data.day;
+      if (data.day - start >= item.days) {
+        const pay = Math.floor(item.principal / 100) * (TERM_PAY[item.days] || 0);
+        if (pay > 0) earnCash(pay, "定存期滿");
+        else noteMoney("in", "定存期滿，本金退回", item.principal);
+      } else keep.push(item);
+    });
+    data.deposits = keep;
+    Object.keys(LIFE_COVERS).forEach(function (key) {
+      if (!policiesOf()[key]) return;
+      const spec = LIFE_COVERS[key];
+      if (payCash(spec.premium, spec.name + "保費")) return;
+      policiesOf()[key] = false;
+      noteMoney("out", spec.name + "停了，現金不夠扣", 0);
+    });
+    const eventId = forceId || data.forceEvent || (Math.random() < 0.45 ? LIFE_EVENTS[Math.floor(Math.random() * LIFE_EVENTS.length)].id : "");
+    data.forceEvent = "";
+    save();
+    renderHud();
+    const nodes = [para("睡了一晚。今天是第 " + data.day + " 天。心情 " + data.mood + "。")];
+    if (interest > 0) nodes.push(para("活存多了 " + interest + " 枚。遊戲數值，非真實利率。"));
+    if (eventId) nodes.push(button("看看今天發生的事", "primary", function () { openEvent(eventId); }));
+    else nodes.push(para("今天沒有突然的花費。工作還可以去打卡。"));
+    fillFacility("新的一天", nodes);
+  }
+
+  function openEvent(id) {
+    const event = LIFE_EVENTS.filter(function (item) { return item.id === id; })[0] || LIFE_EVENTS[0];
+    const spec = LIFE_COVERS[event.cover];
+    const covered = !!policiesOf()[event.cover];
+    const due = covered ? spec.deductible : event.full;
+    const paid = Math.min(due, cashOf(role));
+    if (paid > 0) payCash(paid, event.title);
+    else noteMoney("out", event.title + "，現金不夠", 0);
+    save();
+    renderHud();
+    const compare = document.createElement("div");
+    compare.className = "compare";
+    compare.innerHTML = "<p><strong>沒有這類練習保單</strong><br>自己付 " + event.full + " 枚</p><p><strong>有這類練習保單</strong><br>只付自負額 " + spec.deductible + " 枚</p>";
+    fillFacility(event.title, [
+      para(event.line),
+      compare,
+      para(covered ? "你現在有" + spec.name + "，這次扣 " + paid + " 枚。" : "你現在沒有" + spec.name + "，這次扣 " + paid + " 枚。"),
+      para("這是小鎮的練習規則，不是推薦真實商品，也不保證給付。實際是否給付，以保單條款為準。")
+    ]);
+  }
+
+  function deposit() { openBank(); }
+  function withdrawEarly() { openBank(); }
 
   function openHospital() {
     const height = document.createElement("input");
@@ -3060,8 +3426,8 @@
         pendingRole = btn.getAttribute("data-role");
         document.getElementById("gender-role").textContent = ROLE_NAME[pendingRole];
         const base = pendingRole === "agent" ? "agent" : pendingRole === "broker" ? "broker" : "client";
-        document.getElementById("gender-art-m").src = "assets/characters/" + base + "_m.webp?v=2.10";
-        document.getElementById("gender-art-f").src = "assets/characters/" + base + "_f.webp?v=2.10";
+        document.getElementById("gender-art-m").src = "assets/characters/" + base + "_m.webp?v=2.11";
+        document.getElementById("gender-art-f").src = "assets/characters/" + base + "_f.webp?v=2.11";
         document.getElementById("gender-pick").hidden = false;
       });
     });
@@ -3201,6 +3567,11 @@
       if (dialog.hidden && progress.hidden) document.body.classList.remove("ui-busy");
     });
     document.getElementById("btn-progress").addEventListener("click", openProgress);
+    document.getElementById("btn-finance").addEventListener("click", openFinance);
+    document.getElementById("finance-close").addEventListener("click", function () {
+      document.getElementById("finance").hidden = true;
+      if (dialog.hidden && progress.hidden && document.getElementById("facility").hidden) document.body.classList.remove("ui-busy");
+    });
     document.getElementById("progress-close").addEventListener("click", closeProgress);
     document.getElementById("progress-clear").addEventListener("click", function () {
       if (!window.confirm("要清除這個身分的完成紀錄與分數嗎？")) return;
@@ -3342,6 +3713,8 @@
     if (data.daily !== today) {
       data.daily = today;
       data.bonus = (data.bonus || 0) + 20;
+      if (!data.ledger) data.ledger = [];
+      data.ledger.unshift({ day: data.day || 1, kind: "in", text: "進鎮零用", amount: 20 });
       data.visits = data.visits || [];
       if (data.visits[data.visits.length - 1] !== today) data.visits.push(today);
       const list = scenariosFor(role);
@@ -3545,6 +3918,8 @@
     zoom: function () { return zoom; },
     setHour: function (hour) { hourOverride = hour; },
     pathLen: function () { return path ? path.length : 0; },
-    area: function () { return area; }
+    area: function () { return area; },
+    sleep: sleepNight,
+    forceEvent: function (id) { bag().forceEvent = id; }
   };
 })();
