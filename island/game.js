@@ -1,12 +1,13 @@
 (function () {
-  const VERSION = "2.5";
+  const VERSION = "2.6";
   const UPDATED = "2026年11月25日";
   const KEY = "hean-village-v1";
   const FONT = '"Noto Sans TC", "PingFang TC", "Microsoft JhengHei", "WenQuanYi Micro Hei", sans-serif';
   const WORLD = { w: 2300, h: 1960 };
   const CS = 20;
-  const SPEED = 132;
-  const STEP = 16;
+  const SPEED = 100;
+  const STEP = 14;
+  const BOB = 1.6;
   const REACH = 64;
 
   const ROLE_NAME = {
@@ -156,11 +157,11 @@
   let zoom = 1;
   let dpr = 1;
   const cam = { x: 0, y: 0 };
-  const player = { x: 400, y: 320, dir: 1, walk: 0, travel: 0, moving: false, facing: "down" };
+  const player = { x: 400, y: 320, dir: 1, walk: 0, travel: 0, moving: false, facing: "down", vel: 0, aimX: 0, aimY: 0 };
   const walkers = [
-    { id: "walker-1", name: "路人", x: 640, y: 410, min: 460, max: 860, axis: "x", dir: 1, speed: 28, travel: 0, moving: false, facing: "right", line: "收據先留著。實支實付還要對得上條款裡的費用，不是花多少領多少。" },
-    { id: "walker-2", name: "路人", x: 1200, y: 940, min: 1000, max: 1500, axis: "x", dir: -1, speed: 24, travel: 0, moving: false, facing: "left", line: "強制險著重人的傷害。車子本身要看另外的契約有沒有寫。" },
-    { id: "walker-3", name: "路人", x: 1300, y: 1420, min: 1100, max: 1680, axis: "x", dir: 1, speed: 22, travel: 0, moving: false, facing: "right", line: "受益人不會因為家裡的事自己改掉，要向公司辦變更。" },
+    { id: "walker-1", name: "路人", x: 640, y: 410, min: 460, max: 860, axis: "x", dir: 1, speed: 86, travel: 0, moving: false, facing: "right", pause: 0.4, walkFor: 1.5, line: "收據先留著。實支實付還要對得上條款裡的費用，不是花多少領多少。" },
+    { id: "walker-2", name: "路人", x: 1200, y: 940, min: 1000, max: 1500, axis: "x", dir: -1, speed: 80, travel: 0, moving: false, facing: "left", pause: 1.1, walkFor: 1.8, line: "強制險著重人的傷害。車子本身要看另外的契約有沒有寫。" },
+    { id: "walker-3", name: "路人", x: 1300, y: 1420, min: 1100, max: 1680, axis: "x", dir: 1, speed: 84, travel: 0, moving: false, facing: "right", pause: 0.2, walkFor: 1.3, line: "受益人不會因為家裡的事自己改掉，要向公司辦變更。" },
     { id: "dog", name: "小狗", x: 1120, y: 800, min: 1000, max: 1320, axis: "x", dir: 1, speed: 34, animal: true, line: "今天摸一下就好，明天還可以再摸。" },
     { id: "cat", name: "小貓", x: 1040, y: 1120, min: 980, max: 1240, axis: "x", dir: -1, speed: 18, animal: true, line: "明天再來摸一次。" }
   ];
@@ -570,16 +571,38 @@
     document.body.classList.toggle("landscape", landscape);
     const rotate = document.getElementById("rotate-hint");
     if (rotate) rotate.hidden = !landscape;
-    zoom = area === "town" ? (landscape ? 1.15 : (viewW < 760 ? 0.9 : 1)) : roomZoom();
+    zoom = area === "town" ? (landscape ? 1.05 : (viewW < 760 ? 0.82 : 0.94)) : roomZoom();
     dpr = Math.min(2, window.devicePixelRatio || 1);
     canvas.width = Math.round(viewW * dpr);
     canvas.height = Math.round(viewH * dpr);
   }
 
   function facingFromVelocity(vx, vy) {
-    if (Math.abs(vy) >= Math.abs(vx) && vy) return vy < 0 ? "up" : "down";
+    const ax = Math.abs(vx);
+    const ay = Math.abs(vy);
+    const current = player.facing || "down";
+    const vertical = current === "up" || current === "down";
+    if (!ax && !ay) return current;
+    if (vertical && ay * 1.2 >= ax) return vy < 0 ? "up" : "down";
+    if (!vertical && ax * 1.2 >= ay) return vx < 0 ? "left" : "right";
+    if (ay >= ax && vy) return vy < 0 ? "up" : "down";
     if (vx) return vx < 0 ? "left" : "right";
-    return player.facing || "down";
+    return current;
+  }
+
+  function gaitFrame(travel, moving) {
+    if (!moving) return 1;
+    const p = (travel % (STEP * 4)) / (STEP * 4);
+    if (p < 0.22) return 0;
+    if (p < 0.5) return 1;
+    if (p < 0.72) return 2;
+    return 3;
+  }
+
+  function gaitLift(travel, moving) {
+    if (!moving) return 0;
+    const p = (travel % (STEP * 4)) / (STEP * 4);
+    return Math.abs(Math.sin(p * Math.PI * 2));
   }
 
   function tryMove(dx, dy) {
@@ -624,15 +647,23 @@
       if (len > 0) {
         vx /= len;
         vy /= len;
+        player.aimX = vx;
+        player.aimY = vy;
+      }
+      const want = len > 0 ? SPEED * scale : 0;
+      const ease = want > player.vel ? 8.5 : 16;
+      player.vel += (want - player.vel) * Math.min(1, ease * dt);
+      if (want === 0 && player.vel < 12) player.vel = 0;
+      if (player.vel > 0 && (player.aimX || player.aimY)) {
         const beforeX = player.x;
         const beforeY = player.y;
-        tryMove(vx * SPEED * scale * dt, vy * SPEED * scale * dt);
+        tryMove((player.aimX || 0) * player.vel * dt, (player.aimY || 0) * player.vel * dt);
         const moved = Math.hypot(player.x - beforeX, player.y - beforeY);
-        player.moving = moved > 0.15;
+        player.moving = moved > 0.2;
         if (player.moving) {
           player.travel += moved;
           player.walk += dt;
-          player.facing = facingFromVelocity(vx, vy);
+          player.facing = facingFromVelocity(player.aimX || 0, player.aimY || 0);
           player.dir = player.facing === "left" ? -1 : 1;
         }
         if (player.walk > 0.35) markTutorial(0);
@@ -686,16 +717,29 @@
           w.moving = false;
           return;
         }
+        if (w.pause > 0) {
+          w.pause -= dt;
+          w.moving = false;
+          return;
+        }
         const before = w[w.axis];
         w[w.axis] += w.dir * w.speed * dt;
+        let turned = false;
         if (w[w.axis] < w.min || w[w.axis] > w.max) {
           w.dir *= -1;
           w[w.axis] = clamp(w[w.axis], w.min, w.max);
+          turned = true;
         }
         const moved = Math.abs(w[w.axis] - before);
         w.travel += moved;
-        w.moving = moved > 0.15;
+        w.moving = moved > 0.2;
         w.facing = w.axis === "y" ? (w.dir < 0 ? "up" : "down") : (w.dir < 0 ? "left" : "right");
+        w.walkFor -= dt;
+        if (w.walkFor <= 0 || turned) {
+          w.pause = 0.7 + hash(Math.floor(time * 4), Math.floor(w.x + w.y)) * 1.5;
+          w.walkFor = 0.9 + hash(Math.floor(w.y), Math.floor(time + w.x)) * 1.4;
+          if (hash(Math.floor(w.x), Math.floor(time * 3)) > 0.62) w.dir *= -1;
+        }
       });
     }
     const near = nearestSpot();
@@ -1281,15 +1325,17 @@
     const moving = !reduceMotion && (isPlayer ? player.moving : !!(walker && walker.moving));
     const facing = isPlayer ? (player.facing || "down") : (walker && walker.facing) || "down";
     const travel = isPlayer ? player.travel : (walker && walker.travel) || 0;
-    const aiH = area === "home" ? 200 : area === "town" ? 96 : 108;
+    const aiH = area === "home" ? 168 : area === "town" ? 88 : 112;
     const aiW = aiH * 256 / 320;
-    const aiFrame = moving ? Math.floor(travel / STEP) % 4 : 1;
+    const aiFrame = gaitFrame(travel, moving);
+    const lift = reduceMotion ? 0 : gaitLift(travel, moving);
     pen.save();
     pen.translate(x, y);
-    pen.fillStyle = "rgba(48, 32, 20, 0.22)";
+    pen.fillStyle = "rgba(48, 32, 20, " + (0.2 + 0.08 * (1 - lift)) + ")";
     pen.beginPath();
-    pen.ellipse(0, 2, aiW * 0.22, 5, 0, 0, Math.PI * 2);
+    pen.ellipse(0, 3, aiW * 0.2 * (1 - 0.16 * lift), 4.2 * (1 - 0.12 * lift), 0, 0, Math.PI * 2);
     pen.fill();
+    pen.translate(0, -BOB * lift);
     if (window.HEAN_CHARS.drawSheet(pen, id, facing, aiFrame, -aiW / 2, -aiH, aiW, aiH)) {
       pen.restore();
       if (!isPlayer) markSpot(x, y, scenarioId);
@@ -1465,6 +1511,9 @@
     joy.dy = 0;
     joy.id = null;
     player.moving = false;
+    player.vel = 0;
+    player.aimX = 0;
+    player.aimY = 0;
     path = null;
     const knob = document.querySelector("#joystick .knob");
     if (knob) knob.style.transform = "translate(0px,0px)";
@@ -1530,8 +1579,8 @@
       if (path && path.length && !ledHere) return;
       if ((!path || !path.length) && player.moving) return;
       triggerArmed = false;
-      if (hit.kind === "home") setArea("home", 430, 760);
-      else setArea("room", 220, 300, hit.kind, { x: door.x, y: door.y + 78 }, hit.name);
+      if (hit.kind === "home") setArea("home", 430, 860);
+      else setArea("room", 220, 360, hit.kind, { x: door.x, y: door.y + 78 }, hit.name);
       return;
     }
     if (!inExitZone()) {
@@ -2048,7 +2097,7 @@
     playScreen.hidden = false;
     document.body.classList.remove("ui-busy");
     applyFont();
-    setArea("home", 430, 760);
+    setArea("home", 430, 860);
     resize();
     paintAvatar();
     renderHud();
@@ -2843,8 +2892,8 @@
         pendingRole = btn.getAttribute("data-role");
         document.getElementById("gender-role").textContent = ROLE_NAME[pendingRole];
         const base = pendingRole === "agent" ? "agent" : pendingRole === "broker" ? "broker" : "client";
-        document.getElementById("gender-art-m").src = "assets/characters/" + base + "_m.webp?v=2.5";
-        document.getElementById("gender-art-f").src = "assets/characters/" + base + "_f.webp?v=2.5";
+        document.getElementById("gender-art-m").src = "assets/characters/" + base + "_m.webp?v=2.6";
+        document.getElementById("gender-art-f").src = "assets/characters/" + base + "_f.webp?v=2.6";
         document.getElementById("gender-pick").hidden = false;
       });
     });
