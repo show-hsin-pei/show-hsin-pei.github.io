@@ -1,5 +1,5 @@
 (function () {
-  const VERSION = "1.9";
+  const VERSION = "2.0";
   const UPDATED = "2026年11月24日";
   const KEY = "hean-village-v1";
   const FONT = '"Noto Sans TC", "PingFang TC", "Microsoft JhengHei", "WenQuanYi Micro Hei", sans-serif';
@@ -437,7 +437,7 @@
         return sc && sc.roles.indexOf(role) !== -1;
       });
     }
-    if (area === "home") return [];
+    if (area === "home") return [{ id: "home-tv", name: "電視", x: 560, y: 470, facility: "tv" }];
     const b = BUILDINGS.find(function (item) { return item.name === roomName; });
     const ids = b && b.scenarios ? b.scenarios : [];
     return ids.filter(function (id) {
@@ -492,6 +492,12 @@
     canvas.height = Math.round(viewH * dpr);
   }
 
+  function facingFromVelocity(vx, vy) {
+    if (Math.abs(vy) >= Math.abs(vx) && vy) return vy < 0 ? "up" : "down";
+    if (vx) return vx < 0 ? "left" : "right";
+    return player.facing || "down";
+  }
+
   function tryMove(dx, dy) {
     if (!solidAt(player.x + dx, player.y, 12)) player.x += dx;
     if (!solidAt(player.x, player.y + dy, 12)) player.y += dy;
@@ -535,8 +541,7 @@
         vy /= len;
         tryMove(vx * SPEED * scale * dt, vy * SPEED * scale * dt);
         player.walk += dt;
-        if (Math.abs(vy) > Math.abs(vx) && vy) player.facing = vy < 0 ? "up" : "down";
-        else if (vx) player.facing = vx < 0 ? "left" : "right";
+        player.facing = facingFromVelocity(vx, vy);
         player.dir = player.facing === "left" ? -1 : 1;
         if (toastEl && !toastEl.hidden && player.walk > 0.4) hideToast();
       } else {
@@ -621,6 +626,7 @@
       const homeArt = window.HEAN_ASSETS && window.HEAN_ASSETS.scenes && window.HEAN_ASSETS.scenes.home;
       if (area === "home" && homeArt && homeArt.complete && homeArt.naturalWidth) pen.drawImage(homeArt, 0, 0, HOME.w, HOME.h);
       else window.HEAN_ROOMS.paint(pen, area === "home" ? "home" : roomKind, time);
+      if (area === "home") drawHomeTv();
       if (area === "room") drawCompanyBoard();
     }
     const queue = [];
@@ -687,22 +693,32 @@
   function drawSky() {
     const hour = taipeiHour();
     const dark = hour >= 19 || hour < 5 ? 0.5 : (hour >= 17 || hour < 6 ? 0.22 : 0);
-    if (dark > 0 && area === "town") {
+    if (dark > 0 && (area === "town" || area === "home")) {
       pen.fillStyle = "rgba(16, 22, 48, " + dark + ")";
       pen.fillRect(0, 0, viewW, viewH);
       pen.save();
       pen.translate(-cam.x * zoom, -cam.y * zoom);
       pen.scale(zoom, zoom);
       pen.globalCompositeOperation = "lighter";
-      LAMPS.forEach(function (lamp) {
-        const glow = pen.createRadialGradient(lamp.x, lamp.y - 10, 4, lamp.x, lamp.y - 10, 70);
-        glow.addColorStop(0, "rgba(255, 214, 140, 0.9)");
-        glow.addColorStop(1, "rgba(255, 214, 140, 0)");
+      if (area === "town") {
+        LAMPS.forEach(function (lamp) {
+          const glow = pen.createRadialGradient(lamp.x, lamp.y - 10, 4, lamp.x, lamp.y - 10, 70);
+          glow.addColorStop(0, "rgba(255, 214, 140, 0.9)");
+          glow.addColorStop(1, "rgba(255, 214, 140, 0)");
+          pen.fillStyle = glow;
+          pen.beginPath();
+          pen.arc(lamp.x, lamp.y - 10, 70, 0, Math.PI * 2);
+          pen.fill();
+        });
+      } else {
+        const glow = pen.createRadialGradient(610, 250, 8, 610, 250, 160);
+        glow.addColorStop(0, "rgba(255, 220, 160, 0.45)");
+        glow.addColorStop(1, "rgba(255, 220, 160, 0)");
         pen.fillStyle = glow;
         pen.beginPath();
-        pen.arc(lamp.x, lamp.y - 10, 70, 0, Math.PI * 2);
+        pen.arc(610, 250, 160, 0, Math.PI * 2);
         pen.fill();
-      });
+      }
       pen.restore();
     }
     const raining = Math.floor((time + 70) / 24) % 8 === 0;
@@ -1146,16 +1162,17 @@
     const id = isPlayer ? "player-" + role : scenarioId;
     const moving = isPlayer && player.walk > 0.02 && !reduceMotion;
     const facing = isPlayer ? (player.facing || "down") : "down";
-    const aiH = area === "home" ? 210 : area === "town" ? 124 : 108;
+    const aiH = area === "home" ? 280 : area === "town" ? 124 : 108;
     const aiW = aiH * 256 / 320;
     const aiFrame = moving ? Math.floor(player.walk * 8) % 4 : 1;
+    const step = moving && (facing === "up" || facing === "down") ? (aiFrame % 2 === 0 ? 4 : -3) : 0;
     pen.save();
     pen.translate(x, y);
     pen.fillStyle = "rgba(48, 32, 20, 0.22)";
     pen.beginPath();
     pen.ellipse(2, 5, 16, 6, 0, 0, Math.PI * 2);
     pen.fill();
-    if (window.HEAN_CHARS.drawSheet(pen, id, facing, aiFrame, -aiW / 2, -aiH + 6, aiW, aiH)) {
+    if (window.HEAN_CHARS.drawSheet(pen, id, facing, aiFrame, -aiW / 2, -aiH + 6 + step, aiW, aiH)) {
       pen.restore();
       if (!isPlayer) markSpot(x, y, scenarioId);
       return;
@@ -1200,7 +1217,7 @@
   function markSpot(x, y, scenarioId) {
     const quest = currentQuest();
     const bang = quest && quest.spot === scenarioId;
-    if (!byId[scenarioId] && scenarioId !== "chest-park" && scenarioId !== "bank-counter") return;
+    if (!byId[scenarioId] && scenarioId !== "chest-park" && scenarioId !== "bank-counter" && scenarioId !== "home-tv") return;
     if (scenarioId !== "chest-park" && scenarioId !== "bank-counter" && recordOf(scenarioId)) {
       drawMark(x, y - 96, recordOf(scenarioId));
       return;
@@ -1661,12 +1678,14 @@
     const done = Object.keys(state.progress[role] || {}).length;
     const level = levelOf();
     const now = new Date();
-    const clock = new Intl.DateTimeFormat("en-GB", {
-      timeZone: "Asia/Taipei",
-      hour: "2-digit",
-      minute: "2-digit",
-      hourCycle: "h23"
-    }).format(now);
+    const clock = hourOverride != null
+      ? String(taipeiHour()).padStart(2, "0") + ":00"
+      : new Intl.DateTimeFormat("en-GB", {
+        timeZone: "Asia/Taipei",
+        hour: "2-digit",
+        minute: "2-digit",
+        hourCycle: "h23"
+      }).format(now);
     document.getElementById("st-season").textContent = seasonName();
     document.getElementById("st-time").textContent = clock;
     document.getElementById("st-place").textContent = placeName();
@@ -1919,11 +1938,124 @@
     openDialog(id);
   }
 
+  const TOWN_NEWS = [
+    { title: "強制險先保人，不保你的車門", body: "法定強制責任保險著重交通事故裡受害人的傷害、失能和死亡，有項目和金額上限。對方的車、自己的車體，要各自看有沒有另外的契約。這則只把類型分開，不是在推薦某一張產險。" },
+    { title: "任意責任和車體損失是另外兩件事", body: "任意責任看的是對別人的賠償責任。車體損失看的是自己的車子。兩者都不會因為已經有強制險就自動附帶。沒寫進契約的項目，就還沒有那一項約定。" },
+    { title: "收到保單後，通常有十天可以撤銷", body: "人身保險契約多半給要保人一段時間重讀條款。這段期間一般從收到保單的翌日起算十天。要在期限內用書面辦，不是傳一句話就算完成。過了期限，就要看解約的約定，拿回的錢通常不一樣。" },
+    { title: "文件齊了，給付期限才開始算", body: "申請保險金時，公司一般要在文件齊全後的一定天數內給付，實務上常見的是十五天。缺診斷、收據或事故說明的那段時間，通常不計入。先把缺的清單補齊，比一直催一句「怎麼還沒下來」有用。" },
+    { title: "可以請求的時候起，兩年不要放著", body: "保險金的請求權有時效。從可以請求的時候起算，兩年沒有行使，權利可能消滅。日期以契約和當時法令為準。手邊有拒絕通知時，先把日期標下來。" },
+    { title: "住宅火險不會自動連淹水一起保", body: "住宅火災保險保的是條款列出的火災和其他約定事故。颱風灌進家裡的水，要另外看有沒有寫颱風、洪水或水漬。沒有寫，就不要當成已經有。" },
+    { title: "地震基本保險有額度，不是照市價重建", body: "住宅地震基本保險處理的是地震引起的特定住宅損失，有法令規定的金額上限，通常還有臨時住宿等分項。它不會照房屋市價整棟重置，也不處理和地震無關的淹水。" },
+    { title: "實支實付先對收據，不是花多少領多少", body: "依實際花費補償的醫療契約，常有金額上限、就醫方式和除外項目。收據用來證明花了什麼，還要對得上條款裡的費用定義。對不上或超過上限的部分，不會因為有一張收據就自動給付。" },
+    { title: "住院日額看的是住得符不符合定義", body: "日額通常不是把收據加總。它看這次有沒有符合條款對住院的定義，以及住了幾天。可以在門診做完的檢查，公司可能主張不算。醫師的醫囑和病歷要一起對。" },
+    { title: "告知要照實寫，時間久了也不會自動消失", body: "要保時問過的病和正在吃的藥，勾了沒有，之後申請時仍可能被拿出來看。不要以為過了幾年，當初沒寫的事就不再算數。先把問卷和病歷對一下。" },
+    { title: "受益人不會因為離婚就自動改掉", body: "身故受益人寫的是誰，就要向公司辦變更才會改。離婚、再婚都不會讓欄位自己換人。指定好受益人，也不等於稅的事情就不用再管。" },
+    { title: "除外寫在後面，沒翻到仍然算數", body: "條款通常先寫保什麼，再寫不保什麼。沒有出現在給付範圍裡的項目，不會因為沒有逐條寫「這也不賠」就變成要賠。看的時候把定義、給付和除外放在一起。" },
+    { when: "day", title: "白天出門，先記得保單放在哪裡", body: "真的要申請時，最常缺的是保單號碼和當時的條款。今天先看一眼放在哪個抽屜。這則只是整理文件的提醒，不叫你加保什麼。" },
+    { when: "night", title: "夜路看腳邊，條款也看沒翻到的那頁", body: "晚上視線差，容易忽略地上的東西。保單也一樣：沒讀到的除外，不會因為天黑就消失。明天白天再把那一頁補上。" },
+    { when: "rain", title: "下雨路滑，沒寫進契約的事故不會跟著變有", body: "今天小鎮在下雨。路滑要自己留神。契約沒有約定的事故，也不會因為下過雨就變成已經有保障。" },
+    { title: "小鎮銀行的定存只是練習", body: "小鎮幣不能換成真實的錢。定存有上限，提前結束只退本金，期滿多給的枚數也不是真實利息。名義上多一點，若物價漲得更快，買得到的東西仍可能變少。" },
+    { title: "外圍三處還沒全開", body: "公園要到 Lv.3，湖畔要到 Lv.5，山上步道要到 Lv.8。等級來自第一次完成情境。鎖住的地方，地圖上會標等級。" },
+    { roles: ["consumer"], title: "給客戶：先分成人的傷害、別人的車、自己的車", body: "三件事可能對應三種契約。問的時候分開問，不要用「我有保險」一句話帶過。沒有投保的那一項，可能要自己負擔。" },
+    { roles: ["agent"], title: "給業務員：除外要在說明時講出來", body: "不要用「一定賠」或貶低別家來促成。親晤和親簽沒完成，筆就停下來。健康欄由本人勾，不要代填。" },
+    { roles: ["broker"], title: "給經紀人：比較條款前先說會不會拿佣金", body: "報酬怎麼算，要在服務做完之前講清楚。委託範圍不含結果保證。對不上的項目留在「條款沒寫到」那一欄，不要填成已經有。" }
+  ];
+
+  function newsPool() {
+    const hour = taipeiHour();
+    const night = hour >= 19 || hour < 5;
+    const rain = Math.floor((time + 70) / 24) % 8 === 0;
+    const list = TOWN_NEWS.filter(function (item) {
+      if (item.roles && role && item.roles.indexOf(role) === -1) return false;
+      if (item.when === "night" && !night) return false;
+      if (item.when === "day" && night) return false;
+      if (item.when === "rain" && !rain) return false;
+      return true;
+    });
+    return list.length ? list : TOWN_NEWS.filter(function (item) { return !item.when && !item.roles; });
+  }
+
+  function newsIndex() {
+    const list = newsPool();
+    return Math.floor(time / 6) % list.length;
+  }
+
+  function drawHomeTv() {
+    const x = 552;
+    const y = 198;
+    const w = 114;
+    const h = 86;
+    const list = newsPool();
+    const item = list[newsIndex()];
+    pen.save();
+    pen.beginPath();
+    pen.rect(x, y, w, h);
+    pen.clip();
+    const glow = 0.82 + Math.sin(time * 7) * 0.08;
+    pen.fillStyle = "rgba(16, 42, 32, " + glow + ")";
+    pen.fillRect(x, y, w, h);
+    pen.strokeStyle = "rgba(190, 255, 210, 0.09)";
+    pen.lineWidth = 1;
+    for (let i = 3; i < h; i += 4) {
+      pen.beginPath();
+      pen.moveTo(x, y + i);
+      pen.lineTo(x + w, y + i);
+      pen.stroke();
+    }
+    pen.fillStyle = "rgba(214, 255, 220, 0.95)";
+    pen.font = "700 11px " + FONT;
+    pen.textAlign = "left";
+    pen.textBaseline = "middle";
+    pen.fillText("小鎮新聞", x + 6, y + 14);
+    const line = item.title + "    ·    ";
+    const shift = reduceMotion ? 0 : (time * 28) % 400;
+    pen.font = "600 12px " + FONT;
+    pen.fillText(line, x + 8 - shift, y + 40);
+    pen.fillText(line, x + 8 - shift + pen.measureText(line).width, y + 40);
+    pen.restore();
+    pen.strokeStyle = "rgba(214, 255, 210, 0.35)";
+    pen.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
+  }
+
+  function openNews() {
+    const list = newsPool();
+    let index = newsIndex();
+    const card = document.createElement("div");
+    const heading = document.createElement("p");
+    heading.className = "body-copy";
+    const detail = document.createElement("p");
+    detail.className = "body-copy";
+    function paint() {
+      const item = list[index];
+      heading.textContent = item.title;
+      detail.textContent = item.body;
+    }
+    paint();
+    const next = document.createElement("button");
+    next.type = "button";
+    next.className = "ghost";
+    next.textContent = "下一則";
+    next.addEventListener("click", function () {
+      index = (index + 1) % list.length;
+      paint();
+    });
+    fillFacility("小鎮新聞", [
+      para("電視裡的字是小鎮自己編的觀念提醒。不是哪一家公司的廣告，也不保證給付或報酬。實際是否給付，以保單條款為準。"),
+      heading,
+      detail,
+      next
+    ]);
+  }
+
   function talk() {
     if (uiOpen()) return;
     const near = nearestSpot();
     if (!near) {
-      showToast("再靠近門口或村民一點。");
+      showToast("再靠近門口、電視或村民一點。");
+      return;
+    }
+    if (near.facility === "tv") {
+      openNews();
       return;
     }
     if (near.facility === "bank" || near.id === "bank-counter") {

@@ -569,20 +569,11 @@
     if (!image || !image.complete || !image.naturalWidth) return false;
     const rowName = { down: 0, left: 1, right: 2, up: 3 };
     const row = rowName[facing] == null ? 0 : rowName[facing];
-    const fh = image.naturalHeight / 4;
-    let cols = 1;
-    let best = Infinity;
-    for (let c = 1; c <= 8; c++) {
-      if (image.naturalWidth % c) continue;
-      const fwTry = image.naturalWidth / c;
-      const err = Math.abs(fwTry / fh - 256 / 320);
-      if (err < best) {
-        best = err;
-        cols = c;
-      }
-    }
+    const rows = 4;
+    const fh = image.naturalHeight / rows;
+    const cols = Math.max(1, Math.round(image.naturalWidth / 256) === 4 ? 4 : Math.round(image.naturalWidth / (fh * 256 / 320)));
     const fw = image.naturalWidth / cols;
-    const col = Math.abs(frame) % cols;
+    const col = Math.abs(Math.floor(frame)) % cols;
     ctx.drawImage(image, col * fw, row * fh, fw, fh, dx, dy, dw, dh);
     return true;
   }
