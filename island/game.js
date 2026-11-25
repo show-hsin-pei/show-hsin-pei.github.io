@@ -1,13 +1,13 @@
 (function () {
-  const VERSION = "2.7";
+  const VERSION = "2.8";
   const UPDATED = "2026年11月25日";
   const KEY = "hean-village-v1";
   const FONT = '"Noto Sans TC", "PingFang TC", "Microsoft JhengHei", "WenQuanYi Micro Hei", sans-serif';
   const WORLD = { w: 2300, h: 1960 };
   const CS = 20;
   const SPEED = 100;
-  const STEP = 14;
-  const BOB = 1.6;
+  const STEP = 12;
+  const FOOT_Y = 296;
   const REACH = 64;
 
   const ROLE_NAME = {
@@ -595,17 +595,7 @@
 
   function gaitFrame(travel, moving) {
     if (!moving) return 1;
-    const p = (travel % (STEP * 4)) / (STEP * 4);
-    if (p < 0.22) return 0;
-    if (p < 0.5) return 1;
-    if (p < 0.72) return 2;
-    return 3;
-  }
-
-  function gaitLift(travel, moving) {
-    if (!moving) return 0;
-    const p = (travel % (STEP * 4)) / (STEP * 4);
-    return Math.abs(Math.sin(p * Math.PI * 2));
+    return Math.floor(travel / STEP) % 4;
   }
 
   function tryMove(dx, dy) {
@@ -1329,18 +1319,17 @@
     const moving = !reduceMotion && (isPlayer ? player.moving : !!(walker && walker.moving));
     const facing = isPlayer ? (player.facing || "down") : (walker && walker.facing) || "down";
     const travel = isPlayer ? player.travel : (walker && walker.travel) || 0;
-    const aiH = area === "town" ? 88 : 118;
+    const aiH = area === "town" ? 84 : 112;
     const aiW = aiH * 256 / 320;
     const aiFrame = gaitFrame(travel, moving);
-    const lift = reduceMotion ? 0 : gaitLift(travel, moving);
+    const foot = -aiH * FOOT_Y / 320;
     pen.save();
     pen.translate(x, y);
-    pen.fillStyle = "rgba(48, 32, 20, " + (0.2 + 0.08 * (1 - lift)) + ")";
+    pen.fillStyle = "rgba(48, 32, 20, 0.24)";
     pen.beginPath();
-    pen.ellipse(0, 3, aiW * 0.2 * (1 - 0.16 * lift), 4.2 * (1 - 0.12 * lift), 0, 0, Math.PI * 2);
+    pen.ellipse(0, 2, aiW * 0.18, 4, 0, 0, Math.PI * 2);
     pen.fill();
-    pen.translate(0, -BOB * lift);
-    if (window.HEAN_CHARS.drawSheet(pen, id, facing, aiFrame, -aiW / 2, -aiH, aiW, aiH)) {
+    if (window.HEAN_CHARS.drawSheet(pen, id, facing, aiFrame, -aiW / 2, foot, aiW, aiH)) {
       pen.restore();
       if (!isPlayer) markSpot(x, y, scenarioId);
       return;
@@ -2979,8 +2968,8 @@
         pendingRole = btn.getAttribute("data-role");
         document.getElementById("gender-role").textContent = ROLE_NAME[pendingRole];
         const base = pendingRole === "agent" ? "agent" : pendingRole === "broker" ? "broker" : "client";
-        document.getElementById("gender-art-m").src = "assets/characters/" + base + "_m.webp?v=2.7";
-        document.getElementById("gender-art-f").src = "assets/characters/" + base + "_f.webp?v=2.7";
+        document.getElementById("gender-art-m").src = "assets/characters/" + base + "_m.webp?v=2.8";
+        document.getElementById("gender-art-f").src = "assets/characters/" + base + "_f.webp?v=2.8";
         document.getElementById("gender-pick").hidden = false;
       });
     });

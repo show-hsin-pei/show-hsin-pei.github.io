@@ -63,9 +63,10 @@
       window.HEAN_ASSETS.portraits[id] = make("portraits/" + id + ".webp");
       pending.push(sheets[id], window.HEAN_ASSETS.full[id], window.HEAN_ASSETS.portraits[id]);
     });
-    sheets[role] = sheets[role + "_m"];
-    window.HEAN_ASSETS.full[role] = window.HEAN_ASSETS.full[role + "_m"];
-    window.HEAN_ASSETS.portraits[role] = window.HEAN_ASSETS.portraits[role + "_m"];
+    const alias = role === "client" ? "_f" : "_m";
+    sheets[role] = sheets[role + alias];
+    window.HEAN_ASSETS.full[role] = window.HEAN_ASSETS.full[role + alias];
+    window.HEAN_ASSETS.portraits[role] = window.HEAN_ASSETS.portraits[role + alias];
   });
   ["npc_grandma", "npc_mom", "npc_office", "npc_shopkeeper", "npc_grandpa"].forEach(function (id) {
     sheets[id] = make("sprites/" + id + "_walk.webp");

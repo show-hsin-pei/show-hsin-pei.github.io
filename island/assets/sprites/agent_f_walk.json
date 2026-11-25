@@ -1,0 +1,38 @@
+{
+  "character": "agent_f",
+  "image": "agent_f_walk.png",
+  "frame_width": 256,
+  "frame_height": 320,
+  "columns": 4,
+  "rows": 4,
+  "row_order": [
+    "down",
+    "left",
+    "right",
+    "up"
+  ],
+  "column_order": [
+    "left_foot",
+    "pass_a",
+    "right_foot",
+    "pass_b"
+  ],
+  "frame_count": 4,
+  "right_is_flipped_from_left": true,
+  "suggested_fps": 8,
+  "loop": true,
+  "playback": "Play each row left to right and loop. Column 0=left-foot stride, 1=passing A, 2=right-foot stride, 3=passing B. Right-facing frames are a horizontal flip of left. Feet share one baseline with no walk bob.",
+  "walk_bob_px": {
+    "stride": 0,
+    "pass": 0,
+    "peak_to_peak": 0
+  },
+  "head_body_ratio": 2.2,
+  "target_body_height_px": 256.0,
+  "alignment": "Foot-midpoint centered on x=128. All frames share one baseline (no bob).",
+  "fix_notes": {
+    "left": "hem-locked programmatic leg split+rotate: original stride as col0; col2 far foot forward (near z-on-top, slightly lighter); col1/3 angled passing; upper body/skirt/jacket kept from original. Residual thin hem seam may remain. Arms not reversed (held props stay).",
+    "down": "kept existing opposite-foot cycle",
+    "up": "kept existing opposite-lift cycle"
+  }
+}
