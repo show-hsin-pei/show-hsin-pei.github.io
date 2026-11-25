@@ -1,5 +1,5 @@
 (function () {
-  const VERSION = "2.8";
+  const VERSION = "2.9";
   const UPDATED = "2026年11月25日";
   const KEY = "hean-village-v1";
   const FONT = '"Noto Sans TC", "PingFang TC", "Microsoft JhengHei", "WenQuanYi Micro Hei", sans-serif';
@@ -1319,7 +1319,7 @@
     const moving = !reduceMotion && (isPlayer ? player.moving : !!(walker && walker.moving));
     const facing = isPlayer ? (player.facing || "down") : (walker && walker.facing) || "down";
     const travel = isPlayer ? player.travel : (walker && walker.travel) || 0;
-    const aiH = area === "town" ? 84 : 112;
+    const aiH = area === "town" ? 176 : 236;
     const aiW = aiH * 256 / 320;
     const aiFrame = gaitFrame(travel, moving);
     const foot = -aiH * FOOT_Y / 320;
@@ -2968,8 +2968,8 @@
         pendingRole = btn.getAttribute("data-role");
         document.getElementById("gender-role").textContent = ROLE_NAME[pendingRole];
         const base = pendingRole === "agent" ? "agent" : pendingRole === "broker" ? "broker" : "client";
-        document.getElementById("gender-art-m").src = "assets/characters/" + base + "_m.webp?v=2.8";
-        document.getElementById("gender-art-f").src = "assets/characters/" + base + "_f.webp?v=2.8";
+        document.getElementById("gender-art-m").src = "assets/characters/" + base + "_m.webp?v=2.9";
+        document.getElementById("gender-art-f").src = "assets/characters/" + base + "_f.webp?v=2.9";
         document.getElementById("gender-pick").hidden = false;
       });
     });

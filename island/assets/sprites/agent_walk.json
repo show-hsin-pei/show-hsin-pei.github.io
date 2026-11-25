@@ -1,0 +1,39 @@
+{
+  "character": "agent",
+  "image": "agent_walk.png",
+  "frame_width": 256,
+  "frame_height": 320,
+  "columns": 4,
+  "rows": 4,
+  "row_order": [
+    "down",
+    "left",
+    "right",
+    "up"
+  ],
+  "column_order": [
+    "left_foot",
+    "pass_a",
+    "right_foot",
+    "pass_b"
+  ],
+  "frame_count": 4,
+  "right_is_flipped_from_left": true,
+  "suggested_fps": 8,
+  "loop": true,
+  "playback": "Play each row left to right and loop. Column 0=left-foot stride, 1=passing A, 2=right-foot stride, 3=passing B. Right-facing frames are a horizontal flip of left. Feet share one baseline with no walk bob.",
+  "walk_bob_px": {
+    "stride": 0,
+    "pass": 0,
+    "peak_to_peak": 0
+  },
+  "head_body_ratio": 2.2,
+  "target_body_height_px": 122.5,
+  "alignment": "Foot-midpoint centered on x=128. All frames share one baseline (no bob).",
+  "fix_notes": {
+    "body": "Programmatic horizontal widen (~25–35% mid-torso, milder shoulders) of the v2.8 2.2-head set. Faces and hair composited from the original. Agents are no longer specially slim.",
+    "left": "Widened hem-locked side cycle, opposite arm swing (left foot forward ⇒ right/far arm forward; pass frames hang), packed at the same body height as front/back, hem/jacket-to-leg cuts closed only where garment sits above a leg (stride gap left open).",
+    "down": "Widened the v2.8 foot-swap down frames; light opposite silhouette shift on stride frames when the arm shell is clean.",
+    "up": "Widened the v2.8 foot-swap up frames, with the same light front/back arm shift when clean."
+  }
+}

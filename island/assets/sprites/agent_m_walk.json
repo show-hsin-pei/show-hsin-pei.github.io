@@ -28,11 +28,12 @@
     "peak_to_peak": 0
   },
   "head_body_ratio": 2.2,
-  "target_body_height_px": 256.0,
+  "target_body_height_px": 122.5,
   "alignment": "Foot-midpoint centered on x=128. All frames share one baseline (no bob).",
   "fix_notes": {
-    "left": "hem-locked programmatic leg split+rotate: original stride as col0; col2 far foot forward (near z-on-top, slightly lighter); col1/3 angled passing; upper body/skirt/jacket kept from original. Residual thin hem seam may remain. Arms not reversed (held props stay).",
-    "down": "front-view leg mirror around hip (true opposite feet)",
-    "up": "kept existing opposite-lift cycle"
+    "body": "Programmatic horizontal widen (~25–35% mid-torso, milder shoulders) of the v2.8 2.2-head set. Faces and hair composited from the original. Agents are no longer specially slim.",
+    "left": "Widened hem-locked side cycle, opposite arm swing (left foot forward ⇒ right/far arm forward; pass frames hang), packed at the same body height as front/back, hem/jacket-to-leg cuts closed only where garment sits above a leg (stride gap left open).",
+    "down": "Widened the v2.8 foot-swap down frames; light opposite silhouette shift on stride frames when the arm shell is clean.",
+    "up": "Widened the v2.8 foot-swap up frames, with the same light front/back arm shift when clean."
   }
 }
