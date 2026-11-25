@@ -1,5 +1,5 @@
 (function () {
-  const VERSION = "2.3";
+  const VERSION = "2.4";
   const UPDATED = "2026年11月25日";
   const KEY = "hean-village-v1";
   const FONT = '"Noto Sans TC", "PingFang TC", "Microsoft JhengHei", "WenQuanYi Micro Hei", sans-serif';
@@ -24,11 +24,11 @@
   const BUILDINGS = [
     { name: "我家", zone: "住宅區", x: 160, y: 40, w: 270, h: 280, roof: "#c4a36a", wall: "#fff8ef", kind: "home", art: true, scenarios: [] },
     { name: "鎮民中心", zone: "住宅區", x: 380, y: 1320, w: 220, h: 150, roof: "#c4a36a", wall: "#fffaf3", kind: "office", card: "center", scenarios: [] },
-    { name: "周家", zone: "住宅區", x: 1868, y: 1148, w: 156, h: 132, roof: "#b98362", wall: "#fff8ef", kind: "house", card: "zhou", scenarios: [] },
-    { name: "吳家", zone: "住宅區", x: 2036, y: 1148, w: 148, h: 132, roof: "#c4896a", wall: "#fff6f0", kind: "house", card: "wu", scenarios: [] },
+    { name: "周家", zone: "住宅區", x: 1868, y: 1148, w: 156, h: 132, roof: "#b98362", wall: "#fff8ef", kind: "house", card: "zhou", door: { x: 1946, y: 1330 }, scenarios: [] },
+    { name: "吳家", zone: "住宅區", x: 2036, y: 1148, w: 148, h: 132, roof: "#c4896a", wall: "#fff6f0", kind: "house", card: "wu", door: { x: 2110, y: 1330 }, scenarios: [] },
     { name: "銀行", zone: "商店街", x: 980, y: 90, w: 210, h: 200, roof: "#8d6b45", wall: "#f7f3ea", kind: "bank", scenarios: [] },
     { name: "超商", zone: "商店街", x: 1230, y: 100, w: 180, h: 180, roof: "#d2b48a", wall: "#fffaf3", kind: "stall", card: "shop", scenarios: [] },
-    { name: "車行", zone: "商店街", x: 1520, y: 70, w: 200, h: 200, roof: "#c4a36a", wall: "#f3eee6", kind: "garage", scenarios: [] },
+    { name: "車行", zone: "商店街", x: 1520, y: 70, w: 200, h: 176, roof: "#c4a36a", wall: "#f3eee6", kind: "garage", door: { x: 1620, y: 368 }, scenarios: [] },
     { name: "寵物店", zone: "商店街", x: 970, y: 590, w: 190, h: 210, roof: "#c48a6a", wall: "#fff6ea", kind: "stall", scenarios: ["pet-visit"] },
     { name: "事務所", zone: "商店街", x: 1880, y: 500, w: 176, h: 156, roof: "#b98362", wall: "#f6f1e6", kind: "office", card: "office", scenarios: ["broker-fee", "broker-commission", "broker-conflict", "broker-scope"] },
     { name: "小鎮公所", zone: "公家機關區", x: 1180, y: 500, w: 340, h: 280, roof: "#c4a36a", wall: "#f7f1e8", kind: "office", card: "hall", scenarios: [] },
@@ -41,7 +41,7 @@
     { name: "岸蒲產物", zone: "產險街", x: 1175, y: 1165, w: 175, h: 155, roof: "#5f7d62", wall: "#f2f6f1", sign: "#5f7d62", theme: "車險分項", motto: "這裡常把強制險、任意責任和車體分開。", kind: "office", scenarios: ["compulsory-auto", "garage-voluntary"] },
     { name: "原麓產物", zone: "產險街", x: 1380, y: 1165, w: 170, h: 155, roof: "#a67c52", wall: "#f8f3ea", sign: "#a67c52", theme: "責任範圍", motto: "這裡常先問責任險保的是誰的責任。", kind: "office", scenarios: ["liability-who", "liability-cap"] },
     { name: "澄川產物", zone: "產險街", x: 1575, y: 1165, w: 165, h: 155, roof: "#6d90a0", wall: "#f2f7f8", sign: "#6d90a0", theme: "意外定義", motto: "這裡常把意外和疾病的定義分開。", kind: "office", scenarios: ["exclusion-print", "complaint-path"] },
-    { name: "醫院", zone: "醫院", x: 50, y: 1280, w: 290, h: 180, roof: "#d7e4ea", wall: "#f7fbff", kind: "clinic", scenarios: [] },
+    { name: "醫院", zone: "醫院", x: 48, y: 1296, w: 168, h: 156, roof: "#d7e4ea", wall: "#f7fbff", kind: "clinic", scenarios: [] },
     { name: "公園亭", zone: "公園", x: 1900, y: 40, w: 200, h: 240, roof: "#7f8f78", wall: "#f7f3ea", kind: "stall", level: 3, scenarios: ["park-walk"] },
     { name: "湖畔亭", zone: "湖畔", x: 90, y: 1748, w: 130, h: 100, roof: "#7aa0b0", wall: "#f7f4ee", kind: "house", level: 5, door: { x: 420, y: 1608 }, scenarios: ["lake-rest"] },
     { name: "步道牌", zone: "山上步道", x: 1768, y: 1496, w: 52, h: 86, roof: "#8d6a45", wall: "#f6efe4", kind: "stall", level: 8, door: { x: 1660, y: 1508 }, scenarios: ["trail-sign"] }
@@ -64,9 +64,9 @@
     { x: 2100, y: 1480 }, { x: 2200, y: 400 }, { x: 600, y: 1500 }, { x: 1500, y: 700 }
   ];
   const SOLIDS = [
-    { x: 1568, y: 292, w: 42, h: 26 },
-    { x: 1620, y: 292, w: 42, h: 26 },
-    { x: 1672, y: 292, w: 42, h: 26 },
+    { x: 1556, y: 318, w: 52, h: 28 },
+    { x: 1624, y: 318, w: 52, h: 28 },
+    { x: 1692, y: 318, w: 52, h: 28 },
     { x: 2060, y: 1680, w: 240, h: 280 },
     { x: 120, y: 80, w: 210, h: 16 },
     { x: 120, y: 80, w: 16, h: 160 }
@@ -155,11 +155,11 @@
   let zoom = 1;
   let dpr = 1;
   const cam = { x: 0, y: 0 };
-  const player = { x: 400, y: 320, dir: 1, walk: 0, facing: "down" };
+  const player = { x: 400, y: 320, dir: 1, walk: 0, travel: 0, moving: false, facing: "down" };
   const walkers = [
-    { id: "walker-1", name: "路人", x: 640, y: 410, min: 460, max: 860, axis: "x", dir: 1, speed: 28, line: "收據先留著。實支實付還要對得上條款裡的費用，不是花多少領多少。" },
-    { id: "walker-2", name: "路人", x: 1200, y: 940, min: 1000, max: 1500, axis: "x", dir: -1, speed: 24, line: "強制險著重人的傷害。車子本身要看另外的契約有沒有寫。" },
-    { id: "walker-3", name: "路人", x: 1300, y: 1420, min: 1100, max: 1680, axis: "x", dir: 1, speed: 22, line: "受益人不會因為家裡的事自己改掉，要向公司辦變更。" },
+    { id: "walker-1", name: "路人", x: 640, y: 410, min: 460, max: 860, axis: "x", dir: 1, speed: 28, travel: 0, moving: false, facing: "right", line: "收據先留著。實支實付還要對得上條款裡的費用，不是花多少領多少。" },
+    { id: "walker-2", name: "路人", x: 1200, y: 940, min: 1000, max: 1500, axis: "x", dir: -1, speed: 24, travel: 0, moving: false, facing: "left", line: "強制險著重人的傷害。車子本身要看另外的契約有沒有寫。" },
+    { id: "walker-3", name: "路人", x: 1300, y: 1420, min: 1100, max: 1680, axis: "x", dir: 1, speed: 22, travel: 0, moving: false, facing: "right", line: "受益人不會因為家裡的事自己改掉，要向公司辦變更。" },
     { id: "dog", name: "小狗", x: 1120, y: 800, min: 1000, max: 1320, axis: "x", dir: 1, speed: 34, animal: true, line: "今天摸一下就好，明天還可以再摸。" },
     { id: "cat", name: "小貓", x: 1040, y: 1120, min: 980, max: 1240, axis: "x", dir: -1, speed: 18, animal: true, line: "明天再來摸一次。" }
   ];
@@ -367,7 +367,7 @@
       for (let c = 0; c < cols; c++) {
         const x = c * CS + CS / 2;
         const y = r * CS + CS / 2;
-        if (solidAt(x, y, 11)) blocked[r * cols + c] = 1;
+        if (solidAt(x, y, 12)) blocked[r * cols + c] = 1;
       }
     }
   }
@@ -622,14 +622,22 @@
       if (len > 0) {
         vx /= len;
         vy /= len;
+        const beforeX = player.x;
+        const beforeY = player.y;
         tryMove(vx * SPEED * scale * dt, vy * SPEED * scale * dt);
-        player.walk += dt;
+        const moved = Math.hypot(player.x - beforeX, player.y - beforeY);
+        player.moving = moved > 0.15;
+        if (player.moving) {
+          player.travel += moved;
+          player.walk += dt;
+          player.facing = facingFromVelocity(vx, vy);
+          player.dir = player.facing === "left" ? -1 : 1;
+        }
         if (player.walk > 0.35) markTutorial(0);
-        player.facing = facingFromVelocity(vx, vy);
-        player.dir = player.facing === "left" ? -1 : 1;
         if (toastEl && !toastEl.hidden && player.walk > 0.4) hideToast();
       } else {
         player.walk = 0;
+        player.moving = false;
       }
     }
     const worldW = viewW / zoom;
@@ -671,11 +679,21 @@
       settleDeposits();
       noteZoneVisit();
       walkers.forEach(function (w) {
+        const sheet = window.HEAN_ART && window.HEAN_ART.sheet(w.id);
+        if (w.animal || !sheet || !sheet.complete || !sheet.naturalWidth) {
+          w.moving = false;
+          return;
+        }
+        const before = w[w.axis];
         w[w.axis] += w.dir * w.speed * dt;
         if (w[w.axis] < w.min || w[w.axis] > w.max) {
           w.dir *= -1;
           w[w.axis] = clamp(w[w.axis], w.min, w.max);
         }
+        const moved = Math.abs(w[w.axis] - before);
+        w.travel += moved;
+        w.moving = moved > 0.15;
+        w.facing = w.axis === "y" ? (w.dir < 0 ? "up" : "down") : (w.dir < 0 ? "left" : "right");
       });
     }
     const near = nearestSpot();
@@ -1257,26 +1275,27 @@
       return;
     }
     const id = isPlayer ? "player-" + role : scenarioId;
-    const moving = isPlayer && player.walk > 0.02 && !reduceMotion;
-    const facing = isPlayer ? (player.facing || "down") : "down";
+    const walker = !isPlayer ? walkers.find(function (w) { return w.id === scenarioId; }) : null;
+    const moving = !reduceMotion && (isPlayer ? player.moving : !!(walker && walker.moving));
+    const facing = isPlayer ? (player.facing || "down") : (walker && walker.facing) || "down";
+    const travel = isPlayer ? player.travel : (walker && walker.travel) || 0;
     const aiH = area === "home" ? 248 : area === "town" ? 112 : 124;
     const aiW = aiH * 256 / 320;
-    const aiFrame = moving ? Math.floor(player.walk * 8) % 4 : 1;
-    const step = moving && (facing === "up" || facing === "down") ? (aiFrame % 2 === 0 ? 4 : -3) : 0;
+    const aiFrame = moving ? Math.floor(travel / 22) % 4 : 1;
     pen.save();
     pen.translate(x, y);
     pen.fillStyle = "rgba(48, 32, 20, 0.22)";
     pen.beginPath();
-    pen.ellipse(2, 5, 16, 6, 0, 0, Math.PI * 2);
+    pen.ellipse(0, 2, aiW * 0.22, 5, 0, 0, Math.PI * 2);
     pen.fill();
-    if (window.HEAN_CHARS.drawSheet(pen, id, facing, aiFrame, -aiW / 2, -aiH + 6 + step, aiW, aiH)) {
+    if (window.HEAN_CHARS.drawSheet(pen, id, facing, aiFrame, -aiW / 2, -aiH, aiW, aiH)) {
       pen.restore();
       if (!isPlayer) markSpot(x, y, scenarioId);
       return;
     }
     pen.restore();
-    const frame = moving ? Math.floor(((player.walk % 0.56) / 0.56) * 16) % 16 : 0;
-    const bob = !moving && !reduceMotion ? Math.sin(time * 1.7 + index) * 1.15 : 0;
+    const frame = moving ? Math.floor(travel / 22) % 16 : 0;
+    const bob = 0;
     const pack = window.HEAN_CHARS.sheetFor(id);
     if (!pack) return;
     const sw = window.HEAN_CHARS.SW;
@@ -1464,11 +1483,15 @@
         const door = b.door || { x: b.x + b.w / 2, y: b.y + b.h + 18 };
         const dx = door.x;
         const dy = door.y;
-        if (Math.abs(player.x - dx) < 26 && Math.abs(player.y - dy) < 22) {
-          if (b.kind === "home") setArea("home", 470, 1040);
-          else setArea("room", 220, 400, b.kind, { x: dx, y: dy + 50 }, b.name);
-          return;
-        }
+        if (Math.abs(player.x - dx) >= 28 || Math.abs(player.y - dy) >= 24) continue;
+        if (b.level && levelOf() < b.level) continue;
+        const goal = path && path.length ? path[path.length - 1] : null;
+        const ledHere = goal && Math.hypot(goal.x - dx, goal.y - dy) < 48;
+        if (path && path.length && !ledHere) continue;
+        if ((!path || !path.length) && player.moving) continue;
+        if (b.kind === "home") setArea("home", 470, 1040);
+        else setArea("room", 220, 400, b.kind, { x: dx, y: dy + 50 }, b.name);
+        return;
       }
     } else if (area === "home" && player.x > 410 && player.x < 548 && player.y > 980 && player.y < 1220) {
       setArea("town", 290, 400);
@@ -2720,8 +2743,8 @@
         pendingRole = btn.getAttribute("data-role");
         document.getElementById("gender-role").textContent = ROLE_NAME[pendingRole];
         const base = pendingRole === "agent" ? "agent" : pendingRole === "broker" ? "broker" : "client";
-        document.getElementById("gender-art-m").src = "assets/characters/" + base + "_m.webp?v=2.3";
-        document.getElementById("gender-art-f").src = "assets/characters/" + base + "_f.webp?v=2.3";
+        document.getElementById("gender-art-m").src = "assets/characters/" + base + "_m.webp?v=2.4";
+        document.getElementById("gender-art-f").src = "assets/characters/" + base + "_f.webp?v=2.4";
         document.getElementById("gender-pick").hidden = false;
       });
     });
@@ -3197,6 +3220,9 @@
     scenariosFor: scenariosFor,
     VERSION: VERSION,
     setArea: setArea,
+    guideTo: guideTo,
+    names: function () { return BUILDINGS.map(function (b) { return b.name; }); },
+    place: function () { return roomName; },
     cam: function () { return { x: cam.x, y: cam.y }; },
     zoom: function () { return zoom; },
     setHour: function (hour) { hourOverride = hour; },
