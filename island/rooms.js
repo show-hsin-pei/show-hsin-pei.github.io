@@ -1,6 +1,8 @@
 /* 藝世錄保險小鎮的家與室內。全部是這支程式自己畫的，沒有外來圖片。 */
 (function () {
-  const ROOM = { w: 440, h: 720 };
+  const ROOM = { w: 720, h: 920 };
+  const HOME = { w: 720, h: 920 };
+  const homeTv = { x: 500, y: 146, w: 164, h: 96 };
   const TIPS = [
     "先把每個月一定要花的錢寫下來",
     "緊急用的錢，放在取得方便的地方",
@@ -25,43 +27,13 @@
   function blocks(kind) {
     if (kind === "home") {
       return [
-        { x: 16, y: 318, w: 248, h: 400 },
-        { x: 64, y: 230, w: 150, h: 110 },
-        { x: 498, y: 292, w: 196, h: 118 },
-        { x: 328, y: 508, w: 196, h: 158 },
-        { x: 548, y: 700, w: 100, h: 72 },
-        { x: 188, y: 860, w: 168, h: 360 },
-        { x: 0, y: 1160, w: 400, h: 120 },
-        { x: 560, y: 1100, w: 160, h: 180 }
-      ];
-    }
-    if (kind === "clinic") {
-      return [
-        { x: 18, y: 148, w: 230, h: 108 },
-        { x: 248, y: 168, w: 150, h: 96 }
-      ];
-    }
-    if (kind === "tea") {
-      return [
-        { x: 16, y: 156, w: 176, h: 92 },
-        { x: 236, y: 156, w: 176, h: 92 }
-      ];
-    }
-    if (kind === "garage") {
-      return [
-        { x: 16, y: 148, w: 220, h: 100 },
-        { x: 268, y: 176, w: 140, h: 110 }
-      ];
-    }
-    if (kind === "stall") {
-      return [
-        { x: 16, y: 150, w: 220, h: 100 },
-        { x: 286, y: 188, w: 86, h: 80 }
+        { x: 8, y: 300, w: 100, h: 200 },
+        { x: 478, y: 232, w: 196, h: 48 },
+        { x: 40, y: 648, w: 160, h: 58 }
       ];
     }
     return [
-      { x: 16, y: 148, w: 228, h: 104 },
-      { x: 292, y: 168, w: 96, h: 86 }
+      { x: 36, y: 228, w: 230, h: 64 }
     ];
   }
 
@@ -250,35 +222,125 @@
     if (label) ctx.fillText(label, x + 43, y - 10);
   }
 
+  function clock(ctx, x, y) {
+    ctx.fillStyle = "#f7f1e6";
+    ctx.beginPath();
+    ctx.arc(x, y, 22, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "#6a4632";
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x, y - 12);
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + 8, y + 2);
+    ctx.stroke();
+  }
+
+  function curtains(ctx, x, y, w, h) {
+    windowView(ctx, x + 18, y + 8, w - 36, h - 16);
+    ctx.fillStyle = "#c4896a";
+    ctx.fillRect(x, y, 22, h);
+    ctx.fillRect(x + w - 22, y, 22, h);
+    ctx.fillStyle = "#a86b52";
+    ctx.fillRect(x, y, w, 10);
+  }
+
+  function frontalTv(ctx, screen) {
+    roundRect(ctx, screen.x - 18, screen.y + screen.h - 4, screen.w + 36, 42, 6);
+    ctx.fillStyle = "#8d5a3a";
+    ctx.fill();
+    ctx.fillStyle = "#c4a36a";
+    ctx.fillRect(screen.x + 8, screen.y + screen.h + 10, 36, 6);
+    ctx.fillRect(screen.x + screen.w - 28, screen.y + screen.h + 10, 28, 6);
+    roundRect(ctx, screen.x - 8, screen.y - 8, screen.w + 16, screen.h + 16, 6);
+    ctx.fillStyle = "#3f342c";
+    ctx.fill();
+    roundRect(ctx, screen.x, screen.y, screen.w, screen.h, 3);
+    ctx.fillStyle = "#16382c";
+    ctx.fill();
+  }
+
+  function lowTable(ctx, x, y) {
+    roundRect(ctx, x, y, 150, 48, 8);
+    ctx.fillStyle = "#c4925a";
+    ctx.fill();
+    ctx.fillStyle = "#e7d3b0";
+    ctx.fillRect(x + 16, y + 12, 36, 8);
+    ctx.fillRect(x + 22, y + 22, 28, 6);
+    ctx.fillStyle = "#f7f1e6";
+    ctx.fillRect(x + 70, y + 14, 42, 18);
+  }
+
+  function doormat(ctx, x, y) {
+    roundRect(ctx, x, y, 92, 52, 6);
+    ctx.fillStyle = "#c4a36a";
+    ctx.fill();
+    ctx.strokeStyle = "#8d6b45";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+
+  function euroRug(ctx, x, y, w, h) {
+    roundRect(ctx, x, y, w, h, 8);
+    ctx.fillStyle = "#9a3d3d";
+    ctx.fill();
+    ctx.strokeStyle = "#f0d7b4";
+    ctx.lineWidth = 4;
+    ctx.stroke();
+    ctx.strokeStyle = "rgba(255, 236, 214, 0.55)";
+    ctx.lineWidth = 1.2;
+    for (let i = 0; i < 4; i++) {
+      ctx.strokeRect(x + 18 + i * ((w - 36) / 4), y + 16, (w - 52) / 4, h - 32);
+    }
+  }
+
+  function paintShell(ctx, w, h) {
+    ctx.fillStyle = "#6a4632";
+    ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = "#8a5e42";
+    ctx.fillRect(16, 16, w - 32, 150);
+    wallpaper(ctx, 28, 156, w - 56, 96);
+    woodFloor(ctx, 28, 252, w - 56, h - 252 - 78);
+    ctx.fillStyle = "#6a4632";
+    ctx.fillRect(0, h - 78, w, 78);
+    ctx.fillRect(0, 0, 18, h);
+    ctx.fillRect(w - 18, 0, 18, h);
+  }
+
   function paintHome(ctx, now) {
-    const w = ROOM.w;
-    const h = ROOM.h;
-    frame(ctx, w, h);
-    woodFloor(ctx, 18, 18, w - 36, h - 36);
-    wallpaper(ctx, 24, 24, w - 48, 150);
-    windowView(ctx, 120, 36, 200, 92);
-    bed(ctx, 22, 168);
-    tv(ctx, 224, 162);
-    plant(ctx, 28, 330);
-    rug(ctx, 70, 390, 300, 130);
-    table(ctx, 130, 400);
-    cushion(ctx, 340, 540);
-    door(ctx, (w - 96) / 2, h - 108, "出門");
+    const w = HOME.w;
+    const h = HOME.h;
+    paintShell(ctx, w, h);
+    curtains(ctx, 46, 164, 150, 74);
+    clock(ctx, 280, 196);
+    roundRect(ctx, 8, 300, 108, 200, 8);
+    ctx.fillStyle = "#8d5a3a";
+    ctx.fill();
+    roundRect(ctx, 20, 318, 84, 166, 6);
+    ctx.fillStyle = "#d5e4ee";
+    ctx.fill();
+    ctx.fillStyle = "#f7f1e6";
+    ctx.fillRect(30, 328, 46, 22);
+    euroRug(ctx, 188, 400, 340, 150);
+    lowTable(ctx, 42, 650);
+    frontalTv(ctx, homeTv);
+    doormat(ctx, (w - 92) / 2, h - 132);
     const shift = reduceShift(now);
-    const screenX = 260;
-    const screenY = 170;
+    const screen = homeTv;
     ctx.save();
-    roundRect(ctx, screenX, screenY, 124, 46, 4);
+    roundRect(ctx, screen.x, screen.y, screen.w, screen.h, 3);
     ctx.clip();
     ctx.fillStyle = "#d7f0c8";
-    ctx.font = "600 15px \"Noto Sans TC\", \"Microsoft JhengHei\", \"WenQuanYi Micro Hei\", sans-serif";
+    ctx.font = "600 13px \"Noto Sans TC\", \"Microsoft JhengHei\", \"WenQuanYi Micro Hei\", sans-serif";
     ctx.textAlign = "left";
     ctx.textBaseline = "middle";
     const line = TIPS.join("    ·    ") + "    ·    ";
     const width = ctx.measureText(line).width;
-    const x0 = screenX - (shift % width);
-    ctx.fillText(line, x0, screenY + 23);
-    ctx.fillText(line, x0 + width, screenY + 23);
+    const x0 = screen.x + 8 - (shift % width);
+    ctx.fillText(line, x0, screen.y + screen.h / 2);
+    ctx.fillText(line, x0 + width, screen.y + screen.h / 2);
     ctx.restore();
   }
 
@@ -289,58 +351,32 @@
   function paintInterior(ctx, kind) {
     const w = ROOM.w;
     const h = ROOM.h;
-    frame(ctx, w, h);
-    woodFloor(ctx, 18, 18, w - 36, h - 36);
-    wallpaper(ctx, 24, 24, w - 48, 168);
-    windowView(ctx, 96, 32, 248, 112);
-    if (kind === "clinic") {
-      counter(ctx, 18, 148, "#f7f3ea", "藥櫃");
-      plant(ctx, 300, 210);
-      rug(ctx, 70, 390, 300, 140);
-      stool(ctx, 120, 268);
-    } else if (kind === "tea") {
-      table(ctx, 28, 168);
-      table(ctx, 248, 168);
-      plant(ctx, 200, 300);
-      stool(ctx, 90, 268);
-      stool(ctx, 310, 268);
-    } else if (kind === "garage") {
-      counter(ctx, 16, 148, "#d7d2c8", "工具");
-      ctx.fillStyle = "#4a4a4a";
-      ctx.beginPath();
-      ctx.ellipse(340, 250, 42, 42, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = "#c4a36a";
-      ctx.lineWidth = 7;
-      ctx.stroke();
-      stool(ctx, 130, 270);
-    } else if (kind === "stall") {
-      counter(ctx, 16, 150, "#f3e6cf", "文件");
-      plant(ctx, 330, 200);
-      stool(ctx, 120, 272);
-    } else {
-      counter(ctx, 16, 148, "#f6f1e6", "桌子");
-      plant(ctx, 330, 190);
-      rug(ctx, 60, 400, 320, 150);
-      stool(ctx, 118, 272);
-    }
-    door(ctx, (w - 96) / 2, h - 108, "回小鎮");
+    const look = {
+      clinic: ["#f7f3ea", "藥櫃"],
+      tea: ["#f3e6cf", "茶桌"],
+      garage: ["#d7d2c8", "工具"],
+      stall: ["#f3e6cf", "文件"]
+    }[kind] || ["#f6f1e6", "桌子"];
+    paintShell(ctx, w, h);
+    curtains(ctx, 46, 164, 150, 74);
+    clock(ctx, 620, 198);
+    counter(ctx, 40, 236, look[0], look[1]);
+    euroRug(ctx, 210, 420, 300, 130);
+    stool(ctx, 150, 330);
+    doormat(ctx, (w - 92) / 2, h - 132);
   }
 
   function counter(ctx, x, y, color, label) {
-    roundRect(ctx, x, y, 228, 100, 10);
+    roundRect(ctx, x, y, 220, 52, 8);
     ctx.fillStyle = "#8d5a3a";
     ctx.fill();
-    roundRect(ctx, x + 10, y + 12, 208, 52, 8);
+    roundRect(ctx, x + 8, y + 8, 204, 28, 6);
     ctx.fillStyle = color;
     ctx.fill();
-    ctx.fillStyle = "#6a4632";
-    ctx.fillRect(x + 18, y + 78, 12, 22);
-    ctx.fillRect(x + 198, y + 78, 12, 22);
     ctx.fillStyle = "#5c4636";
-    ctx.font = "600 16px \"Noto Sans TC\", \"Microsoft JhengHei\", \"WenQuanYi Micro Hei\", sans-serif";
+    ctx.font = "600 15px \"Noto Sans TC\", \"Microsoft JhengHei\", \"WenQuanYi Micro Hei\", sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText(label, x + 114, y + 44);
+    ctx.fillText(label, x + 110, y + 28);
   }
 
   function stool(ctx, x, y) {
@@ -358,5 +394,5 @@
     else paintInterior(ctx, kind);
   }
 
-  window.HEAN_ROOMS = { ROOM: ROOM, blocks: blocks, paint: paint };
+  window.HEAN_ROOMS = { ROOM: ROOM, HOME: HOME, homeTv: homeTv, blocks: blocks, paint: paint };
 })();

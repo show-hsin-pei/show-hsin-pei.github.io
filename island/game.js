@@ -1,5 +1,5 @@
 (function () {
-  const VERSION = "2.6";
+  const VERSION = "2.7";
   const UPDATED = "2026年11月25日";
   const KEY = "hean-village-v1";
   const FONT = '"Noto Sans TC", "PingFang TC", "Microsoft JhengHei", "WenQuanYi Micro Hei", sans-serif';
@@ -166,7 +166,7 @@
     { id: "cat", name: "小貓", x: 1040, y: 1120, min: 980, max: 1240, axis: "x", dir: -1, speed: 18, animal: true, line: "明天再來摸一次。" }
   ];
   const ROOM = window.HEAN_ROOMS.ROOM;
-  const HOME = { w: 720, h: 1280 };
+  const HOME = window.HEAN_ROOMS.HOME;
   const PLAZA = { x: 0, y: 0, w: 720, h: 1280 };
   let plazaBits = null;
   let plazaCW = 45;
@@ -516,17 +516,20 @@
       walkers.forEach(function (w) { list.push(w); });
       return list;
     }
-    if (area === "home") return [{ id: "home-tv", name: "電視", x: 590, y: 448, facility: "tv" }];
+    if (area === "home") {
+      const screen = window.HEAN_ROOMS.homeTv;
+      return [{ id: "home-tv", name: "電視", x: screen.x + screen.w / 2, y: screen.y + screen.h + 120, facility: "tv" }];
+    }
     const b = BUILDINGS.find(function (item) { return item.name === roomName; });
     const ids = (b && b.scenarios ? b.scenarios : []).filter(function (id) {
       const sc = byId[id];
       return sc && sc.roles.indexOf(role) !== -1;
     });
     const spots = ids.map(function (id, index) {
-      return { id: id, x: 78 + (index % 3) * 130, y: 300 + Math.floor(index / 3) * 140 };
+      return { id: id, x: 160 + (index % 3) * 160, y: 480 + Math.floor(index / 3) * 120 };
     });
-    if (b && b.card === "office" && !ids.length) spots.push({ id: "info-office", name: "櫃台", x: 220, y: 360, facility: "card" });
-    if (b && b.card && b.card !== "office") spots.push({ id: "info-" + (b.card === "center" ? "center" : b.card === "shop" ? "shop" : b.card === "zhou" ? "zhou" : b.card === "wu" ? "wu" : "center"), name: "說明", x: 220, y: 360, facility: "card" });
+    if (b && b.card === "office" && !ids.length) spots.push({ id: "info-office", name: "櫃台", x: 150, y: 340, facility: "card" });
+    if (b && b.card && b.card !== "office") spots.push({ id: "info-" + (b.card === "center" ? "center" : b.card === "shop" ? "shop" : b.card === "zhou" ? "zhou" : b.card === "wu" ? "wu" : "center"), name: "說明", x: 150, y: 340, facility: "card" });
     return spots;
   }
 
@@ -682,7 +685,7 @@
     if (area === "town") {
       cam.x = camFocus(player.x, focusX, viewW, box.w);
       cam.y = camFocus(player.y, focusY, viewH, box.h);
-    } else if (area === "home" && viewW < 760) {
+    } else if ((area === "home" || area === "room") && viewW < 760) {
       const pad = roomPad();
       const drawnH = box.h * zoom;
       const pinned = viewH - pad.bottom - drawnH;
@@ -748,13 +751,16 @@
       talkBtn.disabled = true;
       talkBtn.textContent = "對話";
       talkBtn.classList.remove("ready");
+      talkBtn.classList.remove("watch");
     } else {
       const sc = byId[near.id];
-      nearLabel.hidden = false;
-      nearLabel.textContent = (sc ? sc.speaker : near.name) + " · 可以互動";
+      const watching = near.facility === "tv";
+      nearLabel.hidden = watching;
+      if (!watching) nearLabel.textContent = (sc ? sc.speaker : near.name) + " · 可以互動";
       talkBtn.disabled = false;
       talkBtn.textContent = talkVerb(near);
-      talkBtn.classList.add("ready");
+      talkBtn.classList.toggle("ready", !watching);
+      talkBtn.classList.toggle("watch", watching);
     }
   }
 
@@ -784,9 +790,7 @@
       pen.drawImage(townLayer, 0, 0);
       drawLife();
     } else {
-      const homeArt = window.HEAN_ASSETS && window.HEAN_ASSETS.scenes && window.HEAN_ASSETS.scenes.home;
-      if (area === "home" && homeArt && homeArt.complete && homeArt.naturalWidth) pen.drawImage(homeArt, 0, 0, HOME.w, HOME.h);
-      else window.HEAN_ROOMS.paint(pen, area === "home" ? "home" : roomKind, time);
+      window.HEAN_ROOMS.paint(pen, area === "home" ? "home" : roomKind, time);
       if (area === "home") drawHomeTv();
       if (area === "room") drawCompanyBoard();
     }
@@ -1325,7 +1329,7 @@
     const moving = !reduceMotion && (isPlayer ? player.moving : !!(walker && walker.moving));
     const facing = isPlayer ? (player.facing || "down") : (walker && walker.facing) || "down";
     const travel = isPlayer ? player.travel : (walker && walker.travel) || 0;
-    const aiH = area === "home" ? 168 : area === "town" ? 88 : 112;
+    const aiH = area === "town" ? 88 : 118;
     const aiW = aiH * 256 / 320;
     const aiFrame = gaitFrame(travel, moving);
     const lift = reduceMotion ? 0 : gaitLift(travel, moving);
@@ -1477,7 +1481,7 @@
     const availW = Math.max(80, viewW - 12);
     const availH = Math.max(80, viewH - pad.top - pad.bottom);
     const contain = Math.min(availW / box.w, availH / box.h);
-    if (area === "home" && viewW < 760) return viewW / box.w;
+    if (viewW < 760 && (area === "home" || area === "room")) return Math.min(viewW / box.w, availH / box.h);
     return contain;
   }
 
@@ -1551,7 +1555,7 @@
   }
 
   function inExitZone() {
-    if (area === "home") return player.x > 410 && player.x < 548 && player.y > 980 && player.y < 1220;
+    if (area === "home") return player.y > 840 && Math.abs(player.x - HOME.w / 2) < 70;
     if (area === "room") return player.y > bounds().h - 48 && Math.abs(player.x - bounds().w / 2) < 46;
     return false;
   }
@@ -1579,8 +1583,8 @@
       if (path && path.length && !ledHere) return;
       if ((!path || !path.length) && player.moving) return;
       triggerArmed = false;
-      if (hit.kind === "home") setArea("home", 430, 860);
-      else setArea("room", 220, 360, hit.kind, { x: door.x, y: door.y + 78 }, hit.name);
+      if (hit.kind === "home") setArea("home", 582, 400);
+      else setArea("room", 480, 520, hit.kind, { x: door.x, y: door.y + 78 }, hit.name);
       return;
     }
     if (!inExitZone()) {
@@ -2097,7 +2101,7 @@
     playScreen.hidden = false;
     document.body.classList.remove("ui-busy");
     applyFont();
-    setArea("home", 430, 860);
+    setArea("home", 582, 400);
     resize();
     paintAvatar();
     renderHud();
@@ -2412,10 +2416,11 @@
   }
 
   function drawHomeTv() {
-    const x = 511;
-    const y = 201;
-    const w = 177;
-    const h = 92;
+    const screen = window.HEAN_ROOMS.homeTv;
+    const x = screen.x;
+    const y = screen.y;
+    const w = screen.w;
+    const h = screen.h;
     const list = newsPool();
     const item = list[newsIndex()] || list[0];
     if (!item || !item.title) return;
@@ -2450,33 +2455,109 @@
   }
 
   function openNews() {
-    const list = newsPool();
-    let index = newsIndex();
-    const card = document.createElement("div");
-    const heading = document.createElement("p");
-    heading.className = "body-copy";
+    const today = newsPool().filter(function (item) { return !item.roles; });
+    const ideas = newsPool().filter(function (item) { return item.roles || !item.when; });
+    let tab = "today";
+    let index = newsIndex() % Math.max(1, today.length);
+    const wrap = document.createElement("div");
+    wrap.className = "news-card";
+    const top = document.createElement("div");
+    top.className = "news-top";
+    const anchor = document.createElement("canvas");
+    anchor.width = 96;
+    anchor.height = 120;
+    anchor.className = "news-anchor";
+    paintAnchor(anchor);
+    const intro = document.createElement("div");
+    const live = document.createElement("span");
+    live.className = "news-live";
+    live.textContent = "直播";
+    const lead = document.createElement("p");
+    lead.className = "body-copy";
+    lead.textContent = "今天的導語：這些字是小鎮自己寫的觀念提醒，不是廣告，也不保證給付。實際是否給付，以保單條款為準。";
+    intro.appendChild(live);
+    intro.appendChild(lead);
+    top.appendChild(anchor);
+    top.appendChild(intro);
+    const tabs = document.createElement("div");
+    tabs.className = "news-tabs";
+    const tabToday = document.createElement("button");
+    const tabIdeas = document.createElement("button");
+    tabToday.type = "button";
+    tabIdeas.type = "button";
+    tabToday.textContent = "今日";
+    tabIdeas.textContent = "觀念";
+    tabs.appendChild(tabToday);
+    tabs.appendChild(tabIdeas);
+    const nav = document.createElement("div");
+    nav.className = "news-nav";
+    const prev = document.createElement("button");
+    const next = document.createElement("button");
+    const page = document.createElement("span");
+    prev.type = "button";
+    next.type = "button";
+    prev.className = "ghost";
+    next.className = "ghost";
+    prev.textContent = "上一則";
+    next.textContent = "下一則";
+    nav.appendChild(prev);
+    nav.appendChild(page);
+    nav.appendChild(next);
+    const listEl = document.createElement("div");
+    listEl.className = "news-list";
     const detail = document.createElement("p");
     detail.className = "body-copy";
-    function paint() {
-      const item = list[index];
-      heading.textContent = item.title;
-      detail.textContent = item.body;
+    function currentList() {
+      const list = tab === "today" ? today : ideas;
+      return list.length ? list : today;
     }
+    function paint() {
+      const list = currentList();
+      index = positiveMod(index, list.length);
+      const item = list[index];
+      tabToday.className = tab === "today" ? "news-tab on" : "news-tab";
+      tabIdeas.className = tab === "ideas" ? "news-tab on" : "news-tab";
+      page.textContent = (index + 1) + " / " + list.length;
+      detail.textContent = item.body;
+      listEl.replaceChildren();
+      list.forEach(function (entry, entryIndex) {
+        const row = document.createElement("button");
+        row.type = "button";
+        row.className = entryIndex === index ? "news-row on" : "news-row";
+        row.textContent = entry.title;
+        row.addEventListener("click", function () {
+          index = entryIndex;
+          paint();
+        });
+        listEl.appendChild(row);
+      });
+    }
+    tabToday.addEventListener("click", function () { tab = "today"; index = 0; paint(); });
+    tabIdeas.addEventListener("click", function () { tab = "ideas"; index = 0; paint(); });
+    prev.addEventListener("click", function () { index -= 1; paint(); });
+    next.addEventListener("click", function () { index += 1; paint(); });
     paint();
-    const next = document.createElement("button");
-    next.type = "button";
-    next.className = "ghost";
-    next.textContent = "下一則";
-    next.addEventListener("click", function () {
-      index = (index + 1) % list.length;
-      paint();
-    });
-    fillFacility("小鎮新聞", [
-      para("電視裡的字是小鎮自己編的觀念提醒。不是哪一家公司的廣告，也不保證給付或報酬。實際是否給付，以保單條款為準。"),
-      heading,
-      detail,
-      next
-    ]);
+    wrap.appendChild(top);
+    wrap.appendChild(tabs);
+    wrap.appendChild(nav);
+    wrap.appendChild(detail);
+    wrap.appendChild(listEl);
+    fillFacility("小鎮新聞", [wrap], "關電視");
+  }
+
+  function paintAnchor(canvas) {
+    const g = canvas.getContext("2d");
+    g.clearRect(0, 0, canvas.width, canvas.height);
+    g.fillStyle = "#f3e6cf";
+    g.fillRect(0, 0, canvas.width, canvas.height);
+    g.fillStyle = "#3f342c";
+    g.beginPath();
+    g.arc(48, 36, 16, 0, Math.PI * 2);
+    g.fill();
+    g.fillStyle = "#8d5a3a";
+    g.fillRect(30, 56, 36, 40);
+    g.fillStyle = "#f7f1e6";
+    g.fillRect(40, 64, 16, 22);
   }
 
   function basisText(id) {
@@ -2495,7 +2576,8 @@
     if (!near) return "對話";
     if (near.animal) return "摸摸";
     if (near.facility === "chest") return "查看";
-    if (near.facility === "tv" || near.facility === "card" || near.facility === "bank") return "查看";
+    if (near.facility === "tv") return "看電視";
+    if (near.facility === "card" || near.facility === "bank") return "查看";
     const building = BUILDINGS.find(function (b) {
       const door = b.door || { x: b.x + b.w / 2, y: b.y + b.h + 18 };
       return Math.hypot(door.x - player.x, door.y - player.y) < 36 && Math.hypot(near.x - door.x, near.y - door.y) < 48;
@@ -2647,11 +2729,16 @@
     showReward("小鎮幣 +8");
   }
 
-  function fillFacility(title, nodes) {
+  function fillFacility(title, nodes, closeLabel) {
     document.getElementById("facility-title").textContent = title;
     const body = document.getElementById("facility-body");
     body.replaceChildren();
     nodes.forEach(function (node) { body.appendChild(node); });
+    const close = document.getElementById("facility-close");
+    close.textContent = closeLabel || "×";
+    close.setAttribute("aria-label", closeLabel || "關閉");
+    close.classList.toggle("text-close", !!closeLabel);
+    document.getElementById("facility").classList.toggle("news-open", !!closeLabel);
     document.getElementById("facility").hidden = false;
     document.body.classList.add("ui-busy");
   }
@@ -2892,8 +2979,8 @@
         pendingRole = btn.getAttribute("data-role");
         document.getElementById("gender-role").textContent = ROLE_NAME[pendingRole];
         const base = pendingRole === "agent" ? "agent" : pendingRole === "broker" ? "broker" : "client";
-        document.getElementById("gender-art-m").src = "assets/characters/" + base + "_m.webp?v=2.6";
-        document.getElementById("gender-art-f").src = "assets/characters/" + base + "_f.webp?v=2.6";
+        document.getElementById("gender-art-m").src = "assets/characters/" + base + "_m.webp?v=2.7";
+        document.getElementById("gender-art-f").src = "assets/characters/" + base + "_f.webp?v=2.7";
         document.getElementById("gender-pick").hidden = false;
       });
     });
@@ -3016,6 +3103,7 @@
     });
     document.getElementById("facility-close").addEventListener("click", function () {
       document.getElementById("facility").hidden = true;
+      document.getElementById("facility").classList.remove("news-open");
       if (dialog.hidden && progress.hidden) document.body.classList.remove("ui-busy");
       renderHud();
     });
