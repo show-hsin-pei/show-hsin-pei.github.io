@@ -1,5 +1,5 @@
 (function () {
-  const VERSION = "2.11";
+  const VERSION = "3.0";
   const UPDATED = "2026年11月25日";
   const KEY = "hean-village-v1";
   const FONT = '"Noto Sans TC", "PingFang TC", "Microsoft JhengHei", "WenQuanYi Micro Hei", sans-serif';
@@ -34,7 +34,9 @@
     { name: "銀行", zone: "商店街", x: 980, y: 90, w: 210, h: 200, roof: "#8d6b45", wall: "#f7f3ea", kind: "bank", scenarios: [] },
     { name: "超商", zone: "商店街", x: 1230, y: 100, w: 180, h: 180, roof: "#d2b48a", wall: "#fffaf3", kind: "stall", card: "shop", scenarios: [] },
     { name: "車行", zone: "商店街", x: 1520, y: 70, w: 200, h: 176, roof: "#c4a36a", wall: "#f3eee6", kind: "garage", door: { x: 1620, y: 368 }, scenarios: [] },
-    { name: "寵物店", zone: "商店街", x: 970, y: 590, w: 190, h: 210, roof: "#c48a6a", wall: "#fff6ea", kind: "stall", scenarios: ["pet-visit"] },
+    { name: "寵物店", zone: "商店街", x: 970, y: 590, w: 190, h: 210, roof: "#c48a6a", wall: "#fff6ea", kind: "stall", level: 2, scenarios: ["pet-visit"] },
+    { name: "小鎮法院", zone: "公家機關區", x: 640, y: 1288, w: 160, h: 110, roof: "#8d6b45", wall: "#f7f1e8", kind: "office", door: { x: 720, y: 1368 }, scenarios: [] },
+    { name: "蘆灣港亭", zone: "蘆灣", x: 2000, y: 720, w: 180, h: 130, roof: "#6d90a0", wall: "#f2f7f8", kind: "stall", level: 6, door: { x: 2090, y: 892 }, scenarios: [] },
     { name: "事務所", zone: "商店街", x: 1880, y: 500, w: 176, h: 156, roof: "#b98362", wall: "#f6f1e6", kind: "office", card: "office", scenarios: ["broker-fee", "broker-commission", "broker-conflict", "broker-scope"] },
     { name: "小鎮公所", zone: "公家機關區", x: 1180, y: 500, w: 340, h: 280, roof: "#c4a36a", wall: "#f7f1e8", kind: "office", card: "hall", scenarios: [] },
     { name: "勞工服務站", zone: "公家機關區", x: 1880, y: 860, w: 176, h: 140, roof: "#c4a36a", wall: "#fffaf3", kind: "office", card: "labor", scenarios: [] },
@@ -90,9 +92,19 @@
   const ZONES = [
     { name: "公園", level: 3, x: 1840, y: 40, w: 440, h: 500, back: { x: 1700, y: 390 } },
     { name: "湖畔", level: 5, x: 40, y: 1572, w: 780, h: 360, back: { x: 240, y: 1460 } },
-    { name: "山上步道", level: 8, x: 1840, y: 1572, w: 440, h: 360, back: { x: 1600, y: 1460 } }
+    { name: "山上步道", level: 8, x: 1840, y: 1572, w: 440, h: 360, back: { x: 1600, y: 1460 } },
+    { name: "蘆灣", level: 6, x: 1920, y: 640, w: 360, h: 360, back: { x: 1795, y: 700 } }
   ];
-  const LEVEL_XP = [0, 20, 40, 80, 120, 160, 200, 260];
+  const LEVEL_XP = [0, 30, 70, 120, 180, 250, 340, 450, 580, 730];
+  const LEVEL_TITLE = ["新鎮民", "認得路", "會看條款", "問得出口", "走得到湖", "蘆灣開放", "客戶簿", "步道熟", "鎮裡熟", "條款熟"];
+  const LEVEL_NOTE = {
+    2: "寵物店和打工開了。",
+    3: "公園的霧散了。",
+    5: "湖畔可以走進去。",
+    6: "蘆灣港口開了，碼頭可以釣魚。",
+    7: "業務員和經紀人可以用客戶簿。",
+    8: "山上步道的霧散了。"
+  };
   const DAY_MS = 30000;
 
   const FLOWERS = [];
@@ -138,6 +150,9 @@
   ].forEach(function (item) {
     SPOTS.push({ id: item[0], name: "寶箱", x: item[1], y: item[2], facility: "chest", zone: item[3] });
   });
+  SPOTS.push({ id: "hen", name: "小雞", x: 760, y: 500, animal: true, line: "今天啄過手心了。" });
+  SPOTS.push({ id: "fish-river", name: "河邊", x: 480, y: 1532, facility: "fish" });
+  SPOTS.push({ id: "fish-dock", name: "碼頭", x: 2090, y: 860, facility: "fish", zone: "蘆灣" });
   const CHEST_POINTS = {
     "住宅區": [{ x: 480, y: 395 }, { x: 720, y: 395 }, { x: 275, y: 520 }, { x: 560, y: 1532 }, { x: 400, y: 1532 }],
     "商店街": [{ x: 1080, y: 395 }, { x: 1280, y: 395 }, { x: 1500, y: 395 }, { x: 1680, y: 395 }, { x: 935, y: 560 }],
@@ -520,6 +535,10 @@
     if (!role) return [];
     if (area === "town") {
       const list = SPOTS.filter(function (s) {
+        if (s.zone) {
+          const gate = ZONES.find(function (item) { return item.name === s.zone; });
+          if (gate && levelOf() < gate.level) return false;
+        }
         if (s.facility === "chest") {
           const phase = chestPhase(s.id);
           if (phase.hidden) return false;
@@ -531,6 +550,7 @@
         return sc && sc.roles.indexOf(role) !== -1;
       });
       walkers.forEach(function (w) { list.push(w); });
+      if (role === "agent" || role === "broker") list.push({ id: "town-client", name: "鎮民", x: 820, y: 430, facility: "client" });
       return list;
     }
     if (area === "home") {
@@ -555,6 +575,8 @@
     if (b && b.name === "寵物店") spots.push({ id: "pet-shelf", name: "用品", x: 220, y: 460, facility: "pet" });
     const cover = b && coverSoldHere(b.name);
     if (cover) spots.push({ id: "cover-" + cover, name: "練習保單", x: 560, y: 400, facility: "cover", cover: cover });
+    if (b && (b.name === "暖禾人壽" || b.name === "石橋產物" || b.name === "澄川產物")) spots.push({ id: "hearing", name: "聽說法", x: 300, y: 520, facility: "hearing" });
+    if (b && b.name === "小鎮法院") spots.push({ id: "court", name: "宣判", x: 360, y: 480, facility: "court" });
     return spots;
   }
 
@@ -764,7 +786,13 @@
       });
     }
     const near = nearestSpot();
-    if (!near) {
+    if (!near && area !== "town" && inExitZone()) {
+      nearLabel.hidden = true;
+      talkBtn.disabled = false;
+      talkBtn.textContent = "出門";
+      talkBtn.classList.add("ready");
+      talkBtn.classList.remove("watch");
+    } else if (!near) {
       nearLabel.hidden = true;
       talkBtn.disabled = true;
       talkBtn.textContent = "對話";
@@ -807,6 +835,7 @@
       }
       pen.drawImage(townLayer, 0, 0);
       drawLife();
+      drawFog();
     } else {
       window.HEAN_ROOMS.paint(pen, area === "home" ? "home" : roomKind, time);
       if (area === "home") {
@@ -821,6 +850,8 @@
         y: s.y,
         draw: function () {
           if (s.animal === true && s.id === "dog") drawDog(s.x, s.y);
+          else if (s.id === "hen") drawHen(s.x, s.y);
+          else if (s.facility === "fish") drawRod(s.x, s.y);
           else if (s.animal) drawCat(s.x, s.y);
           else if (s.facility === "chest") drawChest(s.x, s.y, s.id);
           else drawPerson(s.x, s.y, i, false, s.id);
@@ -862,6 +893,46 @@
     pen.fillStyle = "#8d6b45";
     pen.beginPath();
     pen.arc(bx, by, 2.2, 0, Math.PI * 2);
+    pen.fill();
+  }
+
+  function drawFog() {
+    if (!role) return;
+    const level = levelOf();
+    ZONES.forEach(function (zone) {
+      if (level >= zone.level) return;
+      pen.fillStyle = "rgba(226, 228, 222, 0.55)";
+      pen.fillRect(zone.x, zone.y, zone.w, zone.h);
+    });
+  }
+
+  function drawHen(x, y) {
+    pen.fillStyle = "rgba(40,28,18,0.2)";
+    pen.beginPath();
+    pen.ellipse(x, y + 6, 10, 3, 0, 0, Math.PI * 2);
+    pen.fill();
+    pen.fillStyle = "#e6c36a";
+    pen.beginPath();
+    pen.ellipse(x, y, 9, 7, 0, 0, Math.PI * 2);
+    pen.fill();
+    pen.fillStyle = "#c4554a";
+    pen.beginPath();
+    pen.moveTo(x + 8, y);
+    pen.lineTo(x + 14, y - 2);
+    pen.lineTo(x + 8, y + 3);
+    pen.fill();
+  }
+
+  function drawRod(x, y) {
+    pen.strokeStyle = "#8d6b45";
+    pen.lineWidth = 2;
+    pen.beginPath();
+    pen.moveTo(x - 8, y + 6);
+    pen.lineTo(x + 10, y - 16);
+    pen.stroke();
+    pen.fillStyle = "#f7f1e6";
+    pen.beginPath();
+    pen.arc(x, y + 4, 5, 0, Math.PI * 2);
     pen.fill();
   }
 
@@ -1807,7 +1878,7 @@
     const level = role ? levelOf() : 1;
     ZONES.forEach(function (zone) {
       if (level >= zone.level) return;
-      g.fillStyle = "rgba(63, 54, 46, 0.28)";
+      g.fillStyle = "rgba(210, 214, 208, 0.72)";
       g.fillRect(zone.x, zone.y, zone.w, zone.h);
     });
     g.restore();
@@ -1983,6 +2054,41 @@
     return Math.max(0, scoreOf(who) + (data.bonus || 0) - lockedOf(who));
   }
 
+  function stamina() {
+    if (!role) return 100;
+    const data = bag();
+    if (data.stamina == null) data.stamina = 100;
+    return data.stamina;
+  }
+
+  function spendStamina(n) {
+    if (stamina() < n) {
+      showToast("體力不夠。回家睡覺可以補。遊戲數字。");
+      return false;
+    }
+    bag().stamina -= n;
+    renderHud();
+    return true;
+  }
+
+  function dateGap(from, to) {
+    const a = new Date(from + "T00:00:00+08:00").getTime();
+    const b = new Date(to + "T00:00:00+08:00").getTime();
+    return Math.round((b - a) / 86400000);
+  }
+
+  function noteLevel() {
+    const lv = levelOf();
+    const seen = bag().seenLevel || 1;
+    if (lv <= seen) return;
+    bag().seenLevel = lv;
+    save();
+    fillFacility("升到 Lv." + lv, [
+      para("稱號：" + (LEVEL_TITLE[lv - 1] || "鎮民")),
+      para(LEVEL_NOTE[lv] || "經驗又多了一些。這是遊戲等級，不是證照。")
+    ]);
+  }
+
   function currentQuest() {
     const level = role ? levelOf() : 1;
     const steps = [
@@ -2102,15 +2208,15 @@
     document.getElementById("st-season").textContent = seasonName();
     document.getElementById("st-time").textContent = clock;
     document.getElementById("st-place").textContent = placeName();
-    document.getElementById("st-role").textContent = ROLE_NAME[role] + " Lv." + level;
+    document.getElementById("st-role").textContent = (LEVEL_TITLE[level - 1] || "鎮民") + " Lv." + level;
     paintXp(false);
-    document.getElementById("st-day").textContent = "第 " + (bag().day || 1) + " 天";
+    document.getElementById("st-day").textContent = "連續 " + (bag().streak || 1) + " 天";
     document.getElementById("st-coin").textContent = "現金 " + cashOf(role);
     document.getElementById("st-save").textContent = "存款 " + lockedOf(role);
     const quest = currentQuest();
     document.getElementById("quest-text").textContent = "目標：" + quest.text;
     placeChrome();
-    document.getElementById("st-stam").textContent = "體力 100/100";
+    document.getElementById("st-stam").textContent = "體力 " + stamina() + "/100";
     const soundBtn = document.getElementById("btn-sound");
     const musicBtn = document.getElementById("btn-music");
     soundBtn.textContent = state.sound ? "音效開" : "音效關";
@@ -2301,10 +2407,12 @@
     const first = !rec[currentId];
     if (pendingBest) rec[currentId] = "best";
     else if (rec[currentId] !== "best") rec[currentId] = "seen";
+    if (!spendStamina(6)) return;
     if (first) state.xp[role] = (state.xp[role] || 0) + 20;
     bag().answers[currentId] = index;
     save();
     renderHud();
+    if (first) noteLevel();
     noteStamps();
     markTutorial(2);
     document.getElementById("dlg-options").hidden = true;
@@ -2673,6 +2781,9 @@
     if (near.facility === "punch") return "打卡";
     if (near.facility === "shop" || near.facility === "pet") return "購買";
     if (near.facility === "cover") return "投保";
+    if (near.facility === "fish") return "釣魚";
+    if (near.facility === "court" || near.facility === "hearing") return "聽審";
+    if (area !== "town" && inExitZone()) return "出門";
     if (near.facility === "tv") return "看電視";
     if (near.facility === "card" || near.facility === "bank") return "查看";
     const building = BUILDINGS.find(function (b) {
@@ -2757,20 +2868,27 @@
 
   function petAnimal(near) {
     const today = taipeiDate();
-    if (bag().petDay === today) {
-      showToast(near.line + "今天已經摸過了。");
+    const data = bag();
+    if (!data.pets) data.pets = {};
+    if (data.pets[near.id] === today) {
+      showToast(near.name + "今天已經摸過了。");
       return;
     }
-    bag().petDay = today;
-    bag().bonus = (bag().bonus || 0) + 3;
+    data.pets[near.id] = today;
+    data.bonus = (data.bonus || 0) + 3;
+    noteMoney("in", "摸" + near.name, 3);
     save();
     renderHud();
     showReward("小鎮幣 +3");
-    showToast(near.name + "讓你摸了一下。明天還可以再來。");
+    showToast(near.name + "讓你摸了一下。每種一天一次。");
   }
 
   function talk() {
     if (uiOpen()) return;
+    if (area !== "town" && inExitZone() && talkBtn.textContent === "出門") {
+      leaveToTown();
+      return;
+    }
     const near = nearestSpot();
     if (!near) {
       showToast("再靠近門口、電視或村民一點。");
@@ -2821,6 +2939,26 @@
       openCover(near.cover);
       return;
     }
+    if (near.facility === "fish") {
+      openFish();
+      return;
+    }
+    if (near.facility === "hearing") {
+      openHearings();
+      return;
+    }
+    if (near.facility === "court") {
+      openCourt();
+      return;
+    }
+    if (near.facility === "client") {
+      openClientTalk();
+      return;
+    }
+    if (talkBtn.textContent === "出門" && area !== "town" && inExitZone()) {
+      leaveToTown();
+      return;
+    }
     openDialog(near.id);
   }
 
@@ -2831,6 +2969,13 @@
       return;
     }
     if (chestWaiting(spot.id)) return;
+    const todayCount = bag().chestDay === taipeiDate() ? (bag().chestCount || 0) : 0;
+    if (todayCount >= 5) {
+      showToast("今天的寶箱已經開了 5 個。遊戲規則，明天再來。");
+      return;
+    }
+    bag().chestDay = taipeiDate();
+    bag().chestCount = todayCount + 1;
     const rec = chestRec(spot.id);
     rec.until = Date.now() + CHEST_WAIT;
     rec.placed = false;
@@ -2845,7 +2990,8 @@
     renderHud();
     animateXp(before, after);
     showFloater(after > before ? "+20 EXP\nLv." + after : "+20 EXP");
-    showReward("小鎮幣 +8");
+    showReward("小鎮幣 +8。今天還可以開 " + (5 - bag().chestCount) + " 個。");
+    if (after > before) noteLevel();
   }
 
   function fillFacility(title, nodes, closeLabel) {
@@ -2886,7 +3032,7 @@
     { id: "clock", name: "圓鐘", price: 18 },
     { id: "cushion", name: "坐墊", price: 14 }
   ];
-  const TERM_PAY = { 3: 4, 7: 10, 14: 18 };
+  const TERM_PAY = { 7: 6, 15: 14, 30: 32 };
 
   function townDay() {
     return bag().day || 1;
@@ -2910,7 +3056,7 @@
   function noteMoney(kind, text, amount) {
     const data = bag();
     if (!data.ledger) data.ledger = [];
-    data.ledger.unshift({ day: townDay(), kind: kind, text: text, amount: amount });
+    data.ledger.unshift({ day: taipeiDate(), kind: kind, text: text, amount: amount });
     if (data.ledger.length > 40) data.ledger.length = 40;
   }
 
@@ -2984,7 +3130,7 @@
     const rows = document.createElement("div");
     rows.className = "passbook";
     (data.deposits || []).forEach(function (item, index) {
-      const left = Math.max(0, item.days - (townDay() - (item.startDay || townDay())));
+      const left = Math.max(0, item.days - dateGap(item.startDate || taipeiDate(), taipeiDate()));
       const line = document.createElement("p");
       line.className = "body-copy";
       line.textContent = "定存 " + item.days + " 天 · 本金 " + item.principal + " · 還剩 " + left + " 天";
@@ -2999,13 +3145,13 @@
     fillFacility("銀行櫃台", [
       para("遊戲數值，非真實利率。小鎮幣不能換成真實的錢，也不是任何一家銀行的存款。利息若追不上物價，能買到的東西仍可能變少。"),
       para("現金 " + cashOf(role) + " · 活存 " + (data.savings || 0) + " · 定存本金 " + ((data.deposits || []).reduce(function (sum, item) { return sum + item.principal; }, 0))),
-      para("活存隨時存提。每過一個小鎮日，每滿 100 枚多 1 枚，未滿 100 當日不計。定存 3 天每百枚期滿 +4、7 天 +10、14 天 +18，期間不能拿去花。提前解約利息只給一半。"),
+      para("活存隨時存提。每個日曆日，每滿 100 枚多 1 枚。定存鎖 7、15 或 30 個真實日，每百枚到期 +6、+14、+32。提前解約只退本金。鎖定的錢不能拿來繳保費。遊戲數值，非真實利率。"),
       amount,
       button("存入活存", "primary", function () { moveSavings(Number(amount.value), true); }),
       button("提出活存", "ghost", function () { moveSavings(Number(amount.value), false); }),
-      button("定存 3 天", "primary", function () { lockTerm(Number(amount.value), 3); }),
       button("定存 7 天", "primary", function () { lockTerm(Number(amount.value), 7); }),
-      button("定存 14 天", "primary", function () { lockTerm(Number(amount.value), 14); }),
+      button("定存 15 天", "primary", function () { lockTerm(Number(amount.value), 15); }),
+      button("定存 30 天", "primary", function () { lockTerm(Number(amount.value), 30); }),
       rows
     ]);
   }
@@ -3051,11 +3197,11 @@
       showToast("現金不夠");
       return;
     }
-    data.deposits.push({ principal: amount, days: days, startDay: townDay() });
+    data.deposits.push({ principal: amount, days: days, startDate: taipeiDate() });
     noteMoney("out", "定存 " + days + " 天", amount);
     save();
     renderHud();
-    showToast("鎖 " + days + " 個小鎮日。期滿每百枚 +" + TERM_PAY[days] + "。遊戲數值，非真實利率。");
+    showToast("鎖到 " + days + " 個日曆日後。期滿每百枚 +" + TERM_PAY[days] + "。遊戲數值，非真實利率。");
     openBank();
   }
 
@@ -3063,21 +3209,22 @@
     const data = bag();
     const item = (data.deposits || [])[index];
     if (!item) return;
-    const full = Math.floor(item.principal / 100) * (TERM_PAY[item.days] || 0);
-    const pay = Math.floor(full / 2);
     data.deposits.splice(index, 1);
-    if (pay > 0) earnCash(pay, "定存提前解約利息");
-    else noteMoney("in", "定存提前解約，本金退回", item.principal);
+    noteMoney("in", "定存提前解約，只退本金", item.principal);
     save();
     renderHud();
-    showToast("本金已退回。約定利息只給一半，這次是 " + pay + " 枚。遊戲數值，非真實利率。");
+    showToast("只退本金 " + item.principal + " 枚，利息不算。遊戲數值，非真實利率。");
     openBank();
   }
 
   function openPunch() {
+    if (levelOf() < 2) {
+      showToast("打工要到 Lv.2。");
+      return;
+    }
     const data = bag();
     const pay = role === "agent" ? 18 : role === "broker" ? 16 : 12;
-    if (data.workedDay === townDay()) {
+    if (data.workedDay === taipeiDate()) {
       fillFacility("打卡", [para("今天這份工作已經領過了。明天睡醒再來。")]);
       return;
     }
@@ -3085,8 +3232,9 @@
       para(role === "consumer" ? "超商這班，今天可以領 " + pay + " 枚小鎮幣。" : role === "broker" ? "事務所這天的委託整理，可以領 " + pay + " 枚。" : "壽險街或事務所的班，今天可以領 " + pay + " 枚。"),
       para("這是小鎮的薪水，不是真實的工資，也不代表哪一種工作比較好。"),
       button("領今天的薪水", "primary", function () {
-        if (bag().workedDay === townDay()) return;
-        bag().workedDay = townDay();
+        if (bag().workedDay === taipeiDate()) return;
+        if (!spendStamina(10)) return;
+        bag().workedDay = taipeiDate();
         earnCash(pay, "工作打卡");
         save();
         renderHud();
@@ -3100,7 +3248,7 @@
   function openShop() {
     const nodes = [
       para("超商只賣小鎮自己的吃食和幾件能擺回家的東西。"),
-      button("飯糰 6 枚 · 心情 +12", "primary", function () { buyFood(); })
+      button("飯糰 6 枚 · 放入背包", "primary", function () { buyFood(); })
     ];
     LIFE_GOODS.forEach(function (item) {
       const owned = bag().furniture && bag().furniture[item.id];
@@ -3114,10 +3262,14 @@
       showToast("現金不夠");
       return;
     }
-    bag().mood = Math.min(100, (bag().mood || 80) + 12);
+    const data = bag();
+    if (!data.pack) data.pack = [];
+    const expire = new Date(Date.now() + 2 * 86400000);
+    const stamp = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Taipei" }).format(expire);
+    data.pack.push({ name: "飯糰", feed: 25, expire: stamp });
     save();
     renderHud();
-    showReward("吃了飯糰。心情 " + bag().mood + "。這不是真實的食物。");
+    showReward("飯糰放進背包，" + stamp + " 前要吃。體力要吃了才補。");
   }
 
   function buyGoods(item) {
@@ -3205,45 +3357,16 @@
     return h;
   }
 
-  function sleepNight(forceId) {
+  function sleepNight() {
     if (area !== "home") {
       showToast("回床上才能睡。");
       return;
     }
-    const data = bag();
-    data.day = townDay() + 1;
-    data.mood = Math.max(20, (data.mood || 80) - 8);
-    const interest = Math.floor((data.savings || 0) / 100);
-    if (interest > 0) {
-      data.savings += interest;
-      noteMoney("in", "活存一天的利息", interest);
-    }
-    const keep = [];
-    (data.deposits || []).forEach(function (item) {
-      const start = item.startDay || data.day;
-      if (data.day - start >= item.days) {
-        const pay = Math.floor(item.principal / 100) * (TERM_PAY[item.days] || 0);
-        if (pay > 0) earnCash(pay, "定存期滿");
-        else noteMoney("in", "定存期滿，本金退回", item.principal);
-      } else keep.push(item);
-    });
-    data.deposits = keep;
-    Object.keys(LIFE_COVERS).forEach(function (key) {
-      if (!policiesOf()[key]) return;
-      const spec = LIFE_COVERS[key];
-      if (payCash(spec.premium, spec.name + "保費")) return;
-      policiesOf()[key] = false;
-      noteMoney("out", spec.name + "停了，現金不夠扣", 0);
-    });
-    const eventId = forceId || data.forceEvent || (Math.random() < 0.45 ? LIFE_EVENTS[Math.floor(Math.random() * LIFE_EVENTS.length)].id : "");
-    data.forceEvent = "";
+    bag().stamina = 100;
+    bag().mood = Math.min(100, (bag().mood || 80) + 8);
     save();
     renderHud();
-    const nodes = [para("睡了一晚。今天是第 " + data.day + " 天。心情 " + data.mood + "。")];
-    if (interest > 0) nodes.push(para("活存多了 " + interest + " 枚。遊戲數值，非真實利率。"));
-    if (eventId) nodes.push(button("看看今天發生的事", "primary", function () { openEvent(eventId); }));
-    else nodes.push(para("今天沒有突然的花費。工作還可以去打卡。"));
-    fillFacility("新的一天", nodes);
+    showReward("睡了一覺，體力補滿。日子照日曆走，不是睡一晚就換一天。");
   }
 
   function openEvent(id) {
@@ -3426,8 +3549,8 @@
         pendingRole = btn.getAttribute("data-role");
         document.getElementById("gender-role").textContent = ROLE_NAME[pendingRole];
         const base = pendingRole === "agent" ? "agent" : pendingRole === "broker" ? "broker" : "client";
-        document.getElementById("gender-art-m").src = "assets/characters/" + base + "_m.webp?v=2.11";
-        document.getElementById("gender-art-f").src = "assets/characters/" + base + "_f.webp?v=2.11";
+        document.getElementById("gender-art-m").src = "assets/characters/" + base + "_m.webp?v=3.0";
+        document.getElementById("gender-art-f").src = "assets/characters/" + base + "_f.webp?v=3.0";
         document.getElementById("gender-pick").hidden = false;
       });
     });
@@ -3568,6 +3691,9 @@
     });
     document.getElementById("btn-progress").addEventListener("click", openProgress);
     document.getElementById("btn-finance").addEventListener("click", openFinance);
+    document.getElementById("btn-tips").addEventListener("click", openTips);
+    document.getElementById("btn-pack").addEventListener("click", openPack);
+    document.getElementById("btn-clients").addEventListener("click", openClientBook);
     document.getElementById("finance-close").addEventListener("click", function () {
       document.getElementById("finance").hidden = true;
       if (dialog.hidden && progress.hidden && document.getElementById("facility").hidden) document.body.classList.remove("ui-busy");
@@ -3710,19 +3836,314 @@
   function grantDaily() {
     const today = taipeiDate();
     const data = bag();
-    if (data.daily !== today) {
-      data.daily = today;
-      data.bonus = (data.bonus || 0) + 20;
-      if (!data.ledger) data.ledger = [];
-      data.ledger.unshift({ day: data.day || 1, kind: "in", text: "進鎮零用", amount: 20 });
-      data.visits = data.visits || [];
-      if (data.visits[data.visits.length - 1] !== today) data.visits.push(today);
-      const list = scenariosFor(role);
-      const n = today.split("-").reduce(function (sum, part) { return sum + Number(part); }, 0);
-      if (list.length) data.dailyId = list[n % list.length].id;
-      save();
-      showToast("今天第一次進來，這個身分的小鎮幣 +20。這不是真實的錢。");
+    if (!data.visits) data.visits = [];
+    if (data.daily === today) return;
+    const prev = data.daily;
+    data.daily = today;
+    data.chestCount = 0;
+    data.casts = 0;
+    data.clientSteps = 0;
+    data.streak = prev && dateGap(prev, today) === 1 ? (data.streak || 1) + 1 : 1;
+    if (data.visits[data.visits.length - 1] !== today) data.visits.push(today);
+    const pay = 8 + levelOf() * 4;
+    data.bonus = (data.bonus || 0) + pay;
+    noteMoney("in", "今日薪水", pay);
+    matureTerms(today);
+    chargePremiums();
+    const list = scenariosFor(role);
+    const n = today.split("-").reduce(function (sum, part) { return sum + Number(part); }, 0);
+    if (list.length) data.dailyId = list[n % list.length].id;
+    const eventId = data.forceEvent || (Math.random() < 0.35 ? LIFE_EVENTS[n % LIFE_EVENTS.length].id : "");
+    data.forceEvent = "";
+    save();
+    renderHud();
+    showReward("連續到訪 " + data.streak + " 天。今日薪水 " + pay + " 枚。遊戲數字。");
+    if (eventId) setTimeout(function () { if (!uiOpen()) openEvent(eventId); }, 400);
+  }
+
+  function matureTerms(today) {
+    const data = bag();
+    const keep = [];
+    (data.deposits || []).forEach(function (item) {
+      if (!item.startDate) item.startDate = today;
+      if (item.days !== 7 && item.days !== 15 && item.days !== 30) item.days = item.days >= 14 ? 30 : 15;
+      if (dateGap(item.startDate, today) >= item.days) {
+        const pay = Math.floor(item.principal / 100) * (TERM_PAY[item.days] || 0);
+        if (pay > 0) data.bonus = (data.bonus || 0) + pay;
+        noteMoney("in", "定存到期", pay);
+      } else keep.push(item);
+    });
+    data.deposits = keep;
+  }
+
+  function openFish() {
+    const data = bag();
+    if (data.castDay !== taipeiDate()) {
+      data.castDay = taipeiDate();
+      data.casts = 0;
     }
+    if ((data.casts || 0) >= 5) {
+      showToast("今天的 5 竿用完了。");
+      return;
+    }
+    if (!spendStamina(8)) return;
+    data.casts += 1;
+    const event = LIFE_EVENTS[Math.floor(Math.random() * LIFE_EVENTS.length)];
+    save();
+    renderHud();
+    fillFacility("第 " + data.casts + " 竿", [
+      para("河邊晃了一下。這不是真的漁獲。"),
+      para(event.title + "：" + event.line),
+      para("今天還剩 " + (5 - data.casts) + " 竿。遊戲數字。")
+    ]);
+  }
+
+  function openPack() {
+    document.getElementById("menu-panel").hidden = true;
+    const data = bag();
+    const today = taipeiDate();
+    data.pack = (data.pack || []).filter(function (item) { return item.expire >= today; });
+    const nodes = [para("食物有保存期限。過期的已經收掉。")];
+    if (!data.pack.length) nodes.push(para("背包是空的。"));
+    data.pack.forEach(function (item, index) {
+      nodes.push(button(item.name + " · 體力 +" + item.feed + " · " + item.expire + " 前", "primary", function () { eatPack(index); }));
+    });
+    fillFacility("背包", nodes);
+  }
+
+  function eatPack(index) {
+    const data = bag();
+    const item = (data.pack || [])[index];
+    if (!item) return;
+    data.pack.splice(index, 1);
+    data.stamina = Math.min(100, stamina() + item.feed);
+    save();
+    renderHud();
+    showReward("吃了" + item.name + "。體力 " + data.stamina + "。");
+    openPack();
+  }
+
+  const COURT_CASES = [
+    { id: "c1", title: "收據對不上費用定義", holder: "保戶說看診花了錢，收據都在。", firm: "公司說條款只列特定費用，這張收據的項目不在裡面。", evidence: "條款給付表沒有這項，收據金額高於表上的上限。", verdict: "firm", reason: "有收據不代表項目落在給付定義裡。", agent: "說明時要把費用定義和上限一起講，不要說花多少領多少。" },
+    { id: "c2", title: "等待期內住進醫院", holder: "保戶說生病了就該理賠。", firm: "公司說契約寫了等待期，發病在這段裡面。", evidence: "契約生效日和診斷日對起來，還在等待期。", verdict: "firm", reason: "等待期內發生的約定事故，通常不在這張契約的給付裡。", agent: "等待期要在說明時講完，不要等申請才說。" },
+    { id: "c3", title: "只有火災約定，家裡進了雨水", holder: "保戶說颱風把水灌進來，房子壞了。", firm: "公司說這張只有火災和條款列出的項目，沒有風和雨。", evidence: "保單沒有颱風、洪水或水漬的欄。", verdict: "firm", reason: "沒寫進契約的事故，不會因為發生了就變成有。", agent: "住宅火災和風水要分開說，不要用一句有保險帶過。" },
+    { id: "c4", title: "契撤期內送出書面", holder: "保戶說收到保單的第十天寄出撤銷信。", firm: "公司說電話講過不算，但書面寄出日還在期限內。", evidence: "郵戳在收到保單翌日起第十天。", verdict: "holder", reason: "期限內的書面撤銷，應該依契約把這段做完。", agent: "契撤要講期限和書面，不要說口頭一句就完成。" },
+    { id: "c5", title: "健康問卷漏了正在吃的藥", holder: "保戶說時間久了，當初沒寫應該沒關係。", firm: "公司說書面詢問的藥，問卷上是空白。", evidence: "病歷有長期用藥，要保書該欄沒勾。", verdict: "split", reason: "已經發生、和漏寫無關的項目可以再對；和漏寫直接有關的部分，公司可以主張不負這一段。", agent: "健康欄要本人照實寫，不要代填，也不要說以後就不會被問。" },
+    { id: "c6", title: "強制險和自己的車門", holder: "保戶說有強制險，車門刮到也該賠。", firm: "公司說強制險著重人的傷害，車體要看有沒有另外的約定。", evidence: "只有強制汽車責任保險的證，沒有車體損失的契約。", verdict: "split", reason: "人的傷害依強制險的項目看；自己的車門不在那張裡面。", agent: "把人、別人的車、自己的車分成三句，不要說有保險就什麼都算。" },
+    { id: "c7", title: "受益人欄還是舊名字", holder: "保戶說已經離婚，保險金不該給前任。", firm: "公司說變更沒有書面辦完，欄位仍是原來的人。", evidence: "沒有受益人變更的申請文件。", verdict: "firm", reason: "契約上的受益人，不會因為家裡的事自己改掉。", agent: "變更受益人要講向公司辦，不要說離婚就自動換人。" },
+    { id: "c8", title: "口頭說一定賠", holder: "保戶說業務員當時保證一定下來。", firm: "公司說給付看條款，口頭沒寫進契約。", evidence: "契約沒有那句保證，也沒有對應的批註。", verdict: "firm", reason: "沒進契約的話，不能變成給付約定。", agent: "不要用一定賠或保證報酬來說明。" }
+  ];
+
+  function openHearings() {
+    const nodes = [para("先聽雙方。可以看證據，也可以直接判斷。這是虛構案例，不是真實判決。")];
+    COURT_CASES.forEach(function (item) {
+      nodes.push(button(item.title, "ghost", function () { openCase(item, false); }));
+    });
+    fillFacility("聽雙方說法", nodes);
+  }
+
+  function openCase(item, showEvidence) {
+    const nodes = [
+      para("保戶：" + item.holder),
+      para("公司：" + item.firm)
+    ];
+    if (showEvidence) nodes.push(para("證據：" + item.evidence));
+    else nodes.push(button("先看證據", "ghost", function () { openCase(item, true); }));
+    nodes.push(button("保戶贏", "primary", function () { judgeCase(item, "holder"); }));
+    nodes.push(button("保險公司贏", "primary", function () { judgeCase(item, "firm"); }));
+    nodes.push(button("各贏一部分", "primary", function () { judgeCase(item, "split"); }));
+    fillFacility(item.title, nodes);
+  }
+
+  function judgeCase(item, pick) {
+    bag().lastCase = { id: item.id, pick: pick };
+    save();
+    const name = { holder: "保戶贏", firm: "保險公司贏", split: "各贏一部分" };
+    fillFacility("你的判斷", [
+      para("你選了" + name[pick] + "。到小鎮法院聽宣判。"),
+      button("帶我去法院", "primary", function () {
+        document.getElementById("facility").hidden = true;
+        document.body.classList.remove("ui-busy");
+        guideTo("小鎮法院");
+      })
+    ]);
+  }
+
+  function openCourt() {
+    const last = bag().lastCase;
+    const nodes = [para("這裡只宣判小鎮自己寫的虛構案例。不是法院的真實裁判，也不引用真實公司。")];
+    if (!last) {
+      nodes.push(para("還沒有判斷。可以先到暖禾人壽、石橋產物或澄川產物聽說法。"));
+      fillFacility("小鎮法院", nodes);
+      return;
+    }
+    const item = COURT_CASES.filter(function (c) { return c.id === last.id; })[0];
+    if (!item) {
+      fillFacility("小鎮法院", nodes);
+      return;
+    }
+    const name = { holder: "保戶贏", firm: "保險公司贏", split: "各贏一部分" };
+    nodes.push(para("結論：" + name[item.verdict] + "。"));
+    nodes.push(para("理由：" + item.reason));
+    nodes.push(para("給業務員的提醒：" + item.agent));
+    nodes.push(para(last.pick === item.verdict ? "你的判斷和這份宣判一樣。" : "你當時選的是" + name[last.pick] + "。可以再對一次條款。"));
+    fillFacility(item.title, nodes);
+  }
+
+  const CLIENTS = [
+    { id: "he", name: "阿禾" },
+    { id: "lin", name: "小林" },
+    { id: "zhou", name: "周先生" },
+    { id: "wu", name: "吳小姐" }
+  ];
+  const CLIENT_STEPS = [
+    { name: "破冰", q: "第一次開口，哪一句比較穩？", options: ["你這樣很危險，快買。", "先問最近在煩什麼，不談商品。", "保證報酬比較高。"], best: 1 },
+    { name: "留聯絡", q: "對方願意再聊，怎麼留？", options: ["先講下次只對條款，不推銷特定商品。", "留下就代表一定要成交。", "說不留會吃虧。"], best: 0 },
+    { name: "約見面", q: "約見面時先說什麼？", options: ["見面一定要簽名。", "時間、地點，還有這次只整理需求和條款範圍。", "不見面就不服務。"], best: 1 },
+    { name: "了解需求", q: "要先弄清楚什麼？", options: ["預算、已經有的契約、在意的事故。", "先選一家真實公司。", "先算能節多少稅。"], best: 0 },
+    { name: "提出建議", q: "建議要怎麼講？", options: ["這張一定賠。", "用類型說明差異，並說實際給付看條款。", "報酬保證寫進口頭。"], best: 1 },
+    { name: "處理異議", q: "對方說太貴，怎麼接？", options: ["嘲諷別家。", "把保費、自負額和沒有這項時要自己付的情況分開。", "說不買以後不能理賠。"], best: 1 },
+    { name: "成交", q: "要簽名時先確認什麼？", options: ["本人親簽，健康欄自己寫，沒有代填。", "趕時間可以代簽。", "空白處以後再補。"], best: 0 },
+    { name: "售後", q: "成交後還要做什麼？", options: ["契約放好，變更和申請的步驟說完。", "說以後不用再看條款。", "保證明年一定領得到。"], best: 0 }
+  ];
+
+  function clientBook() {
+    const data = bag();
+    if (!data.clients) data.clients = {};
+    return data.clients;
+  }
+
+  function openClientTalk() {
+    if (role !== "agent" && role !== "broker") {
+      showToast("這個身分先把條款看熟。");
+      return;
+    }
+    if (levelOf() < 2) {
+      showToast("客戶簿要到 Lv.2。");
+      return;
+    }
+    const data = bag();
+    if (data.clientDay !== taipeiDate()) {
+      data.clientDay = taipeiDate();
+      data.clientSteps = 0;
+    }
+    if ((data.clientSteps || 0) >= 5) {
+      showToast("今天的 5 次談完了。");
+      return;
+    }
+    const nodes = [para("一天最多推進 5 步。同一位一天只走一步。答錯會冷兩天。不推薦真實商品，不保證報酬。")];
+    CLIENTS.forEach(function (person) {
+      const rec = clientBook()[person.id] || { step: 0, day: "", cold: "" };
+      nodes.push(button(person.name + " · " + (CLIENT_STEPS[rec.step] ? CLIENT_STEPS[rec.step].name : "談完了"), "ghost", function () { askClient(person); }));
+    });
+    fillFacility("路上遇到的人", nodes);
+  }
+
+  function askClient(person) {
+    const today = taipeiDate();
+    const rec = clientBook()[person.id] || { step: 0, day: "", cold: "" };
+    clientBook()[person.id] = rec;
+    if (rec.step >= CLIENT_STEPS.length) {
+      showToast(person.name + "這段已經談完。");
+      return;
+    }
+    if (rec.day === today) {
+      showToast(person.name + "今天已經談過一步。");
+      return;
+    }
+    if (rec.cold && rec.cold > today) {
+      showToast(person.name + "這兩天不想談。");
+      return;
+    }
+    if (!spendStamina(6)) return;
+    const step = CLIENT_STEPS[rec.step];
+    const nodes = [para(person.name + " · " + step.name), para(step.q)];
+    step.options.forEach(function (text, index) {
+      nodes.push(button(text, "option", function () { answerClient(person, index); }));
+    });
+    fillFacility(step.name, nodes);
+  }
+
+  function answerClient(person, index) {
+    const rec = clientBook()[person.id];
+    const step = CLIENT_STEPS[rec.step];
+    const today = taipeiDate();
+    bag().clientSteps = (bag().clientSteps || 0) + 1;
+    rec.day = today;
+    if (index === step.best) {
+      rec.step += 1;
+      rec.cold = "";
+      earnCash(4, "和" + person.name + "談完一步");
+      save();
+      showReward(person.name + "願意再聽下一步。遊戲裡的 4 枚不是佣金。");
+    } else {
+      const cold = new Date(Date.now() + 2 * 86400000);
+      rec.cold = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Taipei" }).format(cold);
+      save();
+      showToast("這句不適合。" + person.name + "兩天內不想繼續。");
+    }
+    renderHud();
+    document.getElementById("facility").hidden = true;
+    document.body.classList.remove("ui-busy");
+  }
+
+  function openClientBook() {
+    if (role !== "agent" && role !== "broker") {
+      showToast("客戶、消費者這個身分沒有客戶簿。");
+      return;
+    }
+    document.getElementById("menu-panel").hidden = true;
+    const nodes = [para("一天最多 5 步。答錯冷兩天。內容只練習說話的界線。")];
+    CLIENTS.forEach(function (person) {
+      const rec = clientBook()[person.id] || { step: 0, cold: "" };
+      const name = rec.step >= CLIENT_STEPS.length ? "這段談完" : CLIENT_STEPS[rec.step].name;
+      nodes.push(para(person.name + " · 下一步：" + name + (rec.cold ? " · 冷到 " + rec.cold : "")));
+    });
+    nodes.push(para("今天已用 " + (bag().clientSteps || 0) + " / 5。"));
+    fillFacility("客戶簿", nodes);
+  }
+
+  function openTips() {
+    document.getElementById("menu-panel").hidden = true;
+    const data = bag();
+    const today = taipeiDate();
+    if (data.castDay !== today) data.casts = 0;
+    const chestLeft = Math.max(0, 5 - (data.chestDay === today ? (data.chestCount || 0) : 0));
+    const fishLeft = Math.max(0, 5 - (data.castDay === today ? (data.casts || 0) : 0));
+    const pets = data.pets || {};
+    document.getElementById("menu-panel").hidden = true;
+    const nodes = [
+      para("遊戲裡的次數。帶我去會取消原本的走路。"),
+      para("今日薪水：" + (data.daily === today ? "已領" : "進鎮時領")),
+      para("寶箱還可開 " + chestLeft + " 個。"),
+      para("釣魚還有 " + fishLeft + " 竿。"),
+      para("小狗：" + (pets.dog === today ? "今天摸過" : "還沒") + " · 小貓：" + (pets.cat === today ? "今天摸過" : "還沒") + " · 小雞：" + (pets.hen === today ? "今天摸過" : "還沒")),
+      button("去河邊", "primary", function () { closeTips(); guideToPoint(480, 1532); }),
+      button("去超商打工或買東西", "ghost", function () { closeTips(); guideTo("超商"); }),
+      button("去銀行", "ghost", function () { closeTips(); guideTo("銀行"); })
+    ];
+    if (role === "agent" || role === "broker") nodes.push(button("去找鎮民", "ghost", function () { closeTips(); guideToPoint(820, 430); }));
+    fillFacility("賺錢小秘籍", nodes);
+  }
+
+  function closeTips() {
+    document.getElementById("facility").hidden = true;
+    document.body.classList.remove("ui-busy");
+  }
+
+  function guideToPoint(x, y) {
+    if (area !== "town") setArea("town", 170, 360);
+    path = findPath(player.x, player.y, x, y);
+  }
+
+  function chargePremiums() {
+    Object.keys(LIFE_COVERS).forEach(function (key) {
+      if (!policiesOf()[key]) return;
+      const spec = LIFE_COVERS[key];
+      if (payCash(spec.premium, spec.name + "本日保費")) return;
+      policiesOf()[key] = false;
+      noteMoney("out", spec.name + "停效，現金不夠", 0);
+    });
   }
 
   function noteZoneVisit() {
