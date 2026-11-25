@@ -1,11 +1,12 @@
 (function () {
-  const VERSION = "2.4";
+  const VERSION = "2.5";
   const UPDATED = "2026年11月25日";
   const KEY = "hean-village-v1";
   const FONT = '"Noto Sans TC", "PingFang TC", "Microsoft JhengHei", "WenQuanYi Micro Hei", sans-serif';
   const WORLD = { w: 2300, h: 1960 };
   const CS = 20;
-  const SPEED = 176;
+  const SPEED = 132;
+  const STEP = 16;
   const REACH = 64;
 
   const ROLE_NAME = {
@@ -183,6 +184,7 @@
   let roomExit = { x: 1485, y: 450 };
   let roomName = "家";
   let doorLock = 0;
+  let triggerArmed = false;
   let townLayer = null;
   let townBakedMode = "";
   let hourOverride = null;
@@ -1279,9 +1281,9 @@
     const moving = !reduceMotion && (isPlayer ? player.moving : !!(walker && walker.moving));
     const facing = isPlayer ? (player.facing || "down") : (walker && walker.facing) || "down";
     const travel = isPlayer ? player.travel : (walker && walker.travel) || 0;
-    const aiH = area === "home" ? 248 : area === "town" ? 112 : 124;
+    const aiH = area === "home" ? 200 : area === "town" ? 96 : 108;
     const aiW = aiH * 256 / 320;
-    const aiFrame = moving ? Math.floor(travel / 22) % 4 : 1;
+    const aiFrame = moving ? Math.floor(travel / STEP) % 4 : 1;
     pen.save();
     pen.translate(x, y);
     pen.fillStyle = "rgba(48, 32, 20, 0.22)";
@@ -1294,7 +1296,7 @@
       return;
     }
     pen.restore();
-    const frame = moving ? Math.floor(travel / 22) % 16 : 0;
+    const frame = moving ? Math.floor(travel / STEP) % 16 : 0;
     const bob = 0;
     const pack = window.HEAN_CHARS.sheetFor(id);
     if (!pack) return;
@@ -1456,17 +1458,31 @@
     return (size - span) / 2;
   }
 
+  function clearMove() {
+    keys.clear();
+    joy.active = false;
+    joy.dx = 0;
+    joy.dy = 0;
+    joy.id = null;
+    player.moving = false;
+    path = null;
+    const knob = document.querySelector("#joystick .knob");
+    if (knob) knob.style.transform = "translate(0px,0px)";
+  }
+
   function setArea(next, x, y, kind, exit, name) {
     hideToast();
+    clearMove();
     area = next;
     if (kind) roomKind = kind;
     if (exit) roomExit = exit;
     if (name) roomName = name;
     if (next === "home") roomName = "家";
+    if (next === "town") roomName = "小鎮";
     player.x = x;
     player.y = y;
-    path = null;
-    doorLock = 0.85;
+    triggerArmed = false;
+    doorLock = 0.4;
     buildNav();
     renderHud();
     if (next === "room" && kind === "bank") openBank();
@@ -1476,28 +1492,55 @@
     if (next === "room" || next === "home") markTutorial(1);
   }
 
+  function townDoor(b) {
+    return b.door || { x: b.x + b.w / 2, y: b.y + b.h + 18 };
+  }
+
+  function inTownDoor(b) {
+    const door = townDoor(b);
+    return Math.abs(player.x - door.x) < 28 && Math.abs(player.y - door.y) < 24;
+  }
+
+  function inExitZone() {
+    if (area === "home") return player.x > 410 && player.x < 548 && player.y > 980 && player.y < 1220;
+    if (area === "room") return player.y > bounds().h - 48 && Math.abs(player.x - bounds().w / 2) < 46;
+    return false;
+  }
+
+  function leaveToTown() {
+    const home = BUILDINGS.find(function (b) { return b.kind === "home"; });
+    const door = area === "home" && home ? townDoor(home) : roomExit;
+    const x = door && door.x ? door.x : 290;
+    const y = door && door.y ? door.y + 78 : 420;
+    setArea("town", x, y);
+  }
+
   function tryDoors() {
     if (area === "town") {
-      for (let i = 0; i < BUILDINGS.length; i++) {
-        const b = BUILDINGS[i];
-        const door = b.door || { x: b.x + b.w / 2, y: b.y + b.h + 18 };
-        const dx = door.x;
-        const dy = door.y;
-        if (Math.abs(player.x - dx) >= 28 || Math.abs(player.y - dy) >= 24) continue;
-        if (b.level && levelOf() < b.level) continue;
-        const goal = path && path.length ? path[path.length - 1] : null;
-        const ledHere = goal && Math.hypot(goal.x - dx, goal.y - dy) < 48;
-        if (path && path.length && !ledHere) continue;
-        if ((!path || !path.length) && player.moving) continue;
-        if (b.kind === "home") setArea("home", 470, 1040);
-        else setArea("room", 220, 400, b.kind, { x: dx, y: dy + 50 }, b.name);
+      const hit = BUILDINGS.find(inTownDoor);
+      if (!hit) {
+        triggerArmed = true;
         return;
       }
-    } else if (area === "home" && player.x > 410 && player.x < 548 && player.y > 980 && player.y < 1220) {
-      setArea("town", 290, 400);
-    } else if (area !== "home" && player.y > bounds().h - 42 && Math.abs(player.x - bounds().w / 2) < 42) {
-      setArea("town", roomExit.x, roomExit.y);
+      if (!triggerArmed) return;
+      if (hit.level && levelOf() < hit.level) return;
+      const door = townDoor(hit);
+      const goal = path && path.length ? path[path.length - 1] : null;
+      const ledHere = goal && Math.hypot(goal.x - door.x, goal.y - door.y) < 48;
+      if (path && path.length && !ledHere) return;
+      if ((!path || !path.length) && player.moving) return;
+      triggerArmed = false;
+      if (hit.kind === "home") setArea("home", 430, 760);
+      else setArea("room", 220, 300, hit.kind, { x: door.x, y: door.y + 78 }, hit.name);
+      return;
     }
+    if (!inExitZone()) {
+      triggerArmed = true;
+      return;
+    }
+    if (!triggerArmed) return;
+    triggerArmed = false;
+    leaveToTown();
   }
 
   let mapGeom = { x: 0, y: 0, scale: 0.18 };
@@ -1730,6 +1773,57 @@
     return level;
   }
 
+  function xpRatio() {
+    const xp = xpOf();
+    let prev = 0;
+    let next = LEVEL_XP[1] || 20;
+    LEVEL_XP.forEach(function (need, index) {
+      if (xp >= need) {
+        prev = need;
+        next = LEVEL_XP[index + 1] != null ? LEVEL_XP[index + 1] : need + 40;
+      }
+    });
+    return Math.max(0, Math.min(1, (xp - prev) / (next - prev)));
+  }
+
+  function paintXp(animate) {
+    const fill = document.getElementById("xp-fill");
+    if (!fill) return;
+    if (!animate) fill.style.transition = "none";
+    fill.style.width = (xpRatio() * 100) + "%";
+    if (!animate) {
+      void fill.offsetWidth;
+      fill.style.transition = "";
+    }
+  }
+
+  function animateXp(before, after) {
+    const fill = document.getElementById("xp-fill");
+    if (!fill) return;
+    if (after > before) {
+      fill.style.width = "100%";
+      setTimeout(function () {
+        fill.style.transition = "none";
+        fill.style.width = "0%";
+        void fill.offsetWidth;
+        fill.style.transition = "";
+        fill.style.width = (xpRatio() * 100) + "%";
+      }, 620);
+      return;
+    }
+    paintXp(true);
+  }
+
+  function showFloater(text) {
+    const el = document.getElementById("floater");
+    if (!el) return;
+    el.hidden = false;
+    el.textContent = text;
+    el.style.animation = "none";
+    void el.offsetWidth;
+    el.style.animation = "";
+  }
+
   function cashOf(r) {
     const who = r || role;
     const data = state.byRole[who] || emptyRole();
@@ -1865,6 +1959,7 @@
     document.getElementById("st-time").textContent = clock;
     document.getElementById("st-place").textContent = placeName();
     document.getElementById("st-role").textContent = ROLE_NAME[role] + " Lv." + level;
+    paintXp(false);
     document.getElementById("st-coin").textContent = "小鎮幣 " + cashOf(role);
     const quest = currentQuest();
     document.getElementById("quest-text").textContent = "目標：" + quest.text;
@@ -1953,7 +2048,7 @@
     playScreen.hidden = false;
     document.body.classList.remove("ui-busy");
     applyFont();
-    setArea("home", 470, 1040);
+    setArea("home", 430, 760);
     resize();
     paintAvatar();
     renderHud();
@@ -2493,8 +2588,13 @@
     }
     bag().opened[spot.id] = true;
     bag().bonus = (bag().bonus || 0) + 8;
+    const before = levelOf();
+    state.xp[role] = (state.xp[role] || 0) + 20;
+    const after = levelOf();
     save();
     renderHud();
+    animateXp(before, after);
+    showFloater(after > before ? "+20 EXP\nLv." + after : "+20 EXP");
     showReward("小鎮幣 +8");
   }
 
@@ -2743,8 +2843,8 @@
         pendingRole = btn.getAttribute("data-role");
         document.getElementById("gender-role").textContent = ROLE_NAME[pendingRole];
         const base = pendingRole === "agent" ? "agent" : pendingRole === "broker" ? "broker" : "client";
-        document.getElementById("gender-art-m").src = "assets/characters/" + base + "_m.webp?v=2.4";
-        document.getElementById("gender-art-f").src = "assets/characters/" + base + "_f.webp?v=2.4";
+        document.getElementById("gender-art-m").src = "assets/characters/" + base + "_m.webp?v=2.5";
+        document.getElementById("gender-art-f").src = "assets/characters/" + base + "_f.webp?v=2.5";
         document.getElementById("gender-pick").hidden = false;
       });
     });
