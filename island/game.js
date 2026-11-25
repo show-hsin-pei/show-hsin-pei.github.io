@@ -1,11 +1,14 @@
 (function () {
-  const VERSION = "2.9";
+  const VERSION = "2.10";
   const UPDATED = "2026年11月25日";
   const KEY = "hean-village-v1";
   const FONT = '"Noto Sans TC", "PingFang TC", "Microsoft JhengHei", "WenQuanYi Micro Hei", sans-serif';
   const WORLD = { w: 2300, h: 1960 };
   const CS = 20;
-  const SPEED = 100;
+  const SPEED = 150;
+  const CHEST_WAIT = 3 * 60 * 1000;
+  const CHEST_OUT = 700;
+  const CHEST_IN = 650;
   const STEP = 12;
   const FOOT_Y = 296;
   const REACH = 64;
@@ -135,6 +138,17 @@
   ].forEach(function (item) {
     SPOTS.push({ id: item[0], name: "寶箱", x: item[1], y: item[2], facility: "chest", zone: item[3] });
   });
+  const CHEST_POINTS = {
+    "住宅區": [{ x: 480, y: 395 }, { x: 720, y: 395 }, { x: 275, y: 520 }, { x: 560, y: 1532 }, { x: 400, y: 1532 }],
+    "商店街": [{ x: 1080, y: 395 }, { x: 1280, y: 395 }, { x: 1500, y: 395 }, { x: 1680, y: 395 }, { x: 935, y: 560 }],
+    "公家機關區": [{ x: 1120, y: 892 }, { x: 1320, y: 892 }, { x: 1560, y: 892 }, { x: 1680, y: 892 }],
+    "壽險街": [{ x: 1040, y: 1119 }, { x: 1280, y: 1119 }, { x: 1500, y: 1119 }, { x: 1680, y: 1119 }],
+    "產險街": [{ x: 1040, y: 1367 }, { x: 1280, y: 1367 }, { x: 1520, y: 1367 }, { x: 1680, y: 1367 }],
+    "醫院": [{ x: 340, y: 1532 }, { x: 520, y: 1532 }, { x: 700, y: 1532 }, { x: 275, y: 1320 }],
+    "公園": [{ x: 1795, y: 280 }, { x: 1795, y: 460 }, { x: 1900, y: 395 }, { x: 2040, y: 395 }],
+    "湖畔": [{ x: 400, y: 1532 }, { x: 560, y: 1532 }, { x: 760, y: 1532 }, { x: 275, y: 1460 }],
+    "山上步道": [{ x: 1500, y: 1532 }, { x: 1640, y: 1532 }, { x: 1795, y: 1360 }, { x: 1360, y: 1532 }]
+  };
 
   const titleScreen = document.getElementById("title-screen");
   const playScreen = document.getElementById("play-screen");
@@ -214,6 +228,7 @@
       bonus: 50,
       deposits: [],
       opened: {},
+      chests: {},
       seenBank: false,
       answers: {},
       petDay: "",
@@ -506,6 +521,8 @@
     if (area === "town") {
       const list = SPOTS.filter(function (s) {
         if (s.facility === "chest") {
+          const phase = chestPhase(s.id);
+          if (phase.hidden) return false;
           const zone = ZONES.find(function (item) { return item.name === s.zone; });
           return !zone || levelOf() >= zone.level;
         }
@@ -538,6 +555,7 @@
     let best = null;
     let bestD = REACH;
     for (let i = 0; i < list.length; i++) {
+      if (list[i].facility === "chest" && chestWaiting(list[i].id)) continue;
       const d = Math.hypot(list[i].x - player.x, list[i].y - player.y);
       if (d < bestD) {
         bestD = d;
@@ -644,9 +662,9 @@
         player.aimY = vy;
       }
       const want = len > 0 ? SPEED * scale : 0;
-      const ease = want > player.vel ? 8.5 : 16;
+      const ease = want > player.vel ? 16 : 28;
       player.vel += (want - player.vel) * Math.min(1, ease * dt);
-      if (want === 0 && player.vel < 12) player.vel = 0;
+      if (want === 0 && player.vel < 22) player.vel = 0;
       if (player.vel > 0 && (player.aimX || player.aimY)) {
         const beforeX = player.x;
         const beforeY = player.y;
@@ -701,6 +719,7 @@
     if (doorLock > 0) doorLock -= dt;
     else tryDoors();
     if (area === "town") {
+      settleChests();
       holdZones();
       settleDeposits();
       noteZoneVisit();
@@ -791,7 +810,7 @@
         draw: function () {
           if (s.animal === true && s.id === "dog") drawDog(s.x, s.y);
           else if (s.animal) drawCat(s.x, s.y);
-          else if (s.facility === "chest") drawChest(s.x, s.y);
+          else if (s.facility === "chest") drawChest(s.x, s.y, s.id);
           else drawPerson(s.x, s.y, i, false, s.id);
         }
       });
@@ -1310,8 +1329,8 @@
   }
 
   function drawPerson(x, y, index, isPlayer, scenarioId) {
-    if (!isPlayer && scenarioId === "chest-park") {
-      drawChest(x, y);
+    if (!isPlayer && scenarioId && String(scenarioId).indexOf("chest") === 0) {
+      drawChest(x, y, scenarioId);
       return;
     }
     const id = isPlayer ? "player-" + role : scenarioId;
@@ -1374,8 +1393,9 @@
   function markSpot(x, y, scenarioId) {
     const quest = currentQuest();
     const bang = quest && quest.spot === scenarioId;
-    if (!byId[scenarioId] && scenarioId !== "chest-park" && scenarioId !== "bank-counter" && scenarioId !== "home-tv") return;
-    if (scenarioId !== "chest-park" && scenarioId !== "bank-counter" && recordOf(scenarioId)) {
+    const isChest = String(scenarioId).indexOf("chest") === 0;
+    if (!byId[scenarioId] && !isChest && scenarioId !== "bank-counter" && scenarioId !== "home-tv") return;
+    if (!isChest && scenarioId !== "bank-counter" && recordOf(scenarioId)) {
       drawMark(x, y - 96, recordOf(scenarioId));
       return;
     }
@@ -1396,17 +1416,88 @@
     pen.restore();
   }
 
-  function drawChest(x, y) {
+  function chestRec(id) {
+    const data = bag();
+    if (!data.chests || typeof data.chests !== "object") data.chests = {};
+    if (!data.chests[id]) data.chests[id] = { until: 0, x: 0, y: 0, placed: false };
+    return data.chests[id];
+  }
+
+  function chestWaiting(id) {
+    if (!role) return false;
+    return chestRec(id).until > Date.now();
+  }
+
+  function chestPhase(id) {
+    if (!role) return { alpha: 1, scale: 1, hidden: false };
+    const rec = chestRec(id);
+    const now = Date.now();
+    if (!rec.until || now >= rec.until) {
+      if (!rec.placed) return { alpha: 1, scale: 1, hidden: false };
+      const t = (now - rec.until) / CHEST_IN;
+      if (t >= 1) return { alpha: 1, scale: 1, hidden: false };
+      const bounce = Math.sin(Math.min(1, t) * Math.PI);
+      return { alpha: Math.min(1, t * 1.6), scale: 0.7 + 0.38 * bounce, hidden: false };
+    }
+    const claimed = rec.until - CHEST_WAIT;
+    const t = (now - claimed) / CHEST_OUT;
+    if (t >= 1) return { alpha: 0, scale: 1, hidden: true };
+    return { alpha: Math.max(0, 1 - t), scale: 1, hidden: false };
+  }
+
+  function pickChestPoint(spot) {
+    const pool = CHEST_POINTS[spot.zone] || [{ x: spot.x, y: spot.y }];
+    const open = pool.filter(function (p) {
+      if (solidAt(p.x, p.y, 14)) return false;
+      return !SPOTS.some(function (other) {
+        return other.facility === "chest" && other.id !== spot.id && Math.hypot(other.x - p.x, other.y - p.y) < 80;
+      });
+    });
+    const list = open.length ? open : pool;
+    return list[Math.floor(Math.random() * list.length)];
+  }
+
+  function settleChests() {
+    if (!role) return;
+    const now = Date.now();
+    SPOTS.forEach(function (s) {
+      if (s.facility !== "chest") return;
+      const rec = chestRec(s.id);
+      if (rec.x && rec.y) {
+        s.x = rec.x;
+        s.y = rec.y;
+      }
+      if (rec.until && now >= rec.until && !rec.placed) {
+        const p = pickChestPoint(s);
+        rec.x = p.x;
+        rec.y = p.y;
+        rec.placed = true;
+        rec.until = now;
+        s.x = p.x;
+        s.y = p.y;
+        save();
+      }
+    });
+  }
+
+  function drawChest(x, y, id) {
+    const phase = chestPhase(id);
+    if (phase.hidden || phase.alpha <= 0) return;
+    pen.save();
+    pen.translate(x, y);
+    pen.globalAlpha = phase.alpha;
+    pen.scale(phase.scale, phase.scale);
     pen.fillStyle = "rgba(40,28,18,0.2)";
     pen.beginPath();
-    pen.ellipse(x, y + 4, 14, 4, 0, 0, Math.PI * 2);
+    pen.ellipse(0, 4, 14, 4, 0, 0, Math.PI * 2);
     pen.fill();
-    pen.fillStyle = role && bag().opened["chest-park"] ? "#a89880" : "#c4923a";
-    roundRect(x - 12, y - 14, 24, 16, 3);
+    pen.fillStyle = "#c4923a";
+    roundRect(-12, -14, 24, 16, 3);
     pen.fill();
     pen.fillStyle = "#f3e2c4";
-    pen.fillRect(x - 12, y - 8, 24, 3);
-    if (!(role && bag().opened["chest-park"])) markSpot(x, y, "chest-park");
+    pen.fillRect(-12, -8, 24, 3);
+    pen.restore();
+    if (!chestWaiting(id)) markSpot(x, y, id);
   }
 
   function drawMark(x, y, rec) {
@@ -2702,11 +2793,12 @@
       showToast(spot.zone + "要到 Lv." + zone.level);
       return;
     }
-    if (bag().opened[spot.id]) {
-      showToast("這個寶箱已經打開了");
-      return;
-    }
-    bag().opened[spot.id] = true;
+    if (chestWaiting(spot.id)) return;
+    const rec = chestRec(spot.id);
+    rec.until = Date.now() + CHEST_WAIT;
+    rec.placed = false;
+    rec.x = spot.x;
+    rec.y = spot.y;
     bag().bonus = (bag().bonus || 0) + 8;
     const before = levelOf();
     state.xp[role] = (state.xp[role] || 0) + 20;
@@ -2968,8 +3060,8 @@
         pendingRole = btn.getAttribute("data-role");
         document.getElementById("gender-role").textContent = ROLE_NAME[pendingRole];
         const base = pendingRole === "agent" ? "agent" : pendingRole === "broker" ? "broker" : "client";
-        document.getElementById("gender-art-m").src = "assets/characters/" + base + "_m.webp?v=2.9";
-        document.getElementById("gender-art-f").src = "assets/characters/" + base + "_f.webp?v=2.9";
+        document.getElementById("gender-art-m").src = "assets/characters/" + base + "_m.webp?v=2.10";
+        document.getElementById("gender-art-f").src = "assets/characters/" + base + "_f.webp?v=2.10";
         document.getElementById("gender-pick").hidden = false;
       });
     });
