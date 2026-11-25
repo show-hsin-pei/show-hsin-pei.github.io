@@ -1,32 +1,66 @@
-/* 載入原創圖。走路表：列 down/left/right/up，欄為走路格，站立用第 2 格。 */
+/* 載入原創圖。走路表：列 down/left/right/up，欄為走路格，站立用第 2 格。
+   可玩身分各留 m / f 兩套。素材未到時，兩個性別先用同一套，不預先請求不存在的檔。 */
 (function () {
   const root = "assets/";
-  function load(src) {
+  const pending = [];
+  let total = 0;
+  let finished = 0;
+
+  function tick() {
+    finished += 1;
+    const bar = document.getElementById("load-bar");
+    const strip = document.getElementById("load-strip");
+    if (bar && total) bar.style.width = Math.min(100, Math.round(finished / total * 100)) + "%";
+    if (strip && total && finished >= total) strip.hidden = true;
+    if (window.HEAN_ART && window.HEAN_ART.onReady) window.HEAN_ART.onReady();
+  }
+
+  function make(file) {
     const image = new Image();
     image.decoding = "async";
-    image.src = src;
+    image._file = root + file;
+    total += 1;
+    image.addEventListener("load", tick);
+    image.addEventListener("error", tick);
     return image;
   }
 
-  const scenes = { town: null, home: null, map: null };
-  scenes.home = load(root + "scenes/home.webp");
-  scenes.town = load(root + "scenes/town.webp");
+  function start(image) {
+    if (!image || image.dataset.started) return image;
+    image.dataset.started = "1";
+    image.src = image._file;
+    return image;
+  }
+
+  function pump() {
+    const image = pending.shift();
+    if (!image) return;
+    start(image);
+    const later = window.requestIdleCallback || function (fn) { setTimeout(fn, 80); };
+    later(function () { pump(); }, { timeout: 500 });
+  }
+
+  const scenes = {
+    home: make("scenes/home.webp"),
+    map: make("scenes/map.webp"),
+    town: make("scenes/town.webp")
+  };
+  start(scenes.home);
+  start(scenes.map);
+  pending.push(scenes.town);
+
   window.HEAN_ASSETS = window.HEAN_ASSETS || {};
-  window.HEAN_ASSETS.scenes = Object.assign(scenes, window.HEAN_ASSETS.scenes || {});
-  if (!window.HEAN_ASSETS.scenes.home) window.HEAN_ASSETS.scenes.home = scenes.home;
-  if (!window.HEAN_ASSETS.scenes.town) window.HEAN_ASSETS.scenes.town = scenes.town;
-  window.HEAN_ASSETS.scenes.map = load(root + "scenes/map.webp");
+  window.HEAN_ASSETS.scenes = scenes;
   window.HEAN_ASSETS.full = {};
   window.HEAN_ASSETS.portraits = {};
 
   const sheetIds = ["agent", "broker", "client", "npc_grandma", "npc_mom", "npc_office", "npc_shopkeeper", "npc_grandpa"];
   const sheets = {};
   sheetIds.forEach(function (id) {
-    sheets[id] = load(root + "sprites/" + id + "_walk.webp");
-    window.HEAN_ASSETS.full[id] = load(root + "characters/" + id + ".webp");
-  });
-  ["agent", "broker", "client", "npc_grandma", "npc_mom", "npc_office", "npc_shopkeeper", "npc_grandpa"].forEach(function (id) {
-    window.HEAN_ASSETS.portraits[id] = load(root + "portraits/" + id + ".webp");
+    sheets[id] = make("sprites/" + id + "_walk.webp");
+    window.HEAN_ASSETS.full[id] = make("characters/" + id + ".webp");
+    window.HEAN_ASSETS.portraits[id] = make("portraits/" + id + ".webp");
+    pending.push(sheets[id], window.HEAN_ASSETS.full[id], window.HEAN_ASSETS.portraits[id]);
   });
 
   const map = {
@@ -44,6 +78,10 @@
     "claim-docs": "npc_mom",
     "rider-ends": "npc_mom",
     "waiting-period": "npc_mom",
+    "face-sign": "npc_mom",
+    "no-misstate": "npc_mom",
+    "no-guarantee": "npc_mom",
+    "broker-scope": "npc_mom",
     "disclosure-form": "npc_grandpa",
     "park-walk": "npc_grandpa",
     "exclusion-print": "npc_grandpa",
@@ -54,26 +92,43 @@
     "garage-voluntary": "npc_shopkeeper",
     "compulsory-auto": "npc_shopkeeper",
     "liability-who": "npc_shopkeeper",
-    "face-sign": "npc_office",
     "no-rebate": "npc_office",
     "health-blank": "npc_office",
     "bank-counter": "npc_office",
     "broker-fee": "npc_office",
     "broker-commission": "npc_office",
     "broker-conflict": "npc_office",
-    "broker-scope": "npc_office",
-    "no-misstate": "npc_office",
-    "no-guarantee": "npc_office",
     "no-proxy-sign": "npc_office",
     "critical-name": "npc_office",
     "liability-cap": "npc_office",
-    "complaint-path": "npc_office"
+    "complaint-path": "npc_office",
+    "info-center": "npc_grandpa",
+    "info-shop": "npc_shopkeeper",
+    "info-zhou": "npc_mom",
+    "info-wu": "npc_grandpa",
+    "info-office": "npc_mom",
+    "walker-1": "npc_mom",
+    "walker-2": "npc_grandpa",
+    "walker-3": "npc_shopkeeper"
   };
+
+  function baseOf(role) {
+    if (role === "agent") return "agent";
+    if (role === "broker") return "broker";
+    return "client";
+  }
+
+  function artKey(role, gender) {
+    const base = baseOf(role);
+    const variant = base + (gender === "f" ? "_f" : "_m");
+    if (sheets[variant] || window.HEAN_ASSETS.portraits[variant]) return variant;
+    return base;
+  }
 
   function applySheets() {
     if (!window.HEAN_CHARS) return;
     Object.keys(map).forEach(function (id) {
-      window.HEAN_CHARS.useImageSheet(id, sheets[map[id]]);
+      if (sheets[map[id]]) window.HEAN_CHARS.useImageSheet(id, sheets[map[id]]);
     });
   }
   applySheets();
@@ -84,6 +139,27 @@
 
   window.HEAN_ART = {
     map: map,
+    artKey: artKey,
+    ensurePlayer: function (role, gender) {
+      const key = artKey(role, gender);
+      start(sheets[key]);
+      start(window.HEAN_ASSETS.full[key]);
+      start(window.HEAN_ASSETS.portraits[key]);
+      start(scenes.home);
+      start(scenes.map);
+      const sheet = sheets[key];
+      if (window.HEAN_CHARS && sheet) window.HEAN_CHARS.useImageSheet("player-" + role, sheet);
+    },
+    pump: function () {
+      ["client", "agent", "broker"].forEach(function (id) {
+        start(window.HEAN_ASSETS.full[id]);
+      });
+      pump();
+    },
+    neededReady: function (role, gender) {
+      const key = artKey(role, gender);
+      return ready(scenes.home) && ready(scenes.map) && ready(sheets[key]);
+    },
     artId: function (id) { return map[id] || null; },
     sheet: function (id) { return sheets[map[id]] || null; },
     full: function (id) {
@@ -94,14 +170,16 @@
       const key = map[id];
       return key ? window.HEAN_ASSETS.portraits[key] : null;
     },
-    ready: ready
+    ready: ready,
+    onReady: null
   };
 
   document.querySelectorAll("img[data-art]").forEach(function (img) {
     const key = img.getAttribute("data-art");
     const image = window.HEAN_ASSETS.full[key];
     if (!image) return;
-    img.src = image.src;
+    start(image);
+    img.src = image._file;
     img.loading = "lazy";
     img.decoding = "async";
   });

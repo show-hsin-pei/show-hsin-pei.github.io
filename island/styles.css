@@ -229,8 +229,9 @@ h1 {
 }
 
 .chip, .tiny {
-  min-height: 36px;
-  padding: 6px 12px;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 8px 12px;
 }
 
 .chip[aria-pressed="true"] {
@@ -348,14 +349,17 @@ h1 {
 
 .quest span { flex: 1; line-height: 1.35; }
 
+.quest span { min-width: 0; }
+
 .quest button {
   flex: none;
   border: 0;
   border-radius: 999px;
   background: var(--gold);
   color: #fffdf9;
-  min-height: 32px;
-  padding: 4px 10px;
+  min-width: 72px;
+  min-height: 44px;
+  padding: 8px 12px;
 }
 
 .reward {
@@ -542,10 +546,21 @@ body.ui-busy .toast { visibility: hidden; }
 }
 
 .icon-btn {
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
   border-radius: 12px;
   flex: none;
+  font-size: 22px;
+}
+
+.sheet-head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--card);
+  padding-bottom: 8px;
 }
 
 .who {
@@ -691,3 +706,76 @@ body.ui-busy .toast { visibility: hidden; }
 @media (prefers-reduced-motion: reduce) {
   .role-card { transition: none; }
 }
+
+body.font-lg { font-size: 18px; }
+body.font-xl { font-size: 21px; }
+
+#progress-summary { white-space: pre-line; }
+
+.dialog.dock {
+  background: transparent;
+  pointer-events: none;
+  align-items: flex-end;
+}
+
+.dialog.dock .sheet {
+  pointer-events: auto;
+  max-height: 48dvh;
+  margin-bottom: 8px;
+}
+
+.line-nav {
+  display: flex;
+  gap: 8px;
+}
+
+.line-nav .ghost,
+.line-nav .primary {
+  width: auto;
+  flex: 1;
+}
+
+.map-tools {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.map-tools .chip { min-width: 44px; }
+
+#load-strip { margin-top: 16px; text-align: center; }
+.load-track {
+  height: 8px;
+  border-radius: 999px;
+  background: #efe6d6;
+  overflow: hidden;
+}
+#load-bar { height: 100%; width: 0; background: #a5865a; }
+
+.coach, .rotate-hint {
+  position: absolute;
+  z-index: 5;
+  left: 8px;
+  right: 8px;
+  bottom: 132px;
+  background: rgba(255, 253, 249, 0.96);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 10px 12px;
+}
+
+.coach { display: flex; gap: 8px; align-items: center; }
+.coach p { margin: 0; flex: 1; }
+#coach-skip { min-height: 44px; min-width: 44px; }
+
+.rotate-hint { bottom: auto; top: 132px; }
+
+body.landscape .status {
+  flex-wrap: nowrap;
+  overflow: auto;
+  font-size: 12px;
+}
+
+body.landscape .quest { font-size: 12px; }
+
+#facility-body a { display: block; margin-top: 8px; color: var(--gold-deep); }

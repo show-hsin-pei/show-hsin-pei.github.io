@@ -1,6 +1,6 @@
 (function () {
-  const VERSION = "2.0";
-  const UPDATED = "2026年11月24日";
+  const VERSION = "2.2";
+  const UPDATED = "2026年11月25日";
   const KEY = "hean-village-v1";
   const FONT = '"Noto Sans TC", "PingFang TC", "Microsoft JhengHei", "WenQuanYi Micro Hei", sans-serif';
   const WORLD = { w: 2300, h: 1960 };
@@ -23,16 +23,16 @@
 
   const BUILDINGS = [
     { name: "我家", zone: "住宅區", x: 160, y: 40, w: 270, h: 280, roof: "#c4a36a", wall: "#fff8ef", kind: "home", art: true, scenarios: [] },
-    { name: "鎮民中心", zone: "住宅區", x: 380, y: 1320, w: 250, h: 170, roof: "#c4a36a", wall: "#fffaf3", kind: "office", scenarios: [] },
-    { name: "周家", zone: "住宅區", x: 1860, y: 1160, w: 220, h: 160, roof: "#b98362", wall: "#fff8ef", kind: "house", scenarios: [] },
-    { name: "吳家", zone: "住宅區", x: 2100, y: 1180, w: 140, h: 130, roof: "#c4896a", wall: "#fff6f0", kind: "house", scenarios: [] },
+    { name: "鎮民中心", zone: "住宅區", x: 380, y: 1320, w: 220, h: 150, roof: "#c4a36a", wall: "#fffaf3", kind: "office", card: "center", scenarios: [] },
+    { name: "周家", zone: "住宅區", x: 1868, y: 1148, w: 156, h: 132, roof: "#b98362", wall: "#fff8ef", kind: "house", card: "zhou", scenarios: [] },
+    { name: "吳家", zone: "住宅區", x: 2036, y: 1148, w: 148, h: 132, roof: "#c4896a", wall: "#fff6f0", kind: "house", card: "wu", scenarios: [] },
     { name: "銀行", zone: "商店街", x: 980, y: 90, w: 210, h: 200, roof: "#8d6b45", wall: "#f7f3ea", kind: "bank", scenarios: [] },
-    { name: "超商", zone: "商店街", x: 1230, y: 100, w: 200, h: 210, roof: "#d2b48a", wall: "#fffaf3", kind: "stall", scenarios: [] },
-    { name: "車行", zone: "商店街", x: 1500, y: 80, w: 230, h: 250, roof: "#c4a36a", wall: "#f3eee6", kind: "garage", scenarios: [] },
+    { name: "超商", zone: "商店街", x: 1230, y: 100, w: 180, h: 180, roof: "#d2b48a", wall: "#fffaf3", kind: "stall", card: "shop", scenarios: [] },
+    { name: "車行", zone: "商店街", x: 1520, y: 70, w: 200, h: 200, roof: "#c4a36a", wall: "#f3eee6", kind: "garage", scenarios: [] },
     { name: "寵物店", zone: "商店街", x: 970, y: 590, w: 190, h: 210, roof: "#c48a6a", wall: "#fff6ea", kind: "stall", scenarios: ["pet-visit"] },
-    { name: "事務所", zone: "商店街", x: 1860, y: 490, w: 250, h: 290, roof: "#b98362", wall: "#f6f1e6", kind: "office", scenarios: ["broker-fee", "broker-commission", "broker-conflict", "broker-scope"] },
-    { name: "小鎮公所", zone: "公家機關區", x: 1180, y: 500, w: 380, h: 330, roof: "#c4a36a", wall: "#f7f1e8", kind: "office", scenarios: [] },
-    { name: "勞工服務站", zone: "公家機關區", x: 1860, y: 860, w: 240, h: 200, roof: "#c4a36a", wall: "#fffaf3", kind: "office", scenarios: [] },
+    { name: "事務所", zone: "商店街", x: 1880, y: 500, w: 176, h: 156, roof: "#b98362", wall: "#f6f1e6", kind: "office", card: "office", scenarios: ["broker-fee", "broker-commission", "broker-conflict", "broker-scope"] },
+    { name: "小鎮公所", zone: "公家機關區", x: 1180, y: 500, w: 340, h: 280, roof: "#c4a36a", wall: "#f7f1e8", kind: "office", card: "hall", scenarios: [] },
+    { name: "勞工服務站", zone: "公家機關區", x: 1880, y: 860, w: 176, h: 140, roof: "#c4a36a", wall: "#fffaf3", kind: "office", card: "labor", scenarios: [] },
     { name: "暖禾人壽", zone: "壽險街", x: 975, y: 900, w: 175, h: 165, roof: "#c4896a", wall: "#fff4ea", sign: "#c4896a", theme: "醫療條款", motto: "這裡常把醫療條款和收據對在一起。", kind: "office", scenarios: ["clinic-necessity", "hospital-reimburse", "claim-docs", "face-sign", "no-rebate", "health-blank"] },
     { name: "青畦人壽", zone: "壽險街", x: 1175, y: 900, w: 175, h: 165, roof: "#6e8a58", wall: "#f3f6ee", sign: "#6e8a58", theme: "重疾定義", motto: "這裡常把重疾定義和等待期攤開。", kind: "office", scenarios: ["waiting-period", "critical-name", "disclosure-form"] },
     { name: "拾穗人壽", zone: "壽險街", x: 1380, y: 900, w: 170, h: 165, roof: "#c4a36a", wall: "#fff8ee", sign: "#c4a36a", theme: "契約步驟", motto: "這裡常把契撤、受益人、停效的步驟說完。", kind: "office", scenarios: ["free-look", "beneficiary-update", "lapse-reinstate", "rider-ends"] },
@@ -43,8 +43,8 @@
     { name: "澄川產物", zone: "產險街", x: 1575, y: 1165, w: 165, h: 155, roof: "#6d90a0", wall: "#f2f7f8", sign: "#6d90a0", theme: "意外定義", motto: "這裡常把意外和疾病的定義分開。", kind: "office", scenarios: ["exclusion-print", "complaint-path"] },
     { name: "醫院", zone: "醫院", x: 50, y: 1280, w: 290, h: 180, roof: "#d7e4ea", wall: "#f7fbff", kind: "clinic", scenarios: [] },
     { name: "公園亭", zone: "公園", x: 1900, y: 40, w: 200, h: 240, roof: "#7f8f78", wall: "#f7f3ea", kind: "stall", level: 3, scenarios: ["park-walk"] },
-    { name: "湖畔亭", zone: "湖畔", x: 150, y: 1630, w: 210, h: 160, roof: "#7aa0b0", wall: "#f7f4ee", kind: "house", level: 5, scenarios: ["lake-rest"] },
-    { name: "步道牌", zone: "山上步道", x: 1980, y: 1560, w: 120, h: 200, roof: "#8d6a45", wall: "#f6efe4", kind: "stall", level: 8, scenarios: ["trail-sign"] }
+    { name: "湖畔亭", zone: "湖畔", x: 90, y: 1748, w: 130, h: 100, roof: "#7aa0b0", wall: "#f7f4ee", kind: "house", level: 5, door: { x: 420, y: 1608 }, scenarios: ["lake-rest"] },
+    { name: "步道牌", zone: "山上步道", x: 1768, y: 1496, w: 52, h: 86, roof: "#8d6a45", wall: "#f6efe4", kind: "stall", level: 8, door: { x: 1660, y: 1508 }, scenarios: ["trail-sign"] }
   ];
 
   const PATHS = [
@@ -62,6 +62,20 @@
     { x: 40, y: 80 }, { x: 860, y: 120 }, { x: 1700, y: 80 }, { x: 40, y: 700 },
     { x: 860, y: 760 }, { x: 2100, y: 80 }, { x: 40, y: 1480 }, { x: 900, y: 1480 },
     { x: 2100, y: 1480 }, { x: 2200, y: 400 }, { x: 600, y: 1500 }, { x: 1500, y: 700 }
+  ];
+  const SOLIDS = [
+    { x: 1568, y: 292, w: 42, h: 26 },
+    { x: 1620, y: 292, w: 42, h: 26 },
+    { x: 1672, y: 292, w: 42, h: 26 },
+    { x: 2060, y: 1680, w: 240, h: 280 },
+    { x: 120, y: 80, w: 210, h: 16 },
+    { x: 120, y: 80, w: 16, h: 160 }
+  ];
+  const TREE_HITS = [
+    { x: 80, y: 160, r: 22 }, { x: 820, y: 180, r: 20 }, { x: 2140, y: 160, r: 22 },
+    { x: 70, y: 760, r: 20 }, { x: 820, y: 820, r: 18 }, { x: 2140, y: 720, r: 20 },
+    { x: 80, y: 1500, r: 20 }, { x: 860, y: 1500, r: 18 }, { x: 520, y: 1560, r: 16 },
+    { x: 1680, y: 1680, r: 22 }, { x: 1860, y: 1760, r: 20 }, { x: 1500, y: 780, r: 16 }
   ];
   const LAMPS = [
     { x: 280, y: 390 }, { x: 940, y: 390 }, { x: 1500, y: 390 },
@@ -100,17 +114,25 @@
   const SPOTS = [];
   BUILDINGS.forEach(function (b) {
     if (b.motto) return;
-    (b.scenarios || []).forEach(function (id, index) {
-      const n = b.scenarios.length;
-      SPOTS.push({
-        id: id,
-        x: b.x + b.w / 2 + (index - (n - 1) / 2) * 44,
-        y: b.y + b.h + 42
-      });
+    (b.scenarios || []).forEach(function (id) {
+      const door = b.door || { x: b.x + b.w / 2, y: b.y + b.h + 36 };
+      SPOTS.push({ id: id, x: door.x, y: door.y });
     });
   });
   SPOTS.push({ id: "bank-counter", name: "櫃台", x: 1080, y: 332, facility: "bank" });
-  SPOTS.push({ id: "chest-park", name: "寶箱", x: 2060, y: 360, facility: "chest", zone: "公園" });
+  [
+    ["chest-home-a", 520, 470, "住宅區"], ["chest-home-b", 640, 1460, "住宅區"],
+    ["chest-shop-a", 1100, 470, "商店街"], ["chest-shop-b", 1400, 470, "商店街"],
+    ["chest-civic-a", 1040, 820, "公家機關區"], ["chest-civic-b", 1500, 820, "公家機關區"],
+    ["chest-life-a", 900, 980, "壽險街"], ["chest-life-b", 1760, 980, "壽險街"],
+    ["chest-prop-a", 900, 1240, "產險街"], ["chest-prop-b", 1760, 1240, "產險街"],
+    ["chest-hosp-a", 360, 1520, "醫院"], ["chest-hosp-b", 720, 1520, "醫院"],
+    ["chest-park", 2060, 300, "公園"], ["chest-park-b", 1980, 220, "公園"],
+    ["chest-lake", 520, 1608, "湖畔"], ["chest-lake-b", 620, 1608, "湖畔"],
+    ["chest-trail", 1600, 1508, "山上步道"], ["chest-trail-b", 1540, 1460, "山上步道"]
+  ].forEach(function (item) {
+    SPOTS.push({ id: item[0], name: "寶箱", x: item[1], y: item[2], facility: "chest", zone: item[3] });
+  });
 
   const titleScreen = document.getElementById("title-screen");
   const playScreen = document.getElementById("play-screen");
@@ -134,6 +156,13 @@
   let dpr = 1;
   const cam = { x: 0, y: 0 };
   const player = { x: 400, y: 320, dir: 1, walk: 0, facing: "down" };
+  const walkers = [
+    { id: "walker-1", name: "路人", x: 640, y: 410, min: 460, max: 860, axis: "x", dir: 1, speed: 28, line: "收據先留著。實支實付還要對得上條款裡的費用，不是花多少領多少。" },
+    { id: "walker-2", name: "路人", x: 1200, y: 940, min: 1000, max: 1500, axis: "x", dir: -1, speed: 24, line: "強制險著重人的傷害。車子本身要看另外的契約有沒有寫。" },
+    { id: "walker-3", name: "路人", x: 1300, y: 1420, min: 1100, max: 1680, axis: "x", dir: 1, speed: 22, line: "受益人不會因為家裡的事自己改掉，要向公司辦變更。" },
+    { id: "dog", name: "小狗", x: 1120, y: 800, min: 1000, max: 1320, axis: "x", dir: 1, speed: 34, animal: true, line: "今天摸一下就好，明天還可以再摸。" },
+    { id: "cat", name: "小貓", x: 1040, y: 1120, min: 980, max: 1240, axis: "x", dir: -1, speed: 18, animal: true, line: "明天再來摸一次。" }
+  ];
   const ROOM = window.HEAN_ROOMS.ROOM;
   const HOME = { w: 720, h: 1280 };
   const PLAZA = { x: 0, y: 0, w: 720, h: 1280 };
@@ -177,17 +206,33 @@
   let rows = 0;
   let blocked = null;
 
+  function emptyRole() {
+    return {
+      bonus: 50,
+      deposits: [],
+      opened: {},
+      seenBank: false,
+      answers: {},
+      petDay: "",
+      daily: "",
+      visits: [],
+      stamps: {},
+      zones: {},
+      tutorial: 0
+    };
+  }
+
   function defaultState() {
     return {
       sound: false,
       music: false,
+      font: "md",
       lastRole: null,
+      gender: { consumer: "m", agent: "m", broker: "m" },
       progress: { consumer: {}, agent: {}, broker: {} },
       xp: { consumer: 0, agent: 0, broker: 0 },
-      bonus: 0,
-      deposits: [],
-      opened: {},
-      seenBank: false
+      byRole: { consumer: emptyRole(), agent: emptyRole(), broker: emptyRole() },
+      tutorialDone: false
     };
   }
 
@@ -205,11 +250,17 @@
         if (src && typeof src === "object") base.progress[r] = src;
         const fromDone = Object.keys(base.progress[r]).length * 20;
         base.xp[r] = Math.max(fromDone, data.xp && typeof data.xp[r] === "number" ? data.xp[r] : 0);
+        if (data.gender && (data.gender[r] === "m" || data.gender[r] === "f")) base.gender[r] = data.gender[r];
+        const bag = data.byRole && data.byRole[r];
+        if (bag && typeof bag === "object") base.byRole[r] = Object.assign(emptyRole(), bag);
       });
-      base.bonus = typeof data.bonus === "number" ? data.bonus : 0;
-      base.deposits = Array.isArray(data.deposits) ? data.deposits : [];
-      base.opened = data.opened && typeof data.opened === "object" ? data.opened : {};
-      base.seenBank = !!data.seenBank;
+      const heir = data.lastRole && base.byRole[data.lastRole] ? data.lastRole : "consumer";
+      if (typeof data.bonus === "number") base.byRole[heir].bonus = data.bonus;
+      if (Array.isArray(data.deposits)) base.byRole[heir].deposits = data.deposits;
+      if (data.opened && typeof data.opened === "object" && !data.opened.consumer) base.byRole[heir].opened = data.opened;
+      if (typeof data.seenBank === "boolean") base.byRole[heir].seenBank = data.seenBank;
+      if (data.font === "lg" || data.font === "xl" || data.font === "md") base.font = data.font;
+      base.tutorialDone = !!data.tutorialDone;
       return base;
     } catch (err) {
       return defaultState();
@@ -228,6 +279,16 @@
 
   function recordOf(id) {
     return (state.progress[role] || {})[id] || null;
+  }
+
+  function bag() {
+    if (!state.byRole[role]) state.byRole[role] = emptyRole();
+    return state.byRole[role];
+  }
+
+  function genderOf(r) {
+    const g = state.gender && state.gender[r || role];
+    return g === "f" ? "f" : "m";
   }
 
   function scoreOf(r) {
@@ -272,7 +333,9 @@
     if (x < rad + 10 || y < rad + 10 || x > WORLD.w - rad - 10 || y > WORLD.h - rad - 10) return true;
     const mapped = backdropMode() === "map";
     if (mapped) {
-      if (y > 1690 && x < 780 && Math.hypot(x - 300, y - 1880) < 340) return true;
+      const dx = (x - 250) / 300;
+      const dy = (y - 1888) / 130;
+      if (y > 1740 && x < 680 && dx * dx + dy * dy < 1) return true;
     } else if (Math.hypot(x - 460, y - 1780) < 120 + rad) return true;
     if (x > WORLD.w - 70 - rad) return true;
     if (!mapped && Math.hypot(x - 820, y - 640) < 22 + rad) return true;
@@ -284,6 +347,13 @@
       for (let t = 0; t < TREES.length; t++) {
         if (Math.hypot(x - TREES[t].x, y - TREES[t].y) < 16 + rad) return true;
       }
+    }
+    for (let i = 0; i < SOLIDS.length; i++) {
+      const r = SOLIDS[i];
+      if (x > r.x - rad && x < r.x + r.w + rad && y > r.y - rad && y < r.y + r.h + rad) return true;
+    }
+    for (let t = 0; t < TREE_HITS.length; t++) {
+      if (Math.hypot(x - TREE_HITS[t].x, y - TREE_HITS[t].y) < TREE_HITS[t].r + rad) return true;
     }
     return false;
   }
@@ -431,22 +501,30 @@
   function activeSpots() {
     if (!role) return [];
     if (area === "town") {
-      return SPOTS.filter(function (s) {
+      const list = SPOTS.filter(function (s) {
+        if (s.facility === "chest") {
+          const zone = ZONES.find(function (item) { return item.name === s.zone; });
+          return !zone || levelOf() >= zone.level;
+        }
         if (s.facility) return true;
         const sc = byId[s.id];
         return sc && sc.roles.indexOf(role) !== -1;
       });
+      walkers.forEach(function (w) { list.push(w); });
+      return list;
     }
     if (area === "home") return [{ id: "home-tv", name: "電視", x: 560, y: 470, facility: "tv" }];
     const b = BUILDINGS.find(function (item) { return item.name === roomName; });
-    const ids = b && b.scenarios ? b.scenarios : [];
-    return ids.filter(function (id) {
+    const ids = (b && b.scenarios ? b.scenarios : []).filter(function (id) {
       const sc = byId[id];
       return sc && sc.roles.indexOf(role) !== -1;
-    }).map(function (id, index) {
-      const top = b.motto ? 560 : 360;
-      return { id: id, x: 130 + (index % 2) * 180, y: top + Math.floor(index / 2) * 70 };
     });
+    const spots = ids.map(function (id, index) {
+      return { id: id, x: 78 + (index % 3) * 130, y: 300 + Math.floor(index / 3) * 140 };
+    });
+    if (b && b.card === "office" && !ids.length) spots.push({ id: "info-office", name: "櫃台", x: 220, y: 360, facility: "card" });
+    if (b && b.card && b.card !== "office") spots.push({ id: "info-" + (b.card === "center" ? "center" : b.card === "shop" ? "shop" : b.card === "zhou" ? "zhou" : b.card === "wu" ? "wu" : "center"), name: "說明", x: 220, y: 360, facility: "card" });
+    return spots;
   }
 
   function nearestSpot() {
@@ -486,7 +564,11 @@
     if (rect.width < 2 || rect.height < 2) return;
     viewW = rect.width;
     viewH = rect.height;
-    zoom = area === "town" ? (viewW < 760 ? 0.86 : 1) : roomZoom();
+    const landscape = viewW > viewH + 24;
+    document.body.classList.toggle("landscape", landscape);
+    const rotate = document.getElementById("rotate-hint");
+    if (rotate) rotate.hidden = !landscape;
+    zoom = area === "town" ? (landscape ? 1.15 : (viewW < 760 ? 0.9 : 1)) : roomZoom();
     dpr = Math.min(2, window.devicePixelRatio || 1);
     canvas.width = Math.round(viewW * dpr);
     canvas.height = Math.round(viewH * dpr);
@@ -507,6 +589,7 @@
   }
 
   function update(dt) {
+    if (!isFinite(dt) || dt < 0) dt = 0;
     time += dt;
     if (!uiOpen()) {
       let vx = 0;
@@ -541,6 +624,7 @@
         vy /= len;
         tryMove(vx * SPEED * scale * dt, vy * SPEED * scale * dt);
         player.walk += dt;
+        if (player.walk > 0.35) markTutorial(0);
         player.facing = facingFromVelocity(vx, vy);
         player.dir = player.facing === "left" ? -1 : 1;
         if (toastEl && !toastEl.hidden && player.walk > 0.4) hideToast();
@@ -551,9 +635,12 @@
     const worldW = viewW / zoom;
     const worldH = viewH / zoom;
     const box = bounds();
+    const pad = playPad();
+    const focusX = viewW / 2;
+    const focusY = pad.top + Math.max(80, viewH - pad.top - pad.bottom) / 2;
     if (area === "town") {
-      cam.x = camAxis(player.x, worldW, box.w);
-      cam.y = camAxis(player.y, worldH, box.h);
+      cam.x = camFocus(player.x, focusX, viewW, box.w);
+      cam.y = camFocus(player.y, focusY, viewH, box.h);
     } else if (area === "home" && viewW < 760) {
       const pad = roomPad();
       const drawnH = box.h * zoom;
@@ -582,17 +669,27 @@
     if (area === "town") {
       holdZones();
       settleDeposits();
+      noteZoneVisit();
+      walkers.forEach(function (w) {
+        w[w.axis] += w.dir * w.speed * dt;
+        if (w[w.axis] < w.min || w[w.axis] > w.max) {
+          w.dir *= -1;
+          w[w.axis] = clamp(w[w.axis], w.min, w.max);
+        }
+      });
     }
     const near = nearestSpot();
     if (!near) {
       nearLabel.hidden = true;
       talkBtn.disabled = true;
+      talkBtn.textContent = "對話";
       talkBtn.classList.remove("ready");
     } else {
       const sc = byId[near.id];
       nearLabel.hidden = false;
       nearLabel.textContent = (sc ? sc.speaker : near.name) + " · 可以互動";
       talkBtn.disabled = false;
+      talkBtn.textContent = talkVerb(near);
       talkBtn.classList.add("ready");
     }
   }
@@ -633,7 +730,12 @@
     activeSpots().forEach(function (s, i) {
       queue.push({
         y: s.y,
-        draw: function () { drawPerson(s.x, s.y, i, false, s.id); }
+        draw: function () {
+          if (s.animal === true && s.id === "dog") drawDog(s.x, s.y);
+          else if (s.animal) drawCat(s.x, s.y);
+          else if (s.facility === "chest") drawChest(s.x, s.y);
+          else drawPerson(s.x, s.y, i, false, s.id);
+        }
       });
     });
     queue.push({
@@ -1076,24 +1178,19 @@
       const sc = byId[id];
       return sc && role && sc.roles.indexOf(role) !== -1;
     });
-    const boardH = 58 + lines.length * 28;
-    roundRect(28, 250, ROOM.w - 56, boardH, 12);
+    roundRect(24, 28, ROOM.w - 48, 46, 12);
     pen.fillStyle = "rgba(255, 248, 238, 0.94)";
     pen.fill();
     pen.strokeStyle = "#c4a36a";
     pen.lineWidth = 2;
     pen.stroke();
     pen.fillStyle = "#6a4632";
-    pen.font = "700 14px " + FONT;
+    pen.font = "700 13px " + FONT;
     pen.textAlign = "left";
     pen.textBaseline = "middle";
-    pen.fillText(building.motto, 44, 272);
-    lines.forEach(function (id, index) {
-      const sc = byId[id];
-      pen.fillStyle = "#3f362e";
-      pen.font = "600 13px " + FONT;
-      pen.fillText((index + 1) + ". " + sc.speaker + " · " + sc.title, 44, 302 + index * 28);
-    });
+    const motto = building.motto.length > 22 ? building.motto.slice(0, 22) + "…" : building.motto;
+    pen.fillText(motto, 36, 51);
+    if (lines.length) pen.fillText(lines.length + " 位可以對話", 36, 68);
   }
 
   function drawCat(x, y) {
@@ -1244,12 +1341,12 @@
     pen.beginPath();
     pen.ellipse(x, y + 4, 14, 4, 0, 0, Math.PI * 2);
     pen.fill();
-    pen.fillStyle = state.opened["chest-park"] ? "#a89880" : "#c4923a";
+    pen.fillStyle = role && bag().opened["chest-park"] ? "#a89880" : "#c4923a";
     roundRect(x - 12, y - 14, 24, 16, 3);
     pen.fill();
     pen.fillStyle = "#f3e2c4";
     pen.fillRect(x - 12, y - 8, 24, 3);
-    if (!state.opened["chest-park"]) markSpot(x, y, "chest-park");
+    if (!(role && bag().opened["chest-park"])) markSpot(x, y, "chest-park");
   }
 
   function drawMark(x, y, rec) {
@@ -1322,7 +1419,26 @@
     return clamp(pos - view / 2, 0, size - view);
   }
 
+  function playPad() {
+    const status = document.getElementById("status");
+    const quest = document.getElementById("quest");
+    let top = 96;
+    if (status) top = Math.max(top, status.offsetTop + status.offsetHeight + 8);
+    if (quest) top = Math.max(top, quest.offsetTop + quest.offsetHeight + 8);
+    return { top: top, bottom: 158 };
+  }
+
+  function camFocus(pos, focus, view, size) {
+    const span = view / zoom;
+    let c = pos - focus / zoom;
+    const minC = 0;
+    const maxC = Math.max(0, size - span);
+    if (minC <= maxC) return clamp(c, minC, maxC);
+    return (size - span) / 2;
+  }
+
   function setArea(next, x, y, kind, exit, name) {
+    hideToast();
     area = next;
     if (kind) roomKind = kind;
     if (exit) roomExit = exit;
@@ -1337,14 +1453,17 @@
     if (next === "room" && kind === "bank") openBank();
     if (next === "room" && name === "醫院") openHospital();
     if (next === "room" && name === "車行") openGarageCard();
+    if (next === "room" && kind !== "bank" && name !== "醫院" && name !== "車行") maybeRoomCard(name);
+    if (next === "room" || next === "home") markTutorial(1);
   }
 
   function tryDoors() {
     if (area === "town") {
       for (let i = 0; i < BUILDINGS.length; i++) {
         const b = BUILDINGS[i];
-        const dx = b.x + b.w / 2;
-        const dy = b.y + b.h + 18;
+        const door = b.door || { x: b.x + b.w / 2, y: b.y + b.h + 18 };
+        const dx = door.x;
+        const dy = door.y;
         if (Math.abs(player.x - dx) < 26 && Math.abs(player.y - dy) < 22) {
           if (b.kind === "home") setArea("home", 360, 820);
           else setArea("room", 220, 400, b.kind, { x: dx, y: dy + 50 }, b.name);
@@ -1379,6 +1498,7 @@
     mapGeom.scale = scale;
     mapGeom.x = wx - box.w / scale / 2;
     mapGeom.y = wy - box.h / scale / 2;
+    clampMap();
   }
 
   function mapFit() {
@@ -1402,10 +1522,27 @@
     const panel = document.getElementById("map-panel");
     panel.hidden = false;
     document.body.classList.add("ui-busy");
+    markTutorial(3);
     requestAnimationFrame(function () {
-      mapOnPlayer();
-      paintTownMap();
+      requestAnimationFrame(function () {
+        const box = mapBox();
+        if (box.w < 2) return;
+        mapOnPlayer();
+        clampMap();
+        paintTownMap();
+      });
     });
+  }
+
+  function clampMap() {
+    const box = mapBox();
+    if (box.w < 2 || mapGeom.scale <= 0) return;
+    const viewWorldW = box.w / mapGeom.scale;
+    const viewWorldH = box.h / mapGeom.scale;
+    if (WORLD.w > viewWorldW) mapGeom.x = clamp(mapGeom.x, 0, WORLD.w - viewWorldW);
+    else mapGeom.x = (WORLD.w - viewWorldW) / 2;
+    if (WORLD.h > viewWorldH) mapGeom.y = clamp(mapGeom.y, 0, WORLD.h - viewWorldH);
+    else mapGeom.y = (WORLD.h - viewWorldH) / 2;
   }
 
   function paintTownMap() {
@@ -1471,9 +1608,14 @@
     g.font = "700 11px " + FONT;
     g.textAlign = "center";
     g.textBaseline = "middle";
+    const labelPts = [];
+    const showNames = mapGeom.scale >= 0.28;
     BUILDINGS.forEach(function (b) {
       const p = toScreen(b.x + b.w / 2, b.y + b.h / 2);
       if (p.x < -40 || p.y < -20 || p.x > box.w + 40 || p.y > box.h + 20) return;
+      if (!showNames) return;
+      if (labelPts.some(function (q) { return Math.hypot(q.x - p.x, q.y - p.y) < 36; })) return;
+      labelPts.push(p);
       const label = b.name.replace("人壽", "").replace("產物", "");
       const tw = g.measureText(label).width + 10;
       g.fillStyle = "rgba(255, 248, 236, 0.9)";
@@ -1482,14 +1624,15 @@
       g.fillText(label, p.x, p.y);
       if (b.level && level < b.level) {
         g.fillStyle = "#8a6230";
-        g.fillText("鎖 Lv." + b.level, p.x, p.y + 14);
+        g.fillText("Lv." + b.level + " 開放", p.x, p.y + 16);
       }
     });
     ZONES.forEach(function (zone) {
       if (level >= zone.level) return;
       const p = toScreen(zone.x + zone.w / 2, zone.y + 28);
       g.fillStyle = "#fffdf9";
-      g.fillText(zone.name + " 鎖 Lv." + zone.level, p.x, p.y);
+      if (mapGeom.scale < 0.34) return;
+      g.fillText(zone.name + " Lv." + zone.level + " 開放", p.x, p.y + 22);
     });
     const quest = role ? currentQuest() : null;
     if (quest) {
@@ -1564,17 +1707,19 @@
   }
 
   function cashOf(r) {
-    const locked = (state.deposits || []).reduce(function (sum, item) {
+    const who = r || role;
+    const data = state.byRole[who] || emptyRole();
+    const locked = (data.deposits || []).reduce(function (sum, item) {
       return sum + item.principal;
     }, 0);
-    return Math.max(0, scoreOf(r || role) + (state.bonus || 0) - locked);
+    return Math.max(0, scoreOf(who) + (data.bonus || 0) - locked);
   }
 
   function currentQuest() {
     const level = role ? levelOf() : 1;
     const steps = [
       { text: "走出家門，到商店街看看", building: "銀行", spot: "bank-counter", when: function () { return area === "home"; } },
-      { text: "到銀行看定存和流動性", building: "銀行", spot: "bank-counter", when: function () { return !state.seenBank; } },
+      { text: "到銀行看定存和流動性", building: "銀行", spot: "bank-counter", when: function () { return role && !bag().seenBank; } },
       { text: "到車行分清強制險和任意險", building: "車行", spot: "garage-voluntary", when: function () { return !recordOf("garage-voluntary"); } },
       { text: "到醫院看醫療花費怎麼對條款", building: "醫院", spot: "hospital-reimburse", when: function () { return !recordOf("hospital-reimburse"); } },
       { text: "到 Lv.3 後去公園亭", building: "公園亭", spot: "park-walk", when: function () { return level < 3 || !recordOf("park-walk"); } },
@@ -1582,6 +1727,11 @@
       { text: "到 Lv.8 後去山上步道", building: "步道牌", spot: "trail-sign", when: function () { return level < 8 || !recordOf("trail-sign"); } }
     ];
     for (let i = 0; i < steps.length; i++) if (steps[i].when()) return steps[i];
+    const again = scenariosFor(role).find(function (sc) { return recordOf(sc.id) === "seen"; });
+    if (again) {
+      const home = BUILDINGS.find(function (b) { return (b.scenarios || []).indexOf(again.id) !== -1; });
+      return { text: "再想一次：" + again.title, building: home ? home.name : "鎮民中心", spot: again.id, again: again.id };
+    }
     return { text: "這座小鎮的目標都看過了", building: "鎮民中心", spot: "free-look" };
   }
 
@@ -1603,20 +1753,21 @@
   }
 
   function settleDeposits() {
-    if (!state.deposits || !state.deposits.length) return;
+    const data = bag();
+    if (!data.deposits || !data.deposits.length) return;
     const now = Date.now();
     const keep = [];
     let interest = 0;
-    state.deposits.forEach(function (item) {
-      if ((now - item.start) / DAY_MS >= item.days) interest += Math.floor(item.principal * item.rate);
+    data.deposits.forEach(function (item) {
+      if ((now - item.start) / DAY_MS >= item.days) interest += Math.floor(item.principal / 50);
       else keep.push(item);
     });
-    if (keep.length === state.deposits.length) return;
-    state.deposits = keep;
-    state.bonus = (state.bonus || 0) + interest;
+    if (keep.length === data.deposits.length) return;
+    data.deposits = keep;
+    if (interest > 0) data.bonus = (data.bonus || 0) + interest;
     save();
     renderHud();
-    showReward("小鎮日到了。練習多給 " + interest + " 枚，已加進小鎮幣。這不是真實利息。");
+    showReward(interest > 0 ? "練習多給 " + interest + " 枚，已加進這個身分的小鎮幣。這不是真實利息。" : "這筆未滿 50 枚，期滿沒有多給，本金已解鎖。");
   }
 
   function guideTo(name) {
@@ -1626,7 +1777,7 @@
       showToast(building.name + "要到 Lv." + building.level);
       return;
     }
-    const dest = { x: building.x + building.w / 2, y: building.y + building.h + 28 };
+    const dest = building.door || { x: building.x + building.w / 2, y: building.y + building.h + 28 };
     if (area !== "town") setArea("town", 170, 360);
     path = findPath(player.x, player.y, dest.x, dest.y);
     document.getElementById("map-panel").hidden = true;
@@ -1759,29 +1910,52 @@
   function startRole(next) {
     role = next;
     state.lastRole = next;
+    if (window.HEAN_ART && window.HEAN_ART.ensurePlayer) window.HEAN_ART.ensurePlayer(next, genderOf(next));
+    const strip = document.getElementById("load-strip");
+    if (strip) strip.hidden = false;
+    const started = performance.now();
+    (function waitArt() {
+      const ready = !window.HEAN_ART || !window.HEAN_ART.neededReady || window.HEAN_ART.neededReady(next, genderOf(next));
+      if (ready || performance.now() - started > 2500) enterPlay();
+      else requestAnimationFrame(waitArt);
+    })();
+    function enterPlay() {
+    if (strip) strip.hidden = true;
     save();
     player.walk = 0;
     path = null;
     titleScreen.hidden = true;
+    document.getElementById("gender-pick").hidden = true;
     playScreen.hidden = false;
     document.body.classList.remove("ui-busy");
+    applyFont();
     setArea("home", 360, 820);
     resize();
     paintAvatar();
     renderHud();
-    showToast("往下方的門走出去，就是小鎮。靠近人或門口，再按對話。");
+    paintCoach();
+    showToast("往下方的門走出去，就是小鎮。這句進了小鎮就會收起來。");
+    grantDaily();
     if (state.music) startMusic();
+    if (window.HEAN_ART && window.HEAN_ART.pump) window.HEAN_ART.pump();
     if (!loopStarted) {
       loopStarted = true;
       let last = performance.now();
       const frame = function (now) {
-        const dt = Math.min(0.034, (now - last) / 1000);
+        let dt = (now - last) / 1000;
         last = now;
-        update(dt);
-        draw();
+        if (!isFinite(dt) || dt < 0) dt = 0;
+        dt = Math.min(0.034, dt);
+        try {
+          update(dt);
+          draw();
+        } catch (err) {
+          console.error(err);
+        }
         requestAnimationFrame(frame);
       };
       requestAnimationFrame(frame);
+    }
     }
   }
 
@@ -1794,17 +1968,44 @@
     renderTitle();
   }
 
-  function openDialog(id) {
+  function talkLines(sc) {
+    const sentences = String(sc.body || "").split(/(?<=。)/).map(function (s) { return s.trim(); }).filter(Boolean);
+    const first = sentences[0] || sc.body;
+    const rest = sentences.slice(1);
+    return [{ speaker: sc.speaker, text: first }]
+      .concat([{ speaker: "櫃台", text: "我在" + sc.place + "。先聽" + sc.speaker + "說完，再對條款，不先講結果。" }])
+      .concat(rest.map(function (text) { return { speaker: sc.speaker, text: text }; }));
+  }
+
+  let lineList = [];
+  let lineAt = 0;
+  let placeOverride = "";
+
+  function showLine() {
+    const line = lineList[lineAt];
+    if (!line) return;
+    document.getElementById("dlg-speaker").textContent = line.speaker;
+    document.getElementById("dlg-body").textContent = line.text;
+    document.getElementById("dlg-prev").disabled = lineAt === 0;
+    const next = document.getElementById("dlg-next");
+    const last = lineAt >= lineList.length - 1;
+    next.hidden = false;
+    next.textContent = last ? "看看法" : "下一句";
+    document.getElementById("dlg-options").hidden = !last;
+  }
+
+  function openDialog(id, placeName) {
     const sc = byId[id];
     if (!sc || sc.roles.indexOf(role) === -1) return;
     currentId = id;
     pendingBest = null;
+    placeOverride = placeName || "";
     path = null;
-    document.getElementById("dlg-place").textContent = sc.place;
+    document.getElementById("dlg-place").textContent = placeOverride || sc.place;
     document.getElementById("dlg-title").textContent = sc.title;
-    document.getElementById("dlg-speaker").textContent = sc.speaker;
     paintDialogArt(id);
-    document.getElementById("dlg-body").textContent = sc.body;
+    lineList = talkLines(sc);
+    lineAt = 0;
     const options = document.getElementById("dlg-options");
     options.replaceChildren();
     sc.options.forEach(function (opt, index) {
@@ -1815,9 +2016,11 @@
       btn.addEventListener("click", function () { choose(index); });
       options.appendChild(btn);
     });
-    options.hidden = false;
     document.getElementById("dlg-feedback").hidden = true;
+    document.getElementById("dlg-nav").hidden = false;
+    showLine();
     dialog.hidden = false;
+    dialog.classList.add("dock");
     document.body.classList.add("ui-busy");
     playSfx("talk");
     dialog.querySelector(".sheet").focus();
@@ -1833,13 +2036,14 @@
     const first = !rec[currentId];
     if (pendingBest) rec[currentId] = "best";
     else if (rec[currentId] !== "best") rec[currentId] = "seen";
-    if (first) {
-      state.xp[role] = (state.xp[role] || 0) + 20;
-      showReward(pendingBest ? "獲得獎勵：經驗 +20，答對的小鎮幣已計入" : "獲得獎勵：經驗 +20");
-    }
+    if (first) state.xp[role] = (state.xp[role] || 0) + 20;
+    bag().answers[currentId] = index;
     save();
     renderHud();
+    noteStamps();
+    markTutorial(2);
     document.getElementById("dlg-options").hidden = true;
+    document.getElementById("dlg-nav").hidden = true;
     document.getElementById("dlg-feedback").hidden = false;
     const verdict = document.getElementById("dlg-verdict");
     verdict.textContent = pendingBest ? "這個看法比較完整" : "先把條款和事實對上";
@@ -1847,6 +2051,10 @@
     const best = sc.options.find(function (item) { return item.best; });
     document.getElementById("dlg-best").textContent = "比較站得住的方向：" + best.text;
     document.getElementById("dlg-explain").textContent = sc.explain;
+    const prior = document.getElementById("dlg-prior");
+    if (prior) prior.textContent = "你選過的答案：" + opt.text + (first ? "。這次記下經驗 +20。" : "。");
+    const basis = document.getElementById("dlg-basis");
+    if (basis) basis.textContent = basisText(sc.id);
     document.getElementById("dlg-tip-label").textContent = TIP_LABEL[role];
     document.getElementById("dlg-tip-body").textContent = sc.tips[role] || "";
     document.getElementById("dlg-retry").hidden = !!pendingBest;
@@ -1860,6 +2068,7 @@
       /* closing after feedback still keeps the saved record */
     }
     dialog.hidden = true;
+    dialog.classList.remove("dock");
     currentId = null;
     pendingBest = null;
     if (progress.hidden) document.body.classList.remove("ui-busy");
@@ -1876,12 +2085,50 @@
   function renderProgress() {
     const list = scenariosFor(role);
     const done = Object.keys(state.progress[role] || {}).length;
+    const rolesLine = ["consumer", "agent", "broker"].map(function (r) {
+      const total = scenariosFor(r).length;
+      const got = Object.keys(state.progress[r] || {}).length;
+      return ROLE_NAME[r].split("（")[0] + " " + got + "／" + total;
+    }).join(" · ");
     document.getElementById("progress-summary").textContent =
-      ROLE_NAME[role] + " · 完成 " + done + "／" + list.length + " · 分數 " + scoreOf(role) + "（答對一則 10 分）";
+      ROLE_NAME[role] + " · 完成 " + done + "／" + list.length + " · 分數 " + scoreOf(role) + "（答對一則 10 分）\n" + rolesLine;
     document.getElementById("progress-version").textContent = "版本 " + VERSION + " · " + UPDATED + "更新";
     const ul = document.getElementById("progress-list");
     ul.replaceChildren();
+    const pass = document.createElement("li");
+    pass.className = "progress-item";
+    const passText = document.createElement("div");
+    const stamps = bag().stamps || {};
+    const stampNames = Object.keys(stamps);
+    passText.textContent = stampNames.length ? "護照章：" + stampNames.join("、") : "護照章：完成一家公司的情境就蓋一章。";
+    pass.appendChild(passText);
+    ul.appendChild(pass);
+    const groups = {};
     list.forEach(function (sc) {
+      const key = sc.place || "其他";
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(sc);
+    });
+    Object.keys(groups).forEach(function (place) {
+      const items = groups[place];
+      const head = document.createElement("li");
+      head.className = "progress-item";
+      const headText = document.createElement("div");
+      const got = items.filter(function (sc) { return recordOf(sc.id); }).length;
+      headText.textContent = place + " " + got + "／" + items.length;
+      const goPlace = document.createElement("button");
+      goPlace.type = "button";
+      goPlace.className = "tiny";
+      goPlace.textContent = "前往";
+      goPlace.addEventListener("click", function () { goTo(items[0].id); });
+      head.appendChild(headText);
+      head.appendChild(goPlace);
+      ul.appendChild(head);
+      items.forEach(function (sc) { addProgressItem(ul, sc); });
+    });
+  }
+
+  function addProgressItem(ul, sc) {
       const li = document.createElement("li");
       li.className = "progress-item";
       const div = document.createElement("div");
@@ -1889,7 +2136,7 @@
       const rec = recordOf(sc.id);
       const badge = document.createElement("span");
       badge.className = "badge" + (rec ? " " + rec : "");
-      badge.textContent = rec === "best" ? "答對" : rec === "seen" ? "已看過" : "未完成";
+      badge.textContent = rec === "best" ? "答對" : rec === "seen" ? "再想一次" : "未完成";
       title.appendChild(badge);
       title.appendChild(document.createTextNode(sc.title));
       const meta = document.createElement("p");
@@ -1904,10 +2151,10 @@
       li.appendChild(div);
       li.appendChild(go);
       ul.appendChild(li);
-    });
   }
 
   function openProgress() {
+    markTutorial(4);
     renderProgress();
     progress.hidden = false;
     document.body.classList.add("ui-busy");
@@ -1919,9 +2166,18 @@
     if (dialog.hidden) document.body.classList.remove("ui-busy");
   }
 
+  function buildingOf(id) {
+    return BUILDINGS.find(function (b) { return (b.scenarios || []).indexOf(id) !== -1; });
+  }
+
   function goTo(id) {
-    const spot = SPOTS.find(function (s) { return s.id === id; });
+    const building = buildingOf(id);
     closeProgress();
+    if (building) {
+      guideTo(building.name);
+      return;
+    }
+    const spot = SPOTS.find(function (s) { return s.id === id; });
     if (!spot) return;
     if (area !== "town") setArea("town", spot.x, spot.y + 50);
     const candidates = [
@@ -1975,9 +2231,16 @@
     return list.length ? list : TOWN_NEWS.filter(function (item) { return !item.when && !item.roles; });
   }
 
+  function positiveMod(n, m) {
+    if (!m) return 0;
+    const r = n % m;
+    return r < 0 ? r + m : r;
+  }
+
   function newsIndex() {
     const list = newsPool();
-    return Math.floor(time / 6) % list.length;
+    if (!list.length) return 0;
+    return positiveMod(Math.floor(Math.max(0, time) / 6), list.length);
   }
 
   function drawHomeTv() {
@@ -1986,7 +2249,8 @@
     const w = 114;
     const h = 86;
     const list = newsPool();
-    const item = list[newsIndex()];
+    const item = list[newsIndex()] || list[0];
+    if (!item || !item.title) return;
     pen.save();
     pen.beginPath();
     pen.rect(x, y, w, h);
@@ -2047,11 +2311,135 @@
     ]);
   }
 
+  function basisText(id) {
+    const known = {
+      "disclosure-form": "依據：保險法第 64 條。訂約時，對保險人的書面詢問要據實說明。",
+      "health-blank": "依據：保險法第 64 條。書面詢問要由本人據實勾寫。",
+      "complaint-path": "依據：先向保險公司申訴，仍不服可看金融消費評議中心公開說明（https://www.foi.org.tw/）。法院不是第一步。"
+    };
+    if (id === "compulsory-auto" || id === "garage-voluntary") {
+      return "依據：強制汽車責任保險法。強制險著重受害人的傷害、失能和死亡，有法定項目和上限。不確定的細節寫成：參考強制汽車責任保險法相關規定。";
+    }
+    return known[id] || "依據：參考保險法相關規定。上面的白話只幫你對條款，不代替條文。";
+  }
+
+  function talkVerb(near) {
+    if (!near) return "對話";
+    if (near.animal) return "摸摸";
+    if (near.facility === "chest") return "查看";
+    if (near.facility === "tv" || near.facility === "card" || near.facility === "bank") return "查看";
+    const building = BUILDINGS.find(function (b) {
+      const door = b.door || { x: b.x + b.w / 2, y: b.y + b.h + 18 };
+      return Math.hypot(door.x - player.x, door.y - player.y) < 36 && Math.hypot(near.x - door.x, near.y - door.y) < 48;
+    });
+    if (building && !byId[near.id]) return "進去";
+    return "對話";
+  }
+
+  function maybeRoomCard(name) {
+    const building = BUILDINGS.find(function (b) { return b.name === name; });
+    if (!building || !building.card) return;
+    if (building.card === "office" && building.scenarios.some(function (id) {
+      const sc = byId[id];
+      return sc && sc.roles.indexOf(role) !== -1;
+    })) return;
+    openRoomCard(building);
+  }
+
+  function openRoomCard(building) {
+    if (building.card === "hall") return openDispute();
+    if (building.card === "labor") return openLabor();
+    const copy = {
+      center: ["鎮民中心布告", "保單放在找得到的地方。受益人要自己向公司辦變更，家裡的事情不會自動改欄位。這裡不代辦、也不留電話。"],
+      shop: ["超商櫃台", "收據先留著。依實際花費補償的契約，還要對得上條款裡的費用和上限，不是花多少領多少。"],
+      zhou: ["周家", "家裡如果只有住宅火災保險，淹水不會自動算進去。有沒有颱風或洪水的約定，要看那張條款。"],
+      wu: ["吳家", "要保時問到的病和正在吃的藥，要照實寫。時間久了，也不代表當初沒寫的事就不算數。"],
+      office: ["事務所櫃台", "這裡談的是委託範圍和報酬怎麼算。你現在這個身分先把條款爭議帶到壽險街或產險街。經紀人收不收費，要在做事之前講清楚。"]
+    };
+    const item = copy[building.card] || ["說明", "這裡是小鎮自己的說明，不是哪一家公司的服務。"];
+    fillFacility(item[0], [para(item[1]), para("實際是否給付，以保單條款為準。")]);
+  }
+
+  function openLabor() {
+    const a = document.createElement("a");
+    a.href = "https://www.bli.gov.tw/";
+    a.target = "_blank";
+    a.rel = "noopener";
+    a.textContent = "勞工保險局網站";
+    const b = document.createElement("a");
+    b.href = "https://www.nhi.gov.tw/";
+    b.target = "_blank";
+    b.rel = "noopener";
+    b.textContent = "中央健康保險署網站";
+    fillFacility("勞工服務站", [
+      para("勞工保險有老年給付這類項目，年資和投保薪資會影響能領的方式。金額和資格會調整，以勞工保險局當時的說明為準，這裡不寫會過時的數字。"),
+      a,
+      para("健保就醫依身分會有部分負擔。金額以衛生福利部中央健康保險署公告為準，這裡不寫死一個數字。"),
+      b,
+      para("這兩張卡片是制度通則，不是投保建議，也不是給付承諾。")
+    ]);
+  }
+
+  function openDispute() {
+    let step = 0;
+    const note = para("公司拒絕之後，先把順序走對。");
+    function paint(text) { note.textContent = text; }
+    function button(label, pick) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "option";
+      btn.textContent = label;
+      btn.addEventListener("click", function () {
+        if (pick === step) {
+          step += 1;
+          if (step === 1) paint("已向公司申訴。還沒有結果之前，先等書面答復，再決定下一步。");
+          else if (step === 2) paint("仍不服，才向金融消費評議中心申請評議。看中心當時公開的說明：https://www.foi.org.tw/");
+          else paint("訴訟不是第一步。前面兩步走完仍不服，才考慮法院。這不是法律意見。");
+        } else paint("先不要跳這一步。順序是：向公司申訴，再申請評議，最後才考慮訴訟。");
+      });
+      return btn;
+    }
+    fillFacility("拒賠之後怎麼走", [
+      para("這是小鎮公所的練習。不代寫狀紙，也不保證結果。"),
+      note,
+      button("向保險公司申訴", 0),
+      button("申請評議", 1),
+      button("考慮訴訟", 2)
+    ]);
+  }
+
+  function petAnimal(near) {
+    const today = taipeiDate();
+    if (bag().petDay === today) {
+      showToast(near.line + "今天已經摸過了。");
+      return;
+    }
+    bag().petDay = today;
+    bag().bonus = (bag().bonus || 0) + 3;
+    save();
+    renderHud();
+    showReward("小鎮幣 +3");
+    showToast(near.name + "讓你摸了一下。明天還可以再來。");
+  }
+
   function talk() {
     if (uiOpen()) return;
     const near = nearestSpot();
     if (!near) {
       showToast("再靠近門口、電視或村民一點。");
+      return;
+    }
+    if (near.animal) {
+      petAnimal(near);
+      return;
+    }
+    if (near.line && !byId[near.id]) {
+      showToast(near.line);
+      return;
+    }
+    if (near.facility === "card") {
+      const building = BUILDINGS.find(function (b) { return b.name === roomName; });
+      if (building) openRoomCard(building);
       return;
     }
     if (near.facility === "tv") {
@@ -2075,15 +2463,15 @@
       showToast(spot.zone + "要到 Lv." + zone.level);
       return;
     }
-    if (state.opened[spot.id]) {
+    if (bag().opened[spot.id]) {
       showToast("這個寶箱已經打開了");
       return;
     }
-    state.opened[spot.id] = true;
-    state.bonus = (state.bonus || 0) + 15;
+    bag().opened[spot.id] = true;
+    bag().bonus = (bag().bonus || 0) + 8;
     save();
     renderHud();
-    showReward("獲得獎勵：小鎮幣 +15");
+    showReward("小鎮幣 +8");
   }
 
   function fillFacility(title, nodes) {
@@ -2103,8 +2491,9 @@
   }
 
   function openBank() {
-    state.seenBank = true;
+    bag().seenBank = true;
     save();
+    renderHud();
     const amount = document.createElement("input");
     amount.type = "number";
     amount.min = "10";
@@ -2123,13 +2512,13 @@
     early.textContent = "提前結束最早的一筆（只退本金）";
     early.addEventListener("click", withdrawEarly);
     const list = document.createElement("div");
-    (state.deposits || []).forEach(function (item, index) {
+    (bag().deposits || []).forEach(function (item, index) {
       const left = Math.max(0, item.days - (Date.now() - item.start) / DAY_MS);
       list.appendChild(para("第 " + (index + 1) + " 筆本金 " + item.principal + "，剩下約 " + left.toFixed(1) + " 個小鎮日"));
     });
     fillFacility("銀行櫃台", [
       para("這裡只用小鎮幣練習，不能換成真實的錢，也不是任何一家銀行的存款。一個小鎮日大約三十秒，只為了讓練習看得到期滿。"),
-      para("名義上多出來的枚數如果追不上物價上漲，能買到的東西仍可能變少。定存期間錢拿去不了急用，就是流動性的代價。合計上限 200 枚。提前結束只退本金，練習多給的枚數不算。期滿才把多給的枚數加進小鎮幣，那也不是真實利息。"),
+      para("名義上多出來的枚數如果追不上物價上漲，能買到的東西仍可能變少。定存期間錢不能拿去急用，就是流動性的代價。每滿 50 枚，期滿多給 1 枚練習幣；未滿 50 枚不會多給。合計上限 200 枚。提前結束只退本金。那不是真實利息。"),
       para("現在拿得到的小鎮幣：" + cashOf(role)),
       amount,
       put,
@@ -2143,7 +2532,8 @@
       showToast("至少存 10 枚小鎮幣");
       return;
     }
-    const locked = (state.deposits || []).reduce(function (sum, item) { return sum + item.principal; }, 0);
+    const data = bag();
+    const locked = (data.deposits || []).reduce(function (sum, item) { return sum + item.principal; }, 0);
     if (locked + amount > 200) {
       showToast("定存合計上限 200 枚");
       return;
@@ -2152,18 +2542,21 @@
       showToast("拿得到的小鎮幣不夠");
       return;
     }
-    state.deposits.push({ principal: amount, days: days, rate: rate, start: Date.now() });
+    const extra = Math.floor(amount / 50);
+    data.deposits.push({ principal: amount, days: days, rate: rate, start: Date.now() });
     save();
     renderHud();
+    showToast(extra > 0 ? "期滿練習多給 " + extra + " 枚。這不是真實利息。" : "未滿 50 枚，期滿不會多給，只是把錢鎖住練習。");
     openBank();
   }
 
   function withdrawEarly() {
-    if (!state.deposits.length) {
+    const data = bag();
+    if (!data.deposits.length) {
       showToast("現在沒有定存");
       return;
     }
-    state.deposits.shift();
+    data.deposits.shift();
     save();
     renderHud();
     showToast("已退回本金，練習用的多給枚數沒有計入");
@@ -2191,9 +2584,17 @@
     calc.className = "primary";
     calc.textContent = "計算 BMI";
     calc.addEventListener("click", function () {
-      const meters = Number(height.value) / 100;
+      const cm = Number(height.value);
       const kilos = Number(weight.value);
-      if (!meters || !kilos) return;
+      if (!height.value || !weight.value || !isFinite(cm) || !isFinite(kilos)) {
+        result.textContent = "請填身高和體重。";
+        return;
+      }
+      if (cm < 100 || cm > 220 || kilos < 30 || kilos > 200) {
+        result.textContent = "身高請填 100–220 公分，體重請填 30–200 公斤。";
+        return;
+      }
+      const meters = cm / 100;
       const bmi = kilos / (meters * meters);
       let band = "多半落在常見範圍";
       if (bmi < 18.5) band = "偏低一些";
@@ -2206,7 +2607,11 @@
     go.textContent = "看醫療花費和條款怎麼對";
     go.addEventListener("click", function () {
       document.getElementById("facility").hidden = true;
-      openDialog("hospital-reimburse");
+      const medical = ["hospital-reimburse", "clinic-necessity", "claim-docs"].filter(function (id) {
+        return byId[id] && byId[id].roles.indexOf(role) !== -1;
+      });
+      const n = taipeiDate().split("-").reduce(function (sum, part) { return sum + Number(part); }, 0);
+      openDialog(medical[n % medical.length] || "hospital-reimburse");
     });
     fillFacility("醫院", [
       para("先算一個簡單的身高體重比值，再去看醫療契約怎麼寫花費。這裡不提供就醫建議，也不推薦任何醫療商品。"),
@@ -2225,7 +2630,7 @@
     go.textContent = "看強制險和任意險差在哪";
     go.addEventListener("click", function () {
       document.getElementById("facility").hidden = true;
-      openDialog("garage-voluntary");
+      openDialog("garage-voluntary", "車行");
     });
     fillFacility("車行", [
       para("車行這裡先把類型分開：法定的強制責任保險著重受害人的傷害；另外的責任保險和車體損失才處理車子本身或對方的財物。這不是在推薦你買某一張產險。"),
@@ -2308,8 +2713,21 @@
   }
 
   function bind() {
-    document.querySelectorAll(".role-card").forEach(function (btn) {
-      btn.addEventListener("click", function () { startRole(btn.getAttribute("data-role")); });
+    let pendingRole = null;
+    document.querySelectorAll("[data-role]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        pendingRole = btn.getAttribute("data-role");
+        document.getElementById("gender-role").textContent = ROLE_NAME[pendingRole];
+        document.getElementById("gender-pick").hidden = false;
+      });
+    });
+    document.querySelectorAll("[data-gender]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        if (!pendingRole) return;
+        state.gender[pendingRole] = btn.getAttribute("data-gender") === "f" ? "f" : "m";
+        save();
+        startRole(pendingRole);
+      });
     });
     document.getElementById("btn-role").addEventListener("click", backToTitle);
     document.getElementById("btn-map").addEventListener("click", function () {
@@ -2318,6 +2736,42 @@
     document.getElementById("map-fit").addEventListener("click", function () {
       mapFit();
       paintTownMap();
+    });
+    document.getElementById("map-in").addEventListener("click", function () {
+      mapGeom.scale = Math.min(1.1, mapGeom.scale * 1.2);
+      clampMap();
+      paintTownMap();
+    });
+    document.getElementById("map-out").addEventListener("click", function () {
+      mapGeom.scale = Math.max(mapFitScale() * 0.85, mapGeom.scale / 1.2);
+      clampMap();
+      paintTownMap();
+    });
+    document.getElementById("dlg-prev").addEventListener("click", function () {
+      if (lineAt > 0) lineAt -= 1;
+      showLine();
+    });
+    document.getElementById("dlg-next").addEventListener("click", function () {
+      if (lineAt < lineList.length - 1) {
+        lineAt += 1;
+        showLine();
+      } else {
+        document.getElementById("dlg-options").hidden = false;
+        const first = document.querySelector("#dlg-options .option");
+        if (first) first.focus();
+      }
+    });
+    document.getElementById("coach-skip").addEventListener("click", function () {
+      state.tutorialDone = true;
+      save();
+      paintCoach();
+    });
+    document.querySelectorAll("[data-font]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        state.font = btn.getAttribute("data-font");
+        save();
+        applyFont();
+      });
     });
     (function bindTownMap() {
       const canvas = document.getElementById("town-map");
@@ -2387,6 +2841,7 @@
     document.getElementById("facility-close").addEventListener("click", function () {
       document.getElementById("facility").hidden = true;
       if (dialog.hidden && progress.hidden) document.body.classList.remove("ui-busy");
+      renderHud();
     });
     document.getElementById("map-close").addEventListener("click", function () {
       document.getElementById("map-panel").hidden = true;
@@ -2405,6 +2860,8 @@
     document.getElementById("progress-clear").addEventListener("click", function () {
       if (!window.confirm("要清除這個身分的完成紀錄與分數嗎？")) return;
       state.progress[role] = {};
+      state.xp[role] = 0;
+      state.byRole[role] = emptyRole();
       save();
       renderHud();
       renderProgress();
@@ -2530,6 +2987,150 @@
     }
   }
 
+  function taipeiDate() {
+    return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Taipei" }).format(new Date());
+  }
+
+  function grantDaily() {
+    const today = taipeiDate();
+    const data = bag();
+    if (data.daily !== today) {
+      data.daily = today;
+      data.bonus = (data.bonus || 0) + 20;
+      data.visits = data.visits || [];
+      if (data.visits[data.visits.length - 1] !== today) data.visits.push(today);
+      const list = scenariosFor(role);
+      const n = today.split("-").reduce(function (sum, part) { return sum + Number(part); }, 0);
+      if (list.length) data.dailyId = list[n % list.length].id;
+      save();
+      showToast("今天第一次進來，這個身分的小鎮幣 +20。這不是真實的錢。");
+    }
+  }
+
+  function noteZoneVisit() {
+    ZONES.forEach(function (zone) {
+      if (player.x > zone.x && player.x < zone.x + zone.w && player.y > zone.y && player.y < zone.y + zone.h && levelOf() >= zone.level) {
+        bag().zones[zone.name] = true;
+      }
+    });
+  }
+
+  function noteStamps() {
+    BUILDINGS.forEach(function (b) {
+      const ids = (b.scenarios || []).filter(function (id) {
+        return byId[id] && byId[id].roles.indexOf(role) !== -1;
+      });
+      if (ids.length && ids.every(function (id) { return recordOf(id); })) bag().stamps[b.name] = true;
+    });
+    const visits = bag().visits || [];
+    let streak = visits.length ? 1 : 0;
+    for (let i = visits.length - 1; i > 0; i--) {
+      const a = new Date(visits[i - 1] + "T00:00:00+08:00").getTime();
+      const b = new Date(visits[i] + "T00:00:00+08:00").getTime();
+      if (Math.round((b - a) / 86400000) === 1) streak += 1;
+      else break;
+    }
+    if (streak >= 2) bag().stamps["連續來訪"] = true;
+    if (ZONES.every(function (zone) { return bag().zones[zone.name]; })) bag().stamps["外圍都走過"] = true;
+  }
+
+  function paintCoach() {
+    const box = document.getElementById("coach");
+    if (!box) return;
+    if (state.tutorialDone) {
+      box.hidden = true;
+      return;
+    }
+    const steps = [
+      "先走兩步。搖桿、方向鍵或點地面都可以。",
+      "走到一扇門前面，按「進去」。",
+      "聽完兩個人說話，選一個看法。",
+      "打開右上角的地圖。",
+      "打開頭像，看這個身分的進度。"
+    ];
+    const step = bag().tutorial || 0;
+    if (step >= steps.length) {
+      state.tutorialDone = true;
+      box.hidden = true;
+      save();
+      return;
+    }
+    box.hidden = false;
+    document.getElementById("coach-text").textContent = "教學 " + (step + 1) + "/5　" + steps[step];
+  }
+
+  function markTutorial(step) {
+    if (state.tutorialDone || !role) return;
+    if ((bag().tutorial || 0) !== step) return;
+    bag().tutorial = step + 1;
+    if (bag().tutorial >= 5) state.tutorialDone = true;
+    save();
+    paintCoach();
+  }
+
+  function applyFont() {
+    document.body.classList.remove("font-lg", "font-xl");
+    if (state.font === "lg") document.body.classList.add("font-lg");
+    if (state.font === "xl") document.body.classList.add("font-xl");
+  }
+
+  function healSpots() {
+    const prev = area;
+    area = "town";
+    buildNav();
+    const startC = clamp(Math.round(500 / CS), 0, cols - 1);
+    const startR = clamp(Math.round(400 / CS), 0, rows - 1);
+    const seen = new Uint8Array(cols * rows);
+    const queue = [startC + startR * cols];
+    if (!blocked[queue[0]]) seen[queue[0]] = 1;
+    else {
+      const n = nearestOpen(startC, startR);
+      if (n) {
+        seen[n.c + n.r * cols] = 1;
+        queue[0] = n.c + n.r * cols;
+      }
+    }
+    for (let i = 0; i < queue.length; i++) {
+      const k = queue[i];
+      const c = k % cols;
+      const r = (k - c) / cols;
+      [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(function (d) {
+        const nc = c + d[0];
+        const nr = r + d[1];
+        if (nc < 0 || nr < 0 || nc >= cols || nr >= rows) return;
+        const nk = nc + nr * cols;
+        if (seen[nk] || blocked[nk]) return;
+        seen[nk] = 1;
+        queue.push(nk);
+      });
+    }
+    SPOTS.forEach(function (s) {
+      let c = clamp(Math.round(s.x / CS), 0, cols - 1);
+      let r = clamp(Math.round(s.y / CS), 0, rows - 1);
+      if (blocked[c + r * cols] || !seen[c + r * cols]) {
+        let best = null;
+        let bestD = Infinity;
+        for (let i = 0; i < seen.length; i++) {
+          if (!seen[i]) continue;
+          const cc = i % cols;
+          const rr = (i - cc) / cols;
+          const d = Math.hypot(cc * CS - s.x, rr * CS - s.y);
+          if (d < bestD) {
+            bestD = d;
+            best = { x: cc * CS + CS / 2, y: rr * CS + CS / 2 };
+          }
+        }
+        if (best && bestD < 220) {
+          console.warn("moved spot", s.id, s.x, s.y, best.x, best.y);
+          s.x = best.x;
+          s.y = best.y;
+        } else console.warn("unreachable spot", s.id, s.x, s.y);
+      }
+    });
+    area = prev;
+    buildNav();
+  }
+
   function validate() {
     const seen = {};
     SCENARIOS.forEach(function (s) {
@@ -2548,6 +3149,15 @@
   }
 
   validate();
+  healSpots();
+  applyFont();
+  if (window.HEAN_ART) {
+    window.HEAN_ART.onReady = function () {
+      if (!role) return;
+      paintAvatar();
+      if (currentId && dialog && !dialog.hidden) paintDialogArt(currentId);
+    };
+  }
   area = "town";
   buildNav();
   SPOTS.forEach(function (s) {
@@ -2571,7 +3181,8 @@
     musicBtn.setAttribute("aria-pressed", state.music ? "true" : "false");
   }
 
-  window.__hean = {
+  const debugMode = /(?:\?|&)debug(?:=|&|$)/.test(location.search);
+  if (debugMode) window.__hean = {
     player: player,
     state: state,
     startRole: startRole,

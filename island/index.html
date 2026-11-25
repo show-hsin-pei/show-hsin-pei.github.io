@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=2.1">
+  <link rel="stylesheet" href="styles.css?v=2.2">
 </head>
 <body>
   <a class="skip" href="#title-main">跳至主要內容</a>
@@ -59,7 +59,7 @@
       <p class="eyebrow">保險觀念散步</p>
       <h1 id="title-main">藝世錄保險小鎮</h1>
       <p class="lede">選一個身分，在小鎮裡走走。靠近住家或村民，聽一段保險爭議，再選一個看法。這是教學，不是測驗排名。</p>
-      <p class="version" id="version-line">版本 2.0 · 2026年11月24日更新</p>
+      <p class="version" id="version-line">版本 2.2 · 2026年11月25日更新</p>
       <div class="roles" role="group" aria-label="選擇身分">
         <button class="role-card" type="button" data-role="consumer">
           <img class="role-full" alt="" data-art="client" width="88" height="120">
@@ -84,6 +84,18 @@
         </button>
       </div>
       <p class="legal">遊戲裡的人壽與產物公司都是虛構的。本內容僅供保險觀念教育，不構成招攬、法律意見或個別建議。實際是否承保或給付，以保險契約條款、投保內容與個案事實為準。</p>
+      <div id="gender-pick" hidden>
+        <p class="lede" id="gender-role">選好身分之後，再選角色外觀。</p>
+        <div class="roles gender-roles">
+          <button type="button" class="chip" data-gender="m">男</button>
+          <button type="button" class="chip" data-gender="f">女</button>
+        </div>
+        <p class="legal">每個可玩身分都留了男、女兩套圖。圖還沒分開時，兩個外觀先用同一套。</p>
+      </div>
+      <div id="load-strip" hidden>
+        <p>正在準備這個角色和小鎮</p>
+        <div class="load-track"><div id="load-bar"></div></div>
+      </div>
     </div>
   </section>
 
@@ -105,12 +117,17 @@
       <p class="desktop-hint" id="desktop-hint">點地面走路 · 方向鍵或 WASD · E 或空白鍵對話</p>
       <p class="near-label" id="near-label" hidden></p>
       <p class="toast" id="toast" hidden></p>
+      <p class="rotate-hint" id="rotate-hint" hidden>橫向時畫面會擠。把手機轉成直向，比較好看。</p>
+      <div class="coach" id="coach" hidden>
+        <p id="coach-text"></p>
+        <button type="button" id="coach-skip">略過教學</button>
+      </div>
       <div class="quest" id="quest">
         <span id="quest-text">目標：走出家門</span>
         <button type="button" id="quest-go">帶我去</button>
       </div>
       <div class="reward" id="reward" hidden>
-        <strong>獲得獎勵</strong>
+        <strong>記下了</strong>
         <p id="reward-body"></p>
       </div>
     </div>
@@ -136,11 +153,17 @@
         <p class="speaker" id="dlg-speaker"></p>
       </div>
       <p class="body-copy" id="dlg-body"></p>
+      <div class="line-nav" id="dlg-nav">
+        <button type="button" class="ghost" id="dlg-prev">上一句</button>
+        <button type="button" class="primary" id="dlg-next">下一句</button>
+      </div>
       <div class="options" id="dlg-options"></div>
       <div class="feedback" id="dlg-feedback" hidden>
         <p class="verdict" id="dlg-verdict"></p>
         <p class="best-line" id="dlg-best"></p>
         <p class="explain" id="dlg-explain"></p>
+        <p class="explain" id="dlg-prior"></p>
+        <p class="explain" id="dlg-basis"></p>
         <div class="tip" id="dlg-tip">
           <strong id="dlg-tip-label"></strong>
           <p id="dlg-tip-body"></p>
@@ -163,7 +186,11 @@
       </div>
       <p class="body-copy">拖曳移動，雙指或滾輪縮放。點建築會走過去。紅點是你現在的位置。</p>
       <canvas id="town-map" aria-label="藝世錄保險小鎮全景地圖"></canvas>
-      <button type="button" class="chip" id="map-fit">看全景</button>
+      <div class="map-tools">
+        <button type="button" class="chip" id="map-in" aria-label="放大">＋</button>
+        <button type="button" class="chip" id="map-out" aria-label="縮小">－</button>
+        <button type="button" class="chip" id="map-fit">看全景</button>
+      </div>
     </div>
   </div>
 
@@ -181,6 +208,9 @@
         <button type="button" class="chip" id="btn-role">換身分</button>
         <button type="button" class="chip" id="btn-sound" aria-pressed="false">音效關</button>
         <button type="button" class="chip" id="btn-music" aria-pressed="false">音樂關</button>
+        <button type="button" class="chip" data-font="md">標準</button>
+        <button type="button" class="chip" data-font="lg">大</button>
+        <button type="button" class="chip" data-font="xl">特大</button>
       </div>
     </div>
   </div>
@@ -215,10 +245,10 @@
   </div>
 
   <noscript><p class="legal">藝世錄保險小鎮需要開啟 JavaScript 才能走動與對話。</p></noscript>
-  <script src="scenarios.js?v=2.1" defer></script>
-  <script src="characters.js?v=2.1" defer></script>
-  <script src="rooms.js?v=2.1" defer></script>
-  <script src="art.js?v=2.1" defer></script>
-  <script src="game.js?v=2.1" defer></script>
+  <script src="scenarios.js?v=2.2" defer></script>
+  <script src="characters.js?v=2.2" defer></script>
+  <script src="rooms.js?v=2.2" defer></script>
+  <script src="art.js?v=2.2" defer></script>
+  <script src="game.js?v=2.2" defer></script>
 </body>
 </html>
