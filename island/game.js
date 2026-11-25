@@ -1,5 +1,5 @@
 (function () {
-  const VERSION = "2.2";
+  const VERSION = "2.3";
   const UPDATED = "2026年11月25日";
   const KEY = "hean-village-v1";
   const FONT = '"Noto Sans TC", "PingFang TC", "Microsoft JhengHei", "WenQuanYi Micro Hei", sans-serif';
@@ -513,7 +513,7 @@
       walkers.forEach(function (w) { list.push(w); });
       return list;
     }
-    if (area === "home") return [{ id: "home-tv", name: "電視", x: 560, y: 470, facility: "tv" }];
+    if (area === "home") return [{ id: "home-tv", name: "電視", x: 590, y: 448, facility: "tv" }];
     const b = BUILDINGS.find(function (item) { return item.name === roomName; });
     const ids = (b && b.scenarios ? b.scenarios : []).filter(function (id) {
       const sc = byId[id];
@@ -1259,7 +1259,7 @@
     const id = isPlayer ? "player-" + role : scenarioId;
     const moving = isPlayer && player.walk > 0.02 && !reduceMotion;
     const facing = isPlayer ? (player.facing || "down") : "down";
-    const aiH = area === "home" ? 280 : area === "town" ? 124 : 108;
+    const aiH = area === "home" ? 248 : area === "town" ? 112 : 124;
     const aiW = aiH * 256 / 320;
     const aiFrame = moving ? Math.floor(player.walk * 8) % 4 : 1;
     const step = moving && (facing === "up" || facing === "down") ? (aiFrame % 2 === 0 ? 4 : -3) : 0;
@@ -1465,14 +1465,15 @@
         const dx = door.x;
         const dy = door.y;
         if (Math.abs(player.x - dx) < 26 && Math.abs(player.y - dy) < 22) {
-          if (b.kind === "home") setArea("home", 360, 820);
+          if (b.kind === "home") setArea("home", 470, 1040);
           else setArea("room", 220, 400, b.kind, { x: dx, y: dy + 50 }, b.name);
           return;
         }
       }
-    } else if (player.y > bounds().h - (area === "home" ? 110 : 42) && Math.abs(player.x - bounds().w / 2) < (area === "home" ? 90 : 42)) {
-      if (area === "home") setArea("town", 290, 400);
-      else setArea("town", roomExit.x, roomExit.y);
+    } else if (area === "home" && player.x > 410 && player.x < 548 && player.y > 980 && player.y < 1220) {
+      setArea("town", 290, 400);
+    } else if (area !== "home" && player.y > bounds().h - 42 && Math.abs(player.x - bounds().w / 2) < 42) {
+      setArea("town", roomExit.x, roomExit.y);
     }
   }
 
@@ -1929,7 +1930,7 @@
     playScreen.hidden = false;
     document.body.classList.remove("ui-busy");
     applyFont();
-    setArea("home", 360, 820);
+    setArea("home", 470, 1040);
     resize();
     paintAvatar();
     renderHud();
@@ -2244,10 +2245,10 @@
   }
 
   function drawHomeTv() {
-    const x = 552;
-    const y = 198;
-    const w = 114;
-    const h = 86;
+    const x = 511;
+    const y = 201;
+    const w = 177;
+    const h = 92;
     const list = newsPool();
     const item = list[newsIndex()] || list[0];
     if (!item || !item.title) return;
@@ -2270,12 +2271,12 @@
     pen.font = "700 11px " + FONT;
     pen.textAlign = "left";
     pen.textBaseline = "middle";
-    pen.fillText("小鎮新聞", x + 6, y + 14);
+    pen.fillText("小鎮新聞", x + 8, y + 18);
     const line = item.title + "    ·    ";
     const shift = reduceMotion ? 0 : (time * 28) % 400;
     pen.font = "600 12px " + FONT;
-    pen.fillText(line, x + 8 - shift, y + 40);
-    pen.fillText(line, x + 8 - shift + pen.measureText(line).width, y + 40);
+    pen.fillText(line, x + 8 - shift, y + 52);
+    pen.fillText(line, x + 8 - shift + pen.measureText(line).width, y + 52);
     pen.restore();
     pen.strokeStyle = "rgba(214, 255, 210, 0.35)";
     pen.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
@@ -2718,6 +2719,9 @@
       btn.addEventListener("click", function () {
         pendingRole = btn.getAttribute("data-role");
         document.getElementById("gender-role").textContent = ROLE_NAME[pendingRole];
+        const base = pendingRole === "agent" ? "agent" : pendingRole === "broker" ? "broker" : "client";
+        document.getElementById("gender-art-m").src = "assets/characters/" + base + "_m.webp?v=2.3";
+        document.getElementById("gender-art-f").src = "assets/characters/" + base + "_f.webp?v=2.3";
         document.getElementById("gender-pick").hidden = false;
       });
     });
@@ -3181,6 +3185,7 @@
     musicBtn.setAttribute("aria-pressed", state.music ? "true" : "false");
   }
 
+  window.HEAN_GENDER = function (who) { return genderOf(who); };
   const debugMode = /(?:\?|&)debug(?:=|&|$)/.test(location.search);
   if (debugMode) window.__hean = {
     player: player,

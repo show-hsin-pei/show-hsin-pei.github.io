@@ -779,3 +779,6 @@ body.landscape .status {
 body.landscape .quest { font-size: 12px; }
 
 #facility-body a { display: block; margin-top: 8px; color: var(--gold-deep); }
+
+.gender-roles { grid-template-columns: 1fr 1fr; }
+.gender-roles .role-full { width: 120px; height: 168px; object-fit: contain; }

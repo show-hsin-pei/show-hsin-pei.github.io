@@ -1,5 +1,5 @@
 /* 載入原創圖。走路表：列 down/left/right/up，欄為走路格，站立用第 2 格。
-   可玩身分各留 m / f 兩套。素材未到時，兩個性別先用同一套，不預先請求不存在的檔。 */
+   可玩身分各有 m / f 兩套。選男用 _m，選女用 _f。 */
 (function () {
   const root = "assets/";
   const pending = [];
@@ -54,9 +54,20 @@
   window.HEAN_ASSETS.full = {};
   window.HEAN_ASSETS.portraits = {};
 
-  const sheetIds = ["agent", "broker", "client", "npc_grandma", "npc_mom", "npc_office", "npc_shopkeeper", "npc_grandpa"];
   const sheets = {};
-  sheetIds.forEach(function (id) {
+  ["agent", "broker", "client"].forEach(function (role) {
+    ["m", "f"].forEach(function (gender) {
+      const id = role + "_" + gender;
+      sheets[id] = make("sprites/" + id + "_walk.webp");
+      window.HEAN_ASSETS.full[id] = make("characters/" + id + ".webp");
+      window.HEAN_ASSETS.portraits[id] = make("portraits/" + id + ".webp");
+      pending.push(sheets[id], window.HEAN_ASSETS.full[id], window.HEAN_ASSETS.portraits[id]);
+    });
+    sheets[role] = sheets[role + "_m"];
+    window.HEAN_ASSETS.full[role] = window.HEAN_ASSETS.full[role + "_m"];
+    window.HEAN_ASSETS.portraits[role] = window.HEAN_ASSETS.portraits[role + "_m"];
+  });
+  ["npc_grandma", "npc_mom", "npc_office", "npc_shopkeeper", "npc_grandpa"].forEach(function (id) {
     sheets[id] = make("sprites/" + id + "_walk.webp");
     window.HEAN_ASSETS.full[id] = make("characters/" + id + ".webp");
     window.HEAN_ASSETS.portraits[id] = make("portraits/" + id + ".webp");
@@ -120,9 +131,16 @@
 
   function artKey(role, gender) {
     const base = baseOf(role);
-    const variant = base + (gender === "f" ? "_f" : "_m");
-    if (sheets[variant] || window.HEAN_ASSETS.portraits[variant]) return variant;
-    return base;
+    return base + (gender === "f" ? "_f" : "_m");
+  }
+
+  function keyFor(id) {
+    if (String(id).indexOf("player-") === 0) {
+      const who = id.slice(7);
+      const gender = window.HEAN_GENDER ? window.HEAN_GENDER(who) : "m";
+      return artKey(who, gender);
+    }
+    return map[id] || null;
   }
 
   function applySheets() {
@@ -161,13 +179,13 @@
       return ready(scenes.home) && ready(scenes.map) && ready(sheets[key]);
     },
     artId: function (id) { return map[id] || null; },
-    sheet: function (id) { return sheets[map[id]] || null; },
+    sheet: function (id) { return sheets[keyFor(id)] || null; },
     full: function (id) {
-      const key = map[id];
+      const key = keyFor(id);
       return key ? window.HEAN_ASSETS.full[key] : null;
     },
     portrait: function (id) {
-      const key = map[id];
+      const key = keyFor(id);
       return key ? window.HEAN_ASSETS.portraits[key] : null;
     },
     ready: ready,
