@@ -49,6 +49,7 @@
     { name: "原麓產物", zone: "產險街", x: 1380, y: 1165, w: 170, h: 155, roof: "#a67c52", wall: "#f8f3ea", sign: "#a67c52", theme: "責任範圍", motto: "這裡常先問責任險保的是誰的責任。", kind: "office", scenarios: ["liability-who", "liability-cap"] },
     { name: "澄川產物", zone: "產險街", x: 1575, y: 1165, w: 165, h: 155, roof: "#6d90a0", wall: "#f2f7f8", sign: "#6d90a0", theme: "意外定義", motto: "這裡常把意外和疾病的定義分開。", kind: "office", scenarios: ["exclusion-print", "complaint-path"] },
     { name: "醫院", zone: "醫院", x: 48, y: 1296, w: 168, h: 156, roof: "#d7e4ea", wall: "#f7fbff", kind: "clinic", scenarios: [] },
+    { name: "青禾診所", zone: "醫院", x: 500, y: 520, w: 140, h: 100, roof: "#d7e4ea", wall: "#f7fbff", kind: "clinic", scenarios: [] },
     { name: "公園亭", zone: "公園", x: 1900, y: 40, w: 200, h: 240, roof: "#7f8f78", wall: "#f7f3ea", kind: "stall", level: 3, scenarios: ["park-walk"] },
     { name: "湖畔亭", zone: "湖畔", x: 90, y: 1748, w: 130, h: 100, roof: "#7aa0b0", wall: "#f7f4ee", kind: "house", level: 5, door: { x: 420, y: 1608 }, scenarios: ["lake-rest"] },
     { name: "步道牌", zone: "山上步道", x: 1768, y: 1496, w: 52, h: 86, roof: "#8d6a45", wall: "#f6efe4", kind: "stall", level: 8, door: { x: 1660, y: 1508 }, scenarios: ["trail-sign"] }
@@ -153,6 +154,26 @@
   SPOTS.push({ id: "hen", name: "小雞", x: 760, y: 500, animal: true, line: "今天啄過手心了。" });
   SPOTS.push({ id: "fish-river", name: "河邊", x: 480, y: 1532, facility: "fish" });
   SPOTS.push({ id: "fish-dock", name: "碼頭", x: 2090, y: 860, facility: "fish", zone: "蘆灣" });
+  [
+    ["folk-he", "阿禾", 760, 395],
+    ["folk-lu", "小路", 1400, 395],
+    ["folk-chen", "陳阿姨", 760, 1119],
+    ["folk-lin", "林先生", 1400, 1367],
+    ["folk-man", "小滿", 560, 1532]
+  ].forEach(function (item) {
+    SPOTS.push({ id: item[0], name: item[1], x: item[2], y: item[3], facility: "meet" });
+  });
+  SPOTS.push({ id: "sport-corner", name: "青禾運動角", x: 775, y: 700, facility: "sport" });
+  SPOTS.push({ id: "barley-square", name: "麥穗廣場", x: 640, y: 480, facility: "draw" });
+  [
+    ["hospital", 320, 1460], ["hospital", 640, 1460], ["hospital", 760, 1460], ["hospital", 900, 1460], ["hospital", 1100, 1460],
+    ["clinic", 320, 700], ["clinic", 400, 700], ["clinic", 760, 700], ["clinic", 900, 700], ["clinic", 1680, 700],
+    ["civic", 480, 820], ["civic", 640, 820], ["civic", 760, 820], ["civic", 900, 820], ["civic", 1100, 820],
+    ["life", 900, 1119], ["life", 1280, 1119], ["life", 1400, 1119], ["life", 1500, 1119], ["life", 1900, 1119],
+    ["prop", 900, 1367], ["prop", 1280, 1367], ["prop", 1400, 1367], ["prop", 1600, 1367], ["prop", 1900, 1367]
+  ].forEach(function (item, index) {
+    SPOTS.push({ id: "quiz-" + item[0] + "-" + (index % 5), name: "居民", x: item[1], y: item[2], facility: "quiz", district: item[0], slot: index % 5 });
+  });
   const CHEST_POINTS = {
     "住宅區": [{ x: 480, y: 395 }, { x: 640, y: 395 }, { x: 800, y: 395 }, { x: 560, y: 1532 }, { x: 820, y: 1532 }],
     "商店街": [{ x: 1080, y: 395 }, { x: 1280, y: 395 }, { x: 1480, y: 395 }, { x: 1680, y: 395 }],
@@ -178,6 +199,7 @@
     "原麓產物": { start: 9, end: 17.5, weekdays: true },
     "澄川產物": { start: 9, end: 17.5, weekdays: true },
     "醫院": { start: 8, end: 17 },
+    "青禾診所": { start: 9, end: 12, start2: 14, end2: 17.5, weekdays: true },
     "小鎮公所": { start: 8.5, end: 17.5, weekdays: true },
     "小鎮法院": { start: 9, end: 17, weekdays: true },
     "鎮民中心": { start: 8.5, end: 17, weekdays: true },
@@ -202,7 +224,7 @@
     { lv: 8, text: "山上步道。" }
   ];
   let townSeen = null;
-  let forceTyphoon = false;
+  let forceTyphoon = null;
   let weekdayOverride = null;
 
   const titleScreen = document.getElementById("title-screen");
@@ -590,7 +612,6 @@
         return sc && sc.roles.indexOf(role) !== -1;
       });
       walkers.forEach(function (w) { list.push(w); });
-      if (role === "agent" || role === "broker") list.push({ id: "town-client", name: "鎮民", x: 820, y: 430, facility: "client" });
       return list;
     }
     if (area === "home") {
@@ -802,6 +823,7 @@
       holdZones();
       settleDeposits();
       noteZoneVisit();
+      refreshDailySpots();
       walkers.forEach(function (w) {
         const sheet = window.HEAN_ART && window.HEAN_ART.sheet(w.id);
         if (w.animal || !sheet || !sheet.complete || !sheet.naturalWidth) {
@@ -883,6 +905,7 @@
       }
       pen.drawImage(townLayer, 0, 0);
       drawShutters();
+      drawTownMarks();
       drawLife();
       drawFog();
     } else {
@@ -974,6 +997,28 @@
       pen.textBaseline = "middle";
       pen.fillText("休息中", b.x + b.w / 2, b.y + b.h * 0.7);
     });
+  }
+
+  function drawTownMarks() {
+    pen.save();
+    pen.fillStyle = "rgba(111, 159, 122, 0.38)";
+    pen.fillRect(700, 620, 150, 90);
+    pen.strokeStyle = "#fffdf9";
+    pen.lineWidth = 2;
+    pen.strokeRect(714, 634, 122, 62);
+    pen.fillStyle = "#3f362e";
+    pen.font = "700 13px " + FONT;
+    pen.textAlign = "center";
+    pen.textBaseline = "middle";
+    pen.fillText("青禾運動角", 775, 665);
+    pen.fillStyle = "#c4a36a";
+    pen.beginPath();
+    pen.arc(640, 455, 18, 0, Math.PI * 2);
+    pen.fill();
+    pen.fillStyle = "#fffdf9";
+    pen.font = "700 12px " + FONT;
+    pen.fillText("麥穗", 640, 455);
+    pen.restore();
   }
 
   function drawFog() {
@@ -1106,7 +1151,7 @@
   }
 
   function isTyphoon() {
-    if (forceTyphoon) return true;
+    if (forceTyphoon != null) return !!forceTyphoon;
     const day = taipeiDate();
     let n = 0;
     for (let i = 0; i < day.length; i++) n = (n * 33 + day.charCodeAt(i)) >>> 0;
@@ -1128,7 +1173,8 @@
     const clock = taipeiParts();
     if (rule.weekdays && (clock.weekday === 0 || clock.weekday === 6)) return false;
     const hour = clock.hour + clock.minute / 60;
-    return hour >= rule.start && hour < rule.end;
+    if (hour >= rule.start && hour < rule.end) return true;
+    return rule.start2 != null && hour >= rule.start2 && hour < rule.end2;
   }
 
   function hoursLabel(name) {
@@ -1136,7 +1182,8 @@
     if (!rule) return "";
     const start = String(Math.floor(rule.start)).padStart(2, "0") + ":" + (rule.start % 1 ? "30" : "00");
     const end = String(Math.floor(rule.end)).padStart(2, "0") + ":" + (rule.end % 1 ? "30" : "00");
-    return (rule.weekdays ? "平日 " : "每天 ") + start + "–" + end;
+    const second = rule.start2 == null ? "" : "、" + String(Math.floor(rule.start2)).padStart(2, "0") + ":" + (rule.start2 % 1 ? "30" : "00") + "–" + String(Math.floor(rule.end2)).padStart(2, "0") + ":" + (rule.end2 % 1 ? "30" : "00");
+    return (rule.weekdays ? "平日 " : "每天 ") + start + "–" + end + second;
   }
 
   function bakeTown() {
@@ -2268,6 +2315,7 @@
     renderHud();
     animateXp(before, after);
     showFloater("第一次來到" + name + "\n+8 EXP");
+    if (Object.keys(data.places).length >= 5) earnBadge("places");
     if (after > before) noteLevel();
   }
 
@@ -2422,9 +2470,9 @@
     placeChrome();
     document.getElementById("st-stam").textContent = "體力 " + stamina() + "/100";
     const alert = document.getElementById("town-alert");
-    if (alert) {
-      alert.hidden = !(area === "town" && isTyphoon());
-    }
+    if (alert) alert.hidden = !(area === "town" && isTyphoon());
+    paintRadio();
+    if (role && isTyphoon()) earnBadge("typhoon");
     const soundBtn = document.getElementById("btn-sound");
     const musicBtn = document.getElementById("btn-music");
     soundBtn.textContent = state.sound ? "音效開" : "音效關";
@@ -2994,6 +3042,10 @@
     if (area !== "town" && inExitZone()) return "出門";
     if (near.facility === "tv") return "看電視";
     if (near.facility === "card" || near.facility === "bank") return "查看";
+    if (near.facility === "meet") return (role === "agent" || role === "broker") ? "陌開" : "對話";
+    if (near.facility === "sport") return "運動";
+    if (near.facility === "draw") return "抽一次";
+    if (near.facility === "quiz") return "聽故事";
     const building = BUILDINGS.find(function (b) {
       const door = b.door || { x: b.x + b.w / 2, y: b.y + b.h + 18 };
       return Math.hypot(door.x - player.x, door.y - player.y) < 36 && Math.hypot(near.x - door.x, near.y - door.y) < 48;
@@ -3161,6 +3213,22 @@
     }
     if (near.facility === "client") {
       openClientTalk();
+      return;
+    }
+    if (near.facility === "meet") {
+      openMeet(near);
+      return;
+    }
+    if (near.facility === "sport") {
+      openSport();
+      return;
+    }
+    if (near.facility === "draw") {
+      openDraw();
+      return;
+    }
+    if (near.facility === "quiz") {
+      openQuiz(near);
       return;
     }
     if (talkBtn.textContent === "出門" && area !== "town" && inExitZone()) {
@@ -3902,6 +3970,8 @@
     document.getElementById("btn-tips").addEventListener("click", openTips);
     document.getElementById("btn-pack").addEventListener("click", openPack);
     document.getElementById("btn-clients").addEventListener("click", openClientBook);
+    document.getElementById("btn-badges").addEventListener("click", openBadges);
+    document.getElementById("radio").addEventListener("click", openRadio);
     document.getElementById("finance-close").addEventListener("click", function () {
       document.getElementById("finance").hidden = true;
       if (dialog.hidden && progress.hidden && document.getElementById("facility").hidden) document.body.classList.remove("ui-busy");
@@ -4213,14 +4283,14 @@
     { id: "wu", name: "吳小姐" }
   ];
   const CLIENT_STEPS = [
-    { name: "破冰", q: "第一次開口，哪一句比較穩？", options: ["你這樣很危險，快買。", "先問最近在煩什麼，不談商品。", "保證報酬比較高。"], best: 1 },
-    { name: "留聯絡", q: "對方願意再聊，怎麼留？", options: ["先講下次只對條款，不推銷特定商品。", "留下就代表一定要成交。", "說不留會吃虧。"], best: 0 },
-    { name: "約見面", q: "約見面時先說什麼？", options: ["見面一定要簽名。", "時間、地點，還有這次只整理需求和條款範圍。", "不見面就不服務。"], best: 1 },
-    { name: "了解需求", q: "要先弄清楚什麼？", options: ["預算、已經有的契約、在意的事故。", "先選一家真實公司。", "先算能節多少稅。"], best: 0 },
-    { name: "提出建議", q: "建議要怎麼講？", options: ["這張一定賠。", "用類型說明差異，並說實際給付看條款。", "報酬保證寫進口頭。"], best: 1 },
-    { name: "處理異議", q: "對方說太貴，怎麼接？", options: ["嘲諷別家。", "把保費、自負額和沒有這項時要自己付的情況分開。", "說不買以後不能理賠。"], best: 1 },
-    { name: "成交", q: "要簽名時先確認什麼？", options: ["本人親簽，健康欄自己寫，沒有代填。", "趕時間可以代簽。", "空白處以後再補。"], best: 0 },
-    { name: "售後", q: "成交後還要做什麼？", options: ["契約放好，變更和申請的步驟說完。", "說以後不用再看條款。", "保證明年一定領得到。"], best: 0 }
+    { name: "破冰", q: "第一次開口，哪一句比較穩？", options: ["你這樣很危險，快買。", "先問最近在煩什麼，不談商品。", "保證報酬比較高。"], best: 1, why: ["用害怕推銷，是誤導。", "先問近況，不談特定商品。", "保證報酬，而且催促。"] },
+    { name: "留聯絡", q: "對方願意再聊，怎麼留？", options: ["先講下次只對條款，不推銷特定商品。", "留下就代表一定要成交。", "說不留會吃虧。"], best: 0, why: ["聯絡不是成交承諾。", "把留資料說成必須購買。", "用吃虧威脅。"] },
+    { name: "約見面", q: "約見面時先說什麼？", options: ["見面一定要簽名。", "時間、地點，還有這次只整理需求和條款範圍。", "不見面就不服務。"], best: 1, why: ["把見面說成必須簽名。", "先約好看什麼，不預設成交。", "用拒絕服務施壓。"] },
+    { name: "了解需求", q: "要先弄清楚什麼？", options: ["預算、已經有的契約、在意的事故。", "先選一家真實公司。", "先算能節多少稅。"], best: 0, why: ["先弄清需求、既有契約和在意的風險。", "這座小鎮不點名、也不比較真實公司。", "把保險說成節稅工具，是誤導。"] },
+    { name: "提出建議", q: "建議要怎麼講？", options: ["這張一定賠。", "用類型說明差異，並說實際給付看條款。", "報酬保證寫進口頭。"], best: 1, why: ["保證給付。", "只用類型說明，並把決定權留在條款。", "口頭保證報酬。"] },
+    { name: "處理異議", q: "對方說太貴，怎麼接？", options: ["嘲諷別家。", "把保費、自負額和沒有這項時要自己付的情況分開。", "說不買以後不能理賠。"], best: 1, why: ["貶低別的選擇。", "把費用結構分開講，不恐嚇。", "把沒有購買說成以後都不能申請，是誤導。"] },
+    { name: "成交", q: "要簽名時先確認什麼？", options: ["本人親簽，健康欄自己寫，沒有代填。", "趕時間可以代簽。", "空白處以後再補。"], best: 0, why: ["本人看過、自己填、自己簽。", "代簽不能代替本人的意思。", "空白補填會讓說明不可靠。"] },
+    { name: "售後", q: "成交後還要做什麼？", options: ["契約放好，變更和申請的步驟說完。", "說以後不用再看條款。", "保證明年一定領得到。"], best: 0, why: ["把文件和以後的程序說清楚。", "條款之後仍然要能對。", "保證未來給付。"] }
   ];
 
   function clientBook() {
@@ -4247,8 +4317,8 @@
       showToast("今天的 5 次談完了。");
       return;
     }
-    const nodes = [para("一天最多推進 5 步。同一位一天只走一步。答錯會冷兩天。不推薦真實商品，不保證報酬。")];
-    CLIENTS.forEach(function (person) {
+    const nodes = [para("一天最多推進 5 步。同一位一天只走一步，而且要隔天。答錯會冷兩天。不推薦真實商品，不保證報酬。")];
+    recruitedPeople().forEach(function (person) {
       const rec = clientBook()[person.id] || { step: 0, day: "", cold: "" };
       nodes.push(button(person.name + " · " + (CLIENT_STEPS[rec.step] ? CLIENT_STEPS[rec.step].name : "談完了"), "ghost", function () { askClient(person); }));
     });
@@ -4286,21 +4356,325 @@
     const today = taipeiDate();
     bag().clientSteps = (bag().clientSteps || 0) + 1;
     rec.day = today;
-    if (index === step.best) {
+    const good = index === step.best;
+    if (good) {
       rec.step += 1;
       rec.cold = "";
       earnCash(4, "和" + person.name + "談完一步");
-      save();
-      showReward(person.name + "願意再聽下一步。遊戲裡的 4 枚不是佣金。");
     } else {
-      const cold = new Date(Date.now() + 2 * 86400000);
-      rec.cold = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Taipei" }).format(cold);
-      save();
-      showToast("這句不適合。" + person.name + "兩天內不想繼續。");
+      rec.cold = shiftDate(today, 2);
     }
+    save();
     renderHud();
-    document.getElementById("facility").hidden = true;
-    document.body.classList.remove("ui-busy");
+    fillFacility("教練", [
+      para(good ? "這句可以用。" : "這句先不要用。"),
+      para(step.why ? step.why[index] : ""),
+      para(good ? person.name + "明天才能進行下一步。遊戲金幣 4 枚，不是佣金。" : person.name + "會冷掉 2 天。遊戲日曆。"),
+      para("這是練習講評，不是話術模板，也不構成招攬。")
+    ]);
+  }
+
+  function lifeData() {
+    return window.HEAN_LIFE || { quizzes: [], radio: [], approach: [], sports: [], cards: [], badges: [] };
+  }
+
+  function shiftDate(day, count) {
+    const when = new Date(day + "T12:00:00+08:00").getTime() + count * 86400000;
+    return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Taipei" }).format(new Date(when));
+  }
+
+  function dayNumber(day) {
+    return String(day).split("-").reduce(function (sum, part) { return sum + Number(part); }, 0);
+  }
+
+  function approachBook() {
+    const data = bag();
+    if (!data.approaches) data.approaches = {};
+    return data.approaches;
+  }
+
+  function approachLimit() {
+    return 5 + ((bag().sportStreak || 0) >= 3 ? 1 : 0);
+  }
+
+  function earnBadge(id) {
+    const spec = lifeData().badges.filter(function (item) { return item.id === id; })[0];
+    if (!spec) return;
+    const data = bag();
+    if (!data.badges) data.badges = {};
+    if (data.badges[id]) return;
+    data.badges[id] = taipeiDate();
+    save();
+    showFloater("徽章\n" + spec.name);
+  }
+
+  function refreshDailySpots() {
+    const pack = lifeData().quizzes;
+    if (!pack.length) return;
+    const n = dayNumber(taipeiDate());
+    SPOTS.forEach(function (spot) {
+      if (spot.facility !== "quiz") return;
+      const pool = pack.filter(function (item) { return item.district === spot.district; });
+      if (!pool.length) return;
+      const quiz = pool[(n + spot.slot) % pool.length];
+      spot.name = quiz.speaker;
+      spot.quizId = quiz.id;
+    });
+  }
+
+  function openMeet(near) {
+    if (role !== "agent" && role !== "broker") {
+      showToast(near.name + "在路邊。陌開練習是業務員和經紀人的遊戲流程。");
+      return;
+    }
+    const today = taipeiDate();
+    const data = bag();
+    if (data.approachDay !== today) {
+      data.approachDay = today;
+      data.approachCount = 0;
+    }
+    const rec = approachBook()[near.id] || { stage: 0, day: "", cold: "" };
+    approachBook()[near.id] = rec;
+    if (rec.stage >= 2) {
+      showToast(near.name + "已經在客戶簿。下一步要等到隔天。");
+      openClientBook();
+      return;
+    }
+    if (rec.cold && rec.cold > today) {
+      showToast(near.name + "這兩天不想談。冷到 " + rec.cold + "。");
+      return;
+    }
+    if (rec.day === today) {
+      showToast("今天這一步談過了。明天再進行下一步。");
+      return;
+    }
+    if ((data.approachCount || 0) >= approachLimit()) {
+      showToast("今天的陌開次數用完了。遊戲規則，一天 " + approachLimit() + " 次。");
+      return;
+    }
+    const step = lifeData().approach[rec.stage];
+    const nodes = [para(near.name + " · " + step.name), para(step.q), para("一天 " + approachLimit() + " 次。這是遊戲次數。")];
+    step.options.forEach(function (option, index) {
+      nodes.push(button(option.text, "option", function () { answerMeet(near, index); }));
+    });
+    fillFacility("陌開 · " + step.name, nodes);
+  }
+
+  function answerMeet(near, index) {
+    const rec = approachBook()[near.id];
+    const step = lifeData().approach[rec.stage];
+    const today = taipeiDate();
+    const option = step.options[index];
+    const good = index === step.best;
+    bag().approachCount = (bag().approachCount || 0) + 1;
+    rec.day = today;
+    if (good) {
+      rec.stage += 1;
+      rec.cold = "";
+      if (rec.stage === 1) earnBadge("approach");
+      if (rec.stage >= 2) {
+        clientBook()[near.id] = { step: 2, day: today, cold: "", name: near.name };
+        earnBadge("booked");
+      }
+    } else {
+      rec.cold = shiftDate(today, 2);
+    }
+    save();
+    renderHud();
+    fillFacility("教練", [
+      para(good ? "這句可以用。" : "這句先不要用。"),
+      para(option.why),
+      para(good ? (rec.stage >= 2 ? near.name + "進了客戶簿。約見面要等到明天。" : "破冰完成。留聯絡要等到明天。") : near.name + "會冷掉 2 天。"),
+      para("重視需求、不誤導、不保證報酬、不推薦特定商品。這是練習講評。")
+    ]);
+  }
+
+  function openSport() {
+    const today = taipeiDate();
+    const data = bag();
+    if (data.sportDay === today) {
+      showToast("今天已經運動過了。連續 " + (data.sportStreak || 0) + " 天。遊戲紀錄。");
+      return;
+    }
+    const nodes = [para("一天選一項。有機會拉傷，遊戲裡會比較有沒有意外或醫療練習保單。")];
+    lifeData().sports.forEach(function (item, index) {
+      nodes.push(button(item.name, "option", function () { playSport(index); }));
+    });
+    fillFacility("青禾運動角", nodes);
+  }
+
+  function playSport(index) {
+    const item = lifeData().sports[index];
+    const today = taipeiDate();
+    const data = bag();
+    const yesterday = shiftDate(today, -1);
+    data.sportStreak = data.sportDay === yesterday ? (data.sportStreak || 1) + 1 : 1;
+    data.sportDay = today;
+    if (data.sportStreak >= 3) earnBadge("sport3");
+    const roll = hash(dayNumber(today), index + 3);
+    const hurt = roll < 0.3;
+    const nodes = [para(item.line)];
+    if (!hurt) {
+      save();
+      renderHud();
+      nodes.push(para("今天沒有受傷。連續 " + data.sportStreak + " 天。滿 3 天，當天陌開多 1 次。"));
+      nodes.push(para("若拉傷：沒有意外或醫療練習保單自己付 18 枚；有對應保單只付自負額。遊戲數值，不是保費試算。"));
+      fillFacility(item.name, nodes);
+      return;
+    }
+    const medical = policiesOf().medical ? LIFE_COVERS.medical.deductible : 0;
+    const accident = policiesOf().accident ? LIFE_COVERS.accident.deductible : 0;
+    const covered = !!(policiesOf().medical || policiesOf().accident);
+    const due = covered ? Math.min.apply(null, [medical, accident].filter(Boolean)) : 18;
+    const paid = Math.min(due, cashOf(role));
+    if (paid > 0) payCash(paid, "運動拉傷");
+    save();
+    renderHud();
+    const compare = document.createElement("div");
+    compare.className = "compare";
+    compare.innerHTML = "<p><strong>沒有意外或醫療練習保單</strong><br>自己付 18 枚</p><p><strong>有對應練習保單</strong><br>只付自負額</p>";
+    nodes.push(para("拉傷了。這是遊戲事件。這次" + (covered ? "有對應練習保單，付 " + due + " 枚。" : "沒有對應練習保單，自己付 " + due + " 枚。")));
+    nodes.push(compare);
+    nodes.push(para("數字是遊戲數值，不是保費試算，也不保證真實給付。連續 " + data.sportStreak + " 天。"));
+    fillFacility("運動拉傷", nodes);
+  }
+
+  function openDraw() {
+    const today = taipeiDate();
+    const data = bag();
+    if (data.drawDay === today) {
+      showToast("今天的麥穗已經抽過了。");
+      return;
+    }
+    const deck = lifeData().cards;
+    const card = deck[dayNumber(today) % deck.length];
+    data.drawDay = today;
+    earnBadge("draw");
+    if (card.kind === "coin") earnCash(card.amount, "麥穗廣場");
+    if (card.kind === "xp") {
+      const before = levelOf();
+      state.xp[role] = (state.xp[role] || 0) + card.amount;
+      const after = levelOf();
+      animateXp(before, after);
+      if (after > before) noteLevel();
+    }
+    if (card.kind === "item") {
+      if (!data.pack) data.pack = [];
+      data.pack.push({ name: card.name, feed: card.feed, expire: shiftDate(today, 2) });
+    }
+    save();
+    renderHud();
+    showFloater(card.name);
+    fillFacility("麥穗廣場", [
+      para(card.line),
+      para("一天一次。遊戲獎勵，不是抽獎廣告，也沒有真實獎金。")
+    ]);
+  }
+
+  function openQuiz(near) {
+    refreshDailySpots();
+    const quiz = lifeData().quizzes.filter(function (item) { return item.id === near.quizId; })[0];
+    if (!quiz) return;
+    const today = taipeiDate();
+    const data = bag();
+    if (!data.quizDone) data.quizDone = {};
+    if (data.quizDone[quiz.id] === today) {
+      showToast("這則今天聽過了。明天會換一批。");
+      return;
+    }
+    const nodes = [para(quiz.story), para(quiz.q)];
+    quiz.options.forEach(function (text, index) {
+      nodes.push(button(text, "option", function () { answerQuiz(near, quiz, index); }));
+    });
+    nodes.push(para("虛構情境。不點名真實公司。"));
+    fillFacility(quiz.title, nodes);
+  }
+
+  function answerQuiz(near, quiz, index) {
+    const today = taipeiDate();
+    const good = index === quiz.best;
+    const data = bag();
+    if (!data.quizDone) data.quizDone = {};
+    data.quizDone[quiz.id] = today;
+    if (good) {
+      data.quizRight = (data.quizRight || 0) + 1;
+      const before = levelOf();
+      state.xp[role] = (state.xp[role] || 0) + 6;
+      const after = levelOf();
+      animateXp(before, after);
+      if (data.quizRight >= 10) earnBadge("quiz10");
+      if (after > before) noteLevel();
+    }
+    save();
+    renderHud();
+    fillFacility(good ? "答對了" : "再看一次", [
+      para(good ? "這則記下了。遊戲經驗 6。" : "這則今天先記解釋，經驗留給答對的時候。"),
+      para(quiz.why),
+      para(quiz.source),
+      para("教學說明，不是法律意見，也不保證給付。")
+    ]);
+  }
+
+  function openBadges() {
+    document.getElementById("menu-panel").hidden = true;
+    const owned = bag().badges || {};
+    const nodes = [para("徽章是遊戲收集，不是證照，也沒有真實獎勵。")];
+    lifeData().badges.forEach(function (item) {
+      nodes.push(para((owned[item.id] ? "已收集 · " : "未收集 · ") + item.name + " — " + item.hint));
+    });
+    fillFacility("徽章", nodes);
+  }
+
+  function openRadio() {
+    const list = lifeData().radio;
+    if (!list.length) return;
+    const index = radioIndex();
+    const item = list[index];
+    earnBadge("radio");
+    fillFacility("正在播 · " + item.title, [
+      para(item.body),
+      para("下一檔：" + list[(index + 1) % list.length].title),
+      para("依台北時間每 30 分鐘換一則。遊戲短文，不推薦商品。")
+    ]);
+  }
+
+  function radioIndex() {
+    const list = lifeData().radio;
+    if (!list.length) return 0;
+    const clock = taipeiParts();
+    return Math.floor((clock.hour * 60 + clock.minute) / 30) % list.length;
+  }
+
+  function paintRadio() {
+    const box = document.getElementById("radio");
+    const now = document.getElementById("radio-now");
+    const next = document.getElementById("radio-next");
+    const list = lifeData().radio;
+    if (!box || !now || !next || !list.length || !role) return;
+    const index = radioIndex();
+    now.textContent = "正在播 " + list[index].title;
+    next.textContent = "下一檔 " + list[(index + 1) % list.length].title;
+  }
+
+  function recruitedPeople() {
+    const seen = {};
+    const people = [];
+    function add(id, name) {
+      if (!id || seen[id]) return;
+      seen[id] = true;
+      people.push({ id: id, name: name || id });
+    }
+    Object.keys(approachBook()).forEach(function (id) {
+      if ((approachBook()[id].stage || 0) < 2) return;
+      const spot = SPOTS.filter(function (item) { return item.id === id; })[0];
+      add(id, spot && spot.name);
+    });
+    Object.keys(clientBook()).forEach(function (id) {
+      const known = CLIENTS.filter(function (item) { return item.id === id; })[0];
+      const spot = SPOTS.filter(function (item) { return item.id === id; })[0];
+      add(id, (spot && spot.name) || (known && known.name));
+    });
+    return people;
   }
 
   function openClientBook() {
@@ -4309,8 +4683,10 @@
       return;
     }
     document.getElementById("menu-panel").hidden = true;
-    const nodes = [para("一天最多 5 步。答錯冷兩天。內容只練習說話的界線。")];
-    CLIENTS.forEach(function (person) {
+    const nodes = [para("路上陌開成功才會出現在這裡。一天最多 5 步，每一步要隔天。答錯冷兩天。")];
+    const people = recruitedPeople();
+    if (!people.length) nodes.push(para("還沒有人留下聯絡。"));
+    people.forEach(function (person) {
       const rec = clientBook()[person.id] || { step: 0, cold: "" };
       const name = rec.step >= CLIENT_STEPS.length ? "這段談完" : CLIENT_STEPS[rec.step].name;
       nodes.push(para(person.name + " · 下一步：" + name + (rec.cold ? " · 冷到 " + rec.cold : "")));
@@ -4590,7 +4966,7 @@
     zoom: function () { return zoom; },
     setHour: function (hour) { hourOverride = hour; townLayer = null; },
     setWeekday: function (day) { weekdayOverride = day; townLayer = null; },
-    setTyphoon: function (on) { forceTyphoon = !!on; },
+    setTyphoon: function (on) { forceTyphoon = on; },
     auditChests: function () {
       const prev = area;
       area = "town";

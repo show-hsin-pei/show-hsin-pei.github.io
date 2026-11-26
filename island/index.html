@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=3.3">
+  <link rel="stylesheet" href="styles.css?v=33b">
 </head>
 <body>
   <a class="skip" href="#title-main">跳至主要內容</a>
@@ -136,6 +136,10 @@
         <button type="button" id="quest-go">帶我去</button>
       </div>
       <p class="town-alert" id="town-alert" hidden>颱風日：蘆灣和釣魚休息。住宅火災不會自動包含風災。遊戲事件。</p>
+      <button type="button" class="radio-pill" id="radio">
+        <span id="radio-now">正在播</span>
+        <span id="radio-next">下一檔</span>
+      </button>
       <p class="floater" id="floater" hidden></p>
       <div class="reward" id="reward" hidden>
         <strong>記下了</strong>
@@ -220,6 +224,7 @@
         <button type="button" class="chip" id="btn-tips">賺錢小秘籍</button>
         <button type="button" class="chip" id="btn-pack">背包</button>
         <button type="button" class="chip" id="btn-clients">客戶簿</button>
+        <button type="button" class="chip" id="btn-badges">徽章</button>
         <button type="button" class="chip" id="btn-progress">進度</button>
         <button type="button" class="chip" id="btn-role">換身分</button>
         <button type="button" class="chip" id="btn-sound" aria-pressed="false">音效關</button>
@@ -275,10 +280,11 @@
   </div>
 
   <noscript><p class="legal">藝世錄保險小鎮需要開啟 JavaScript 才能走動與對話。</p></noscript>
-  <script src="scenarios.js?v=3.3" defer></script>
-  <script src="characters.js?v=3.3" defer></script>
-  <script src="rooms.js?v=3.3" defer></script>
-  <script src="art.js?v=3.3" defer></script>
-  <script src="game.js?v=3.3" defer></script>
+  <script src="scenarios.js?v=33b" defer></script>
+  <script src="characters.js?v=33b" defer></script>
+  <script src="rooms.js?v=33b" defer></script>
+  <script src="art.js?v=33b" defer></script>
+  <script src="life.js?v=33b" defer></script>
+  <script src="game.js?v=33b" defer></script>
 </body>
 </html>
