@@ -1,6 +1,6 @@
 (function () {
-  const VERSION = "3.2";
-  const UPDATED = "2026年11月25日";
+  const VERSION = "3.3";
+  const UPDATED = "2026年11月26日";
   const KEY = "hean-village-v1";
   const FONT = '"Noto Sans TC", "PingFang TC", "Microsoft JhengHei", "WenQuanYi Micro Hei", sans-serif';
   const WORLD = { w: 2300, h: 1960 };
@@ -11,7 +11,7 @@
   const CHEST_IN = 650;
   const STEP = 12;
   const FOOT_Y = 296;
-  const REACH = 64;
+  const REACH = 82;
 
   const ROLE_NAME = {
     consumer: "客戶（消費者）",
@@ -138,15 +138,15 @@
   });
   SPOTS.push({ id: "bank-counter", name: "櫃台", x: 1080, y: 332, facility: "bank" });
   [
-    ["chest-home-a", 520, 470, "住宅區"], ["chest-home-b", 640, 1460, "住宅區"],
-    ["chest-shop-a", 1100, 470, "商店街"], ["chest-shop-b", 1400, 470, "商店街"],
-    ["chest-civic-a", 1040, 820, "公家機關區"], ["chest-civic-b", 1500, 820, "公家機關區"],
-    ["chest-life-a", 900, 980, "壽險街"], ["chest-life-b", 1760, 980, "壽險街"],
-    ["chest-prop-a", 900, 1240, "產險街"], ["chest-prop-b", 1760, 1240, "產險街"],
-    ["chest-hosp-a", 360, 1520, "醫院"], ["chest-hosp-b", 720, 1520, "醫院"],
-    ["chest-park", 2060, 300, "公園"], ["chest-park-b", 1980, 220, "公園"],
-    ["chest-lake", 520, 1608, "湖畔"], ["chest-lake-b", 620, 1608, "湖畔"],
-    ["chest-trail", 1600, 1508, "山上步道"], ["chest-trail-b", 1540, 1460, "山上步道"]
+    ["chest-home-a", 560, 395, "住宅區"], ["chest-home-b", 700, 1532, "住宅區"],
+    ["chest-shop-a", 1100, 395, "商店街"], ["chest-shop-b", 1480, 395, "商店街"],
+    ["chest-civic-a", 1040, 850, "公家機關區"], ["chest-civic-b", 1600, 850, "公家機關區"],
+    ["chest-life-a", 1080, 1119, "壽險街"], ["chest-life-b", 1680, 1119, "壽險街"],
+    ["chest-prop-a", 1080, 1367, "產險街"], ["chest-prop-b", 1680, 1367, "產險街"],
+    ["chest-hosp-a", 400, 1532, "醫院"], ["chest-hosp-b", 760, 1532, "醫院"],
+    ["chest-park", 1980, 395, "公園"], ["chest-park-b", 2140, 480, "公園"],
+    ["chest-lake", 360, 1532, "湖畔"], ["chest-lake-b", 760, 1532, "湖畔"],
+    ["chest-trail", 1680, 1532, "山上步道"], ["chest-trail-b", 1795, 1460, "山上步道"]
   ].forEach(function (item) {
     SPOTS.push({ id: item[0], name: "寶箱", x: item[1], y: item[2], facility: "chest", zone: item[3] });
   });
@@ -154,16 +154,56 @@
   SPOTS.push({ id: "fish-river", name: "河邊", x: 480, y: 1532, facility: "fish" });
   SPOTS.push({ id: "fish-dock", name: "碼頭", x: 2090, y: 860, facility: "fish", zone: "蘆灣" });
   const CHEST_POINTS = {
-    "住宅區": [{ x: 480, y: 395 }, { x: 720, y: 395 }, { x: 275, y: 520 }, { x: 560, y: 1532 }, { x: 400, y: 1532 }],
-    "商店街": [{ x: 1080, y: 395 }, { x: 1280, y: 395 }, { x: 1500, y: 395 }, { x: 1680, y: 395 }, { x: 935, y: 560 }],
-    "公家機關區": [{ x: 1120, y: 892 }, { x: 1320, y: 892 }, { x: 1560, y: 892 }, { x: 1680, y: 892 }],
-    "壽險街": [{ x: 1040, y: 1119 }, { x: 1280, y: 1119 }, { x: 1500, y: 1119 }, { x: 1680, y: 1119 }],
-    "產險街": [{ x: 1040, y: 1367 }, { x: 1280, y: 1367 }, { x: 1520, y: 1367 }, { x: 1680, y: 1367 }],
-    "醫院": [{ x: 340, y: 1532 }, { x: 520, y: 1532 }, { x: 700, y: 1532 }, { x: 275, y: 1320 }],
-    "公園": [{ x: 1795, y: 280 }, { x: 1795, y: 460 }, { x: 1900, y: 395 }, { x: 2040, y: 395 }],
-    "湖畔": [{ x: 400, y: 1532 }, { x: 560, y: 1532 }, { x: 760, y: 1532 }, { x: 275, y: 1460 }],
-    "山上步道": [{ x: 1500, y: 1532 }, { x: 1640, y: 1532 }, { x: 1795, y: 1360 }, { x: 1360, y: 1532 }]
+    "住宅區": [{ x: 480, y: 395 }, { x: 640, y: 395 }, { x: 800, y: 395 }, { x: 560, y: 1532 }, { x: 820, y: 1532 }],
+    "商店街": [{ x: 1080, y: 395 }, { x: 1280, y: 395 }, { x: 1480, y: 395 }, { x: 1680, y: 395 }],
+    "公家機關區": [{ x: 980, y: 850 }, { x: 1100, y: 850 }, { x: 1480, y: 850 }, { x: 1600, y: 850 }],
+    "壽險街": [{ x: 1040, y: 1119 }, { x: 1280, y: 1119 }, { x: 1500, y: 1119 }, { x: 1700, y: 1119 }],
+    "產險街": [{ x: 1040, y: 1367 }, { x: 1280, y: 1367 }, { x: 1520, y: 1367 }, { x: 1700, y: 1367 }],
+    "醫院": [{ x: 320, y: 1532 }, { x: 480, y: 1532 }, { x: 640, y: 1532 }, { x: 1100, y: 1532 }],
+    "公園": [{ x: 1900, y: 395 }, { x: 2040, y: 395 }, { x: 2140, y: 480 }, { x: 1880, y: 480 }],
+    "湖畔": [{ x: 320, y: 1532 }, { x: 480, y: 1532 }, { x: 700, y: 1532 }, { x: 1100, y: 1532 }],
+    "山上步道": [{ x: 1500, y: 1532 }, { x: 1640, y: 1532 }, { x: 1795, y: 1400 }, { x: 1795, y: 1280 }]
   };
+  const SHOP_HOURS = {
+    "超商": { start: 7, end: 23 },
+    "車行": { start: 10, end: 19 },
+    "寵物店": { start: 11, end: 20 },
+    "事務所": { start: 9, end: 18, weekdays: true },
+    "暖禾人壽": { start: 9, end: 17.5, weekdays: true },
+    "青畦人壽": { start: 9, end: 17.5, weekdays: true },
+    "拾穗人壽": { start: 9, end: 17.5, weekdays: true },
+    "暮嵐人壽": { start: 9, end: 17.5, weekdays: true },
+    "石橋產物": { start: 9, end: 17.5, weekdays: true },
+    "岸蒲產物": { start: 9, end: 17.5, weekdays: true },
+    "原麓產物": { start: 9, end: 17.5, weekdays: true },
+    "澄川產物": { start: 9, end: 17.5, weekdays: true },
+    "醫院": { start: 8, end: 17 },
+    "小鎮公所": { start: 8.5, end: 17.5, weekdays: true },
+    "小鎮法院": { start: 9, end: 17, weekdays: true },
+    "鎮民中心": { start: 8.5, end: 17, weekdays: true },
+    "勞工服務站": { start: 8.5, end: 17, weekdays: true },
+    "公園亭": { start: 6, end: 21 },
+    "湖畔亭": { start: 8, end: 18 },
+    "步道牌": { start: 7, end: 17 }
+  };
+  const LEVEL_GO = {
+    2: "寵物店",
+    3: "公園亭",
+    5: "湖畔亭",
+    6: "蘆灣港亭",
+    8: "步道牌"
+  };
+  const LEVEL_TABLE = [
+    { lv: 1, text: "家、商店街、銀行、醫院、公所。銀行練習櫃台整天開著。" },
+    { lv: 2, text: "寵物店。業務員和經紀人可以開始客戶簿。" },
+    { lv: 3, text: "公園。" },
+    { lv: 5, text: "湖畔。" },
+    { lv: 6, text: "蘆灣。颱風日港口會休息。" },
+    { lv: 8, text: "山上步道。" }
+  ];
+  let townSeen = null;
+  let forceTyphoon = false;
+  let weekdayOverride = null;
 
   const titleScreen = document.getElementById("title-screen");
   const playScreen = document.getElementById("play-screen");
@@ -580,14 +620,22 @@
     return spots;
   }
 
+  function reachFor(spot) {
+    if (!spot) return REACH;
+    if (spot.facility === "chest") return 118;
+    if (spot.facility === "fish" || spot.facility === "bank") return 100;
+    return REACH;
+  }
+
   function nearestSpot() {
     const list = activeSpots();
     let best = null;
-    let bestD = REACH;
+    let bestD = Infinity;
     for (let i = 0; i < list.length; i++) {
       if (list[i].facility === "chest" && chestWaiting(list[i].id)) continue;
+      const limit = reachFor(list[i]);
       const d = Math.hypot(list[i].x - player.x, list[i].y - player.y);
-      if (d < bestD) {
+      if (d < limit && d < bestD) {
         bestD = d;
         best = list[i];
       }
@@ -834,6 +882,7 @@
         townLayer = bakeTown();
       }
       pen.drawImage(townLayer, 0, 0);
+      drawShutters();
       drawLife();
       drawFog();
     } else {
@@ -894,6 +943,37 @@
     pen.beginPath();
     pen.arc(bx, by, 2.2, 0, Math.PI * 2);
     pen.fill();
+  }
+
+  function drawShutters() {
+    BUILDINGS.forEach(function (b) {
+      const closed = !isOpen(b.name);
+      if (b.name === "銀行" && bankOffHours()) {
+        pen.fillStyle = "rgba(255, 253, 249, 0.92)";
+        pen.font = "700 13px " + FONT;
+        pen.textAlign = "center";
+        pen.fillText("練習櫃台", b.x + b.w / 2, b.y + b.h + 28);
+        return;
+      }
+      if (!closed) return;
+      if (!SHOP_HOURS[b.name] && b.name !== "蘆灣港亭") return;
+      pen.fillStyle = "rgba(62, 56, 50, 0.78)";
+      pen.fillRect(b.x + 8, b.y + b.h * 0.42, b.w - 16, b.h * 0.55);
+      pen.strokeStyle = "rgba(236, 226, 206, 0.55)";
+      pen.lineWidth = 2;
+      for (let i = 0; i < 5; i++) {
+        const y = b.y + b.h * 0.48 + i * 10;
+        pen.beginPath();
+        pen.moveTo(b.x + 12, y);
+        pen.lineTo(b.x + b.w - 12, y);
+        pen.stroke();
+      }
+      pen.fillStyle = "#fffdf9";
+      pen.font = "700 14px " + FONT;
+      pen.textAlign = "center";
+      pen.textBaseline = "middle";
+      pen.fillText("休息中", b.x + b.w / 2, b.y + b.h * 0.7);
+    });
   }
 
   function drawFog() {
@@ -998,14 +1078,65 @@
     }
   }
 
-  function taipeiHour() {
-    if (hourOverride != null) return hourOverride;
-    const text = new Intl.DateTimeFormat("en-GB", {
+  function taipeiParts() {
+    if (hourOverride != null) {
+      return { hour: hourOverride, minute: 0, weekday: weekdayOverride == null ? 3 : weekdayOverride };
+    }
+    const parts = new Intl.DateTimeFormat("en-US", {
       timeZone: "Asia/Taipei",
+      weekday: "short",
       hour: "2-digit",
+      minute: "2-digit",
       hourCycle: "h23"
-    }).format(new Date());
-    return Number(text);
+    }).formatToParts(new Date());
+    const pick = function (type) {
+      const found = parts.filter(function (part) { return part.type === type; })[0];
+      return found ? found.value : "";
+    };
+    const days = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+    return {
+      hour: Number(pick("hour")),
+      minute: Number(pick("minute")),
+      weekday: days[pick("weekday")] == null ? 0 : days[pick("weekday")]
+    };
+  }
+
+  function taipeiHour() {
+    return taipeiParts().hour;
+  }
+
+  function isTyphoon() {
+    if (forceTyphoon) return true;
+    const day = taipeiDate();
+    let n = 0;
+    for (let i = 0; i < day.length; i++) n = (n * 33 + day.charCodeAt(i)) >>> 0;
+    return n % 5 === 0;
+  }
+
+  function bankOffHours() {
+    const clock = taipeiParts();
+    if (clock.weekday === 0 || clock.weekday === 6) return true;
+    const hour = clock.hour + clock.minute / 60;
+    return hour < 9 || hour >= 15.5;
+  }
+
+  function isOpen(name) {
+    if (name === "銀行" || name === "我家") return true;
+    if (name === "蘆灣港亭" && isTyphoon()) return false;
+    const rule = SHOP_HOURS[name];
+    if (!rule) return true;
+    const clock = taipeiParts();
+    if (rule.weekdays && (clock.weekday === 0 || clock.weekday === 6)) return false;
+    const hour = clock.hour + clock.minute / 60;
+    return hour >= rule.start && hour < rule.end;
+  }
+
+  function hoursLabel(name) {
+    const rule = SHOP_HOURS[name];
+    if (!rule) return "";
+    const start = String(Math.floor(rule.start)).padStart(2, "0") + ":" + (rule.start % 1 ? "30" : "00");
+    const end = String(Math.floor(rule.end)).padStart(2, "0") + ":" + (rule.end % 1 ? "30" : "00");
+    return (rule.weekdays ? "平日 " : "每天 ") + start + "–" + end;
   }
 
   function bakeTown() {
@@ -1531,15 +1662,28 @@
     return { alpha: Math.max(0, 1 - t), scale: 1, hidden: false };
   }
 
+  function chestPointOk(x, y) {
+    if (solidAt(x, y, 16)) return false;
+    const stands = [[0, 0], [42, 0], [-42, 0], [0, 42], [0, -42]];
+    return stands.some(function (offset) {
+      const sx = x + offset[0];
+      const sy = y + offset[1];
+      if (solidAt(sx, sy, 14)) return false;
+      if (!townSeen || area !== "town") return true;
+      const c = clamp(Math.round(sx / CS), 0, cols - 1);
+      const r = clamp(Math.round(sy / CS), 0, rows - 1);
+      return !!townSeen[c + r * cols];
+    });
+  }
+
   function pickChestPoint(spot) {
-    const pool = CHEST_POINTS[spot.zone] || [{ x: spot.x, y: spot.y }];
-    const open = pool.filter(function (p) {
-      if (solidAt(p.x, p.y, 14)) return false;
-      return !SPOTS.some(function (other) {
-        return other.facility === "chest" && other.id !== spot.id && Math.hypot(other.x - p.x, other.y - p.y) < 80;
+    const pool = (CHEST_POINTS[spot.zone] || [{ x: spot.x, y: spot.y }]).filter(function (p) {
+      return chestPointOk(p.x, p.y) && !SPOTS.some(function (other) {
+        return other.facility === "chest" && other.id !== spot.id && Math.hypot(other.x - p.x, other.y - p.y) < 70;
       });
     });
-    const list = open.length ? open : pool;
+    const list = pool.length ? pool : (CHEST_POINTS[spot.zone] || []).filter(function (p) { return chestPointOk(p.x, p.y); });
+    if (!list.length) return { x: spot.x, y: spot.y };
     return list[Math.floor(Math.random() * list.length)];
   }
 
@@ -1549,9 +1693,13 @@
     SPOTS.forEach(function (s) {
       if (s.facility !== "chest") return;
       const rec = chestRec(s.id);
-      if (rec.x && rec.y) {
+      if (rec.x && rec.y && chestPointOk(rec.x, rec.y)) {
         s.x = rec.x;
         s.y = rec.y;
+      } else if (rec.x || rec.y) {
+        rec.x = s.x;
+        rec.y = s.y;
+        rec.placed = false;
       }
       if (rec.until && now >= rec.until && !rec.placed) {
         const p = pickChestPoint(s);
@@ -1709,6 +1857,8 @@
     if (next === "room" && name === "車行") openGarageCard();
     if (next === "room" && kind !== "bank" && name !== "醫院" && name !== "車行") maybeRoomCard(name);
     if (next === "room" || next === "home") markTutorial(1);
+    if (next === "home") grantPlaceXp("家");
+    if (next === "room" && name) grantPlaceXp(name);
     resize();
   }
 
@@ -1718,7 +1868,7 @@
 
   function inTownDoor(b) {
     const door = townDoor(b);
-    return Math.abs(player.x - door.x) < 28 && Math.abs(player.y - door.y) < 24;
+    return Math.abs(player.x - door.x) < 48 && Math.abs(player.y - door.y) < 42;
   }
 
   function inExitZone() {
@@ -1740,10 +1890,20 @@
       const hit = BUILDINGS.find(inTownDoor);
       if (!hit) {
         triggerArmed = true;
+        closedNote = "";
         return;
       }
       if (!triggerArmed) return;
       if (hit.level && levelOf() < hit.level) return;
+      if (!isOpen(hit.name)) {
+        if (closedNote !== hit.name) {
+          closedNote = hit.name;
+          showToast(hit.name + "休息中。" + (hoursLabel(hit.name) || "今天不開門。") + " 遊戲裡的營業時間。");
+        }
+        triggerArmed = false;
+        return;
+      }
+      closedNote = "";
       const door = townDoor(hit);
       const goal = path && path.length ? path[path.length - 1] : null;
       const ledHere = goal && Math.hypot(goal.x - door.x, goal.y - door.y) < 48;
@@ -1810,6 +1970,20 @@
     panel.hidden = false;
     document.body.classList.add("ui-busy");
     markTutorial(3);
+    const levels = document.getElementById("map-levels");
+    if (levels) {
+      levels.replaceChildren();
+      const title = document.createElement("p");
+      title.className = "map-level-title";
+      title.textContent = "各等級解鎖表";
+      levels.appendChild(title);
+      LEVEL_TABLE.forEach(function (row) {
+        const line = document.createElement("p");
+        const here = role && levelOf() >= row.lv;
+        line.textContent = "Lv." + row.lv + (here ? " 已開" : "") + "　" + row.text;
+        levels.appendChild(line);
+      });
+    }
     requestAnimationFrame(function () {
       requestAnimationFrame(function () {
         const box = mapBox();
@@ -2081,16 +2255,41 @@
     return Math.round((b - a) / 86400000);
   }
 
+  function grantPlaceXp(name) {
+    if (!role || !name) return;
+    const data = bag();
+    if (!data.places) data.places = {};
+    if (data.places[name]) return;
+    data.places[name] = true;
+    const before = levelOf();
+    state.xp[role] = (state.xp[role] || 0) + 8;
+    const after = levelOf();
+    save();
+    renderHud();
+    animateXp(before, after);
+    showFloater("第一次來到" + name + "\n+8 EXP");
+    if (after > before) noteLevel();
+  }
+
   function noteLevel() {
     const lv = levelOf();
     const seen = bag().seenLevel || 1;
     if (lv <= seen) return;
     bag().seenLevel = lv;
     save();
-    fillFacility("升到 Lv." + lv, [
+    const nodes = [
       para("稱號：" + (LEVEL_TITLE[lv - 1] || "鎮民")),
       para(LEVEL_NOTE[lv] || "經驗又多了一些。這是遊戲等級，不是證照。")
-    ]);
+    ];
+    const dest = LEVEL_GO[lv];
+    if (dest) {
+      nodes.push(button("帶我去", "primary", function () {
+        document.getElementById("facility").hidden = true;
+        document.body.classList.remove("ui-busy");
+        guideTo(dest);
+      }));
+    }
+    fillFacility("升到 Lv." + lv, nodes);
   }
 
   function currentQuest() {
@@ -2179,6 +2378,7 @@
   }
 
   let zoneNote = "";
+  let closedNote = "";
   let rewardTimer = 0;
 
   function seasonName() {
@@ -2221,6 +2421,10 @@
     document.getElementById("quest-text").textContent = "目標：" + quest.text;
     placeChrome();
     document.getElementById("st-stam").textContent = "體力 " + stamina() + "/100";
+    const alert = document.getElementById("town-alert");
+    if (alert) {
+      alert.hidden = !(area === "town" && isTyphoon());
+    }
     const soundBtn = document.getElementById("btn-sound");
     const musicBtn = document.getElementById("btn-music");
     soundBtn.textContent = state.sound ? "音效開" : "音效關";
@@ -3553,8 +3757,8 @@
         pendingRole = btn.getAttribute("data-role");
         document.getElementById("gender-role").textContent = ROLE_NAME[pendingRole];
         const base = pendingRole === "agent" ? "agent" : pendingRole === "broker" ? "broker" : "client";
-        document.getElementById("gender-art-m").src = "assets/characters/" + base + "_m.webp?v=3.2";
-        document.getElementById("gender-art-f").src = "assets/characters/" + base + "_f.webp?v=3.2";
+        document.getElementById("gender-art-m").src = "assets/characters/" + base + "_m.webp?v=3.3";
+        document.getElementById("gender-art-f").src = "assets/characters/" + base + "_f.webp?v=3.3";
         document.getElementById("gender-pick").hidden = false;
       });
     });
@@ -3881,6 +4085,14 @@
   }
 
   function openFish() {
+    if (isTyphoon()) {
+      fillFacility("颱風日", [
+        para("今天蘆灣港口和釣魚都休息。這是遊戲裡的天氣，不是氣象預報。"),
+        para("住宅火災保險不會自動把颱風、洪水算進去。有沒有風災或水災，要看那張條款有沒有另外寫。"),
+        para("上面是觀念說明，不是商品建議，也不保證給付。")
+      ]);
+      return;
+    }
     const data = bag();
     if (data.castDay !== taipeiDate()) {
       data.castDay = taipeiDate();
@@ -4153,6 +4365,7 @@
   function noteZoneVisit() {
     ZONES.forEach(function (zone) {
       if (player.x > zone.x && player.x < zone.x + zone.w && player.y > zone.y && player.y < zone.y + zone.h && levelOf() >= zone.level) {
+        if (!bag().zones[zone.name]) grantPlaceXp(zone.name);
         bag().zones[zone.name] = true;
       }
     });
@@ -4221,8 +4434,9 @@
     const prev = area;
     area = "town";
     buildNav();
-    const startC = clamp(Math.round(500 / CS), 0, cols - 1);
-    const startR = clamp(Math.round(400 / CS), 0, rows - 1);
+    const spawn = { x: 295, y: 434 };
+    const startC = clamp(Math.round(spawn.x / CS), 0, cols - 1);
+    const startR = clamp(Math.round(spawn.y / CS), 0, rows - 1);
     const seen = new Uint8Array(cols * rows);
     const queue = [startC + startR * cols];
     if (!blocked[queue[0]]) seen[queue[0]] = 1;
@@ -4270,8 +4484,41 @@
         } else console.warn("unreachable spot", s.id, s.x, s.y);
       }
     });
+    townSeen = seen;
+    const chestAudit = auditChests(seen);
+    chestAudit.forEach(function (item) {
+      console.error("chest unreachable", item.id, item.x, item.y, item.reasons.join(","));
+    });
     area = prev;
     buildNav();
+  }
+
+  function auditChests(seen) {
+    const fails = [];
+    function check(id, x, y) {
+      const reasons = [];
+      if (solidAt(x, y, 16)) reasons.push("inside-solid");
+      const stands = [[0, 0], [42, 0], [-42, 0], [0, 42], [0, -42]];
+      const ok = stands.some(function (offset) {
+        const sx = x + offset[0];
+        const sy = y + offset[1];
+        if (solidAt(sx, sy, 14)) return false;
+        const c = clamp(Math.round(sx / CS), 0, cols - 1);
+        const r = clamp(Math.round(sy / CS), 0, rows - 1);
+        return !!(seen && seen[c + r * cols]);
+      });
+      if (!ok) reasons.push("no-path-from-spawn");
+      if (reasons.length) fails.push({ id: id, x: x, y: y, reasons: reasons });
+    }
+    SPOTS.forEach(function (s) {
+      if (s.facility === "chest") check(s.id, s.x, s.y);
+    });
+    Object.keys(CHEST_POINTS).forEach(function (zone) {
+      CHEST_POINTS[zone].forEach(function (p, index) {
+        check(zone + "#" + index, p.x, p.y);
+      });
+    });
+    return fails;
   }
 
   function validate() {
@@ -4341,7 +4588,20 @@
     place: function () { return roomName; },
     cam: function () { return { x: cam.x, y: cam.y }; },
     zoom: function () { return zoom; },
-    setHour: function (hour) { hourOverride = hour; },
+    setHour: function (hour) { hourOverride = hour; townLayer = null; },
+    setWeekday: function (day) { weekdayOverride = day; townLayer = null; },
+    setTyphoon: function (on) { forceTyphoon = !!on; },
+    auditChests: function () {
+      const prev = area;
+      area = "town";
+      buildNav();
+      const report = auditChests(townSeen);
+      area = prev;
+      buildNav();
+      return report;
+    },
+    isOpen: isOpen,
+    isTyphoon: isTyphoon,
     pathLen: function () { return path ? path.length : 0; },
     area: function () { return area; },
     sleep: sleepNight,

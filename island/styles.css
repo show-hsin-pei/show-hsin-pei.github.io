@@ -398,7 +398,34 @@ h1 {
   min-width: 72px;
   min-height: 44px;
   padding: 8px 12px;
+  animation: hean-pulse 1.8s ease-in-out infinite;
 }
+
+.town-alert {
+  position: absolute;
+  z-index: 4;
+  left: 8px;
+  right: 86px;
+  bottom: 108px;
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: rgba(63, 54, 46, 0.88);
+  color: #fffdf9;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.map-levels {
+  flex: none;
+  margin-top: 8px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.map-levels p { margin: 0 0 4px; }
+
+.map-level-title { font-weight: 700; }
 
 .reward {
   position: fixed;
@@ -440,13 +467,13 @@ h1 {
   display: flex;
   flex-direction: column;
   height: min(86dvh, 780px);
-  overflow: hidden;
+  overflow: auto;
 }
 
 #town-map {
   width: 100%;
-  flex: 1;
-  min-height: 280px;
+  flex: 1 1 auto;
+  min-height: 180px;
   touch-action: none;
   border-radius: 16px;
   background: #efe6d6;
@@ -518,6 +545,21 @@ h1 {
   background: #e7c98a;
   color: #3f362e;
   border-color: #a5865a;
+  animation: hean-pulse 1.6s ease-in-out infinite;
+}
+
+.quest button {
+  animation: hean-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes hean-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .talk-btn.ready,
+  .quest button { animation: none; }
 }
 
 .talk-btn.watch {
