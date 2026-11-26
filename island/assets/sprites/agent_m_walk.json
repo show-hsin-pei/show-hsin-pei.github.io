@@ -25,10 +25,13 @@
   "style": "smooth_chibi_v3_3",
   "source_height_px": 120,
   "actual_height_px": 130,
+  "actual_height_notes": "130px is the opaque silhouette in the 256x320 cell, including a soft ground shadow. Designed body without shadow is about 120px.",
   "suggested_draw_height_px": {
     "town": 110,
     "indoor": 124
   },
+  "scale_filter": "lanczos",
+  "scale_notes": "平滑縮放（Lanczos），不要用 nearest 放大。建議小鎮 110px、室內 124px。",
   "baseline_y": 296,
   "foot_center_x": 128,
   "walk_bob_px": {
@@ -37,6 +40,7 @@
     "peak_to_peak": 2,
     "source_pass_bob_px": 2
   },
+  "side_arm_swing": false,
   "playback": "Play each row left to right and loop. Head and torso are a frozen bitmap per direction; only feet move. Pass frames translate the same bitmap slightly up. Right-facing frames are a horizontal flip of left.",
-  "alignment": "Foot-midpoint at x=128, sole at y=296. Authored as a smooth (non-pixel) chibi at ~120px, suggested on-screen draw 110px in town and 124px indoors."
+  "alignment": "Foot-midpoint at x=128, sole at y=296. Authored as a smooth (non-pixel) chibi at ~120px, suggested on-screen draw 110px in town and 124px indoors, with smooth (Lanczos) scaling."
 }

@@ -68,13 +68,14 @@
     window.HEAN_ASSETS.full[role] = window.HEAN_ASSETS.full[role + alias];
     window.HEAN_ASSETS.portraits[role] = window.HEAN_ASSETS.portraits[role + alias];
   });
-  sheets.agent_m._smooth = true;
-  sheets.client_f._smooth = true;
   ["npc_grandma", "npc_mom", "npc_office", "npc_shopkeeper", "npc_grandpa"].forEach(function (id) {
     sheets[id] = make("sprites/" + id + "_walk.webp");
     window.HEAN_ASSETS.full[id] = make("characters/" + id + ".webp");
     window.HEAN_ASSETS.portraits[id] = make("portraits/" + id + ".webp");
     pending.push(sheets[id], window.HEAN_ASSETS.full[id], window.HEAN_ASSETS.portraits[id]);
+  });
+  Object.keys(sheets).forEach(function (id) {
+    if (sheets[id]) sheets[id]._smooth = true;
   });
 
   const map = {
@@ -123,8 +124,19 @@
     "info-office": "npc_mom",
     "walker-1": "npc_mom",
     "walker-2": "npc_grandpa",
-    "walker-3": "npc_shopkeeper"
+    "walker-3": "npc_shopkeeper",
+    "folk-he": "npc_mom",
+    "folk-lu": "npc_shopkeeper",
+    "folk-chen": "npc_grandma",
+    "folk-lin": "npc_grandpa",
+    "folk-man": "npc_office"
   };
+  ["hospital", "clinic", "civic", "life", "prop"].forEach(function (district, districtIndex) {
+    const cycle = ["npc_grandma", "npc_mom", "npc_grandpa", "npc_office", "npc_shopkeeper"];
+    for (let slot = 0; slot < 5; slot++) {
+      map["quiz-" + district + "-" + slot] = cycle[(districtIndex + slot) % cycle.length];
+    }
+  });
 
   function baseOf(role) {
     if (role === "agent") return "agent";

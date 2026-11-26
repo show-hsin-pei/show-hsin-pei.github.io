@@ -1,5 +1,5 @@
 (function () {
-  const VERSION = "3.3";
+  const VERSION = "3.4";
   const UPDATED = "2026年11月26日";
   const KEY = "hean-village-v1";
   const FONT = '"Noto Sans TC", "PingFang TC", "Microsoft JhengHei", "WenQuanYi Micro Hei", sans-serif';
@@ -1599,10 +1599,9 @@
     const moving = !reduceMotion && (isPlayer ? player.moving : !!(walker && walker.moving));
     const facing = isPlayer ? (player.facing || "down") : (walker && walker.facing) || "down";
     const travel = isPlayer ? player.travel : (walker && walker.travel) || 0;
-    const smooth = isPlayer && ((role === "agent" && genderOf("agent") === "m") || (role === "consumer" && genderOf("consumer") === "f"));
     const body = 130;
     const target = area === "town" ? 110 : 124;
-    const aiH = smooth ? target / ((body / 320) * (zoom || 1)) : (area === "town" ? 176 : 236);
+    const aiH = target / ((body / 320) * (zoom || 1));
     const aiW = aiH * 256 / 320;
     const aiFrame = gaitFrame(travel, moving);
     const foot = -aiH * FOOT_Y / 320;
@@ -1659,12 +1658,13 @@
     const bang = quest && quest.spot === scenarioId;
     const isChest = String(scenarioId).indexOf("chest") === 0;
     if (!byId[scenarioId] && !isChest && scenarioId !== "bank-counter" && scenarioId !== "home-tv") return;
+    const lift = isChest ? 40 : personTagLift();
     if (!isChest && scenarioId !== "bank-counter" && recordOf(scenarioId)) {
-      drawMark(x, y - 96, recordOf(scenarioId));
+      drawMark(x, y - lift, recordOf(scenarioId));
       return;
     }
     pen.save();
-    pen.translate(x, y - 100);
+    pen.translate(x, y - lift);
     pen.fillStyle = bang ? "#e0b15a" : "#fffdf9";
     pen.beginPath();
     pen.arc(0, 0, 8, 0, Math.PI * 2);
@@ -1800,6 +1800,17 @@
     }
   }
 
+  function personTagLift() {
+    const target = area === "town" ? 110 : 124;
+    const cell = target / ((130 / 320) * (zoom || 1));
+    return cell * 146 / 320;
+  }
+
+  function tagLift(s) {
+    if (!s || s.animal || s.facility === "chest" || s.facility === "fish" || s.facility === "sport" || s.facility === "draw" || s.facility === "tv" || s.facility === "sleep") return 46;
+    return personTagLift();
+  }
+
   function drawLabels() {
     const near = nearestSpot();
     pen.font = "600 13px " + FONT;
@@ -1812,7 +1823,7 @@
       const text = sc ? sc.speaker : (s.name || "這裡");
       const w = pen.measureText(text).width + 16;
       const x = s.x - w / 2;
-      const y = s.y - 102;
+      const y = s.y - tagLift(s);
       roundRect(x, y, w, 20, 10);
       pen.fillStyle = "rgba(255, 253, 249, 0.94)";
       pen.fill();
@@ -3825,8 +3836,8 @@
         pendingRole = btn.getAttribute("data-role");
         document.getElementById("gender-role").textContent = ROLE_NAME[pendingRole];
         const base = pendingRole === "agent" ? "agent" : pendingRole === "broker" ? "broker" : "client";
-        document.getElementById("gender-art-m").src = "assets/characters/" + base + "_m.webp?v=3.3";
-        document.getElementById("gender-art-f").src = "assets/characters/" + base + "_f.webp?v=3.3";
+        document.getElementById("gender-art-m").src = "assets/characters/" + base + "_m.webp?v=3.4";
+        document.getElementById("gender-art-f").src = "assets/characters/" + base + "_f.webp?v=3.4";
         document.getElementById("gender-pick").hidden = false;
       });
     });

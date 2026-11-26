@@ -21,19 +21,27 @@
   "right_is_flipped_from_left": true,
   "suggested_fps": 8,
   "loop": true,
-  "playback": "Play each row left to right and loop. Column 0=left-foot stride, 1=passing A, 2=right-foot stride, 3=passing B. Right-facing frames are a horizontal flip of left. Feet share one baseline with no walk bob.",
+  "head_body_ratio": 2.2,
+  "style": "smooth_chibi_v3_3",
+  "source_height_px": 120,
+  "actual_height_px": 130,
+  "actual_height_notes": "130px is the opaque silhouette in the 256x320 cell, including a soft ground shadow. Designed body without shadow is about 120px.",
+  "suggested_draw_height_px": {
+    "town": 110,
+    "indoor": 124
+  },
+  "scale_filter": "lanczos",
+  "scale_notes": "平滑縮放（Lanczos），不要用 nearest 放大。建議小鎮 110px、室內 124px。",
+  "baseline_y": 296,
+  "foot_center_x": 128,
   "walk_bob_px": {
     "stride": 0,
-    "pass": 0,
-    "peak_to_peak": 0
+    "pass": 2,
+    "peak_to_peak": 2,
+    "source_pass_bob_px": 2
   },
-  "head_body_ratio": 2.2,
-  "target_body_height_px": 122.0,
-  "alignment": "Foot-midpoint centered on x=128. All frames share one baseline (no bob).",
-  "fix_notes": {
-    "body": "2.2-head Q with moderate shoulder/limb volume (between the slim and barrel-belly versions). Mid-torso is a straight or slightly tucked cylinder — no protruding belly. Brokers and the shopkeeper use a stronger waist flatten.",
-    "left": "Reshaped hem-locked side cycle, opposite arm swing (left foot forward ⇒ right/far arm forward; pass frames hang), packed at the same body height as front/back, abdomen flattened on the side silhouette.",
-    "down": "Reshaped v2.8 foot-swap down frames with the same no-belly profile; light opposite arm shift on stride frames when the shell is clean.",
-    "up": "Reshaped v2.8 foot-swap up frames, with the same light front/back arm shift when clean."
-  }
+  "side_arm_swing": false,
+  "playback": "Play each row left to right and loop. Head and torso are a frozen bitmap per direction; only feet move. Pass frames translate the same bitmap slightly up. Right-facing frames are a horizontal flip of left.",
+  "alignment": "Foot-midpoint at x=128, sole at y=296. Authored as a smooth (non-pixel) chibi at ~120px, suggested on-screen draw 110px in town and 124px indoors, with smooth (Lanczos) scaling.",
+  "alias_of": "agent_m"
 }
