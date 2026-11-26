@@ -68,6 +68,8 @@
     window.HEAN_ASSETS.full[role] = window.HEAN_ASSETS.full[role + alias];
     window.HEAN_ASSETS.portraits[role] = window.HEAN_ASSETS.portraits[role + alias];
   });
+  sheets.agent_m._smooth = true;
+  sheets.client_f._smooth = true;
   ["npc_grandma", "npc_mom", "npc_office", "npc_shopkeeper", "npc_grandpa"].forEach(function (id) {
     sheets[id] = make("sprites/" + id + "_walk.webp");
     window.HEAN_ASSETS.full[id] = make("characters/" + id + ".webp");

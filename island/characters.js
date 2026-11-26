@@ -574,7 +574,15 @@
     const cols = Math.max(1, Math.round(image.naturalWidth / 256) === 4 ? 4 : Math.round(image.naturalWidth / (fh * 256 / 320)));
     const fw = image.naturalWidth / cols;
     const col = Math.abs(Math.floor(frame)) % cols;
+    const prevSmooth = ctx.imageSmoothingEnabled;
+    const prevQuality = ctx.imageSmoothingQuality;
+    if (image._smooth) {
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+    }
     ctx.drawImage(image, col * fw, row * fh, fw, fh, dx, dy, dw, dh);
+    ctx.imageSmoothingEnabled = prevSmooth;
+    if (prevQuality) ctx.imageSmoothingQuality = prevQuality;
     return true;
   }
 

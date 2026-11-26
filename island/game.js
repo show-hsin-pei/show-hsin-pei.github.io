@@ -1,5 +1,5 @@
 (function () {
-  const VERSION = "3.1";
+  const VERSION = "3.2";
   const UPDATED = "2026年11月25日";
   const KEY = "hean-village-v1";
   const FONT = '"Noto Sans TC", "PingFang TC", "Microsoft JhengHei", "WenQuanYi Micro Hei", sans-serif';
@@ -1421,7 +1421,10 @@
     const moving = !reduceMotion && (isPlayer ? player.moving : !!(walker && walker.moving));
     const facing = isPlayer ? (player.facing || "down") : (walker && walker.facing) || "down";
     const travel = isPlayer ? player.travel : (walker && walker.travel) || 0;
-    const aiH = area === "town" ? 176 : 236;
+    const smooth = isPlayer && ((role === "agent" && genderOf("agent") === "m") || (role === "consumer" && genderOf("consumer") === "f"));
+    const body = 130;
+    const target = area === "town" ? 110 : 124;
+    const aiH = smooth ? target / ((body / 320) * (zoom || 1)) : (area === "town" ? 176 : 236);
     const aiW = aiH * 256 / 320;
     const aiFrame = gaitFrame(travel, moving);
     const foot = -aiH * FOOT_Y / 320;
@@ -1706,6 +1709,7 @@
     if (next === "room" && name === "車行") openGarageCard();
     if (next === "room" && kind !== "bank" && name !== "醫院" && name !== "車行") maybeRoomCard(name);
     if (next === "room" || next === "home") markTutorial(1);
+    resize();
   }
 
   function townDoor(b) {
@@ -3549,8 +3553,8 @@
         pendingRole = btn.getAttribute("data-role");
         document.getElementById("gender-role").textContent = ROLE_NAME[pendingRole];
         const base = pendingRole === "agent" ? "agent" : pendingRole === "broker" ? "broker" : "client";
-        document.getElementById("gender-art-m").src = "assets/characters/" + base + "_m.webp?v=3.1";
-        document.getElementById("gender-art-f").src = "assets/characters/" + base + "_f.webp?v=3.1";
+        document.getElementById("gender-art-m").src = "assets/characters/" + base + "_m.webp?v=3.2";
+        document.getElementById("gender-art-f").src = "assets/characters/" + base + "_f.webp?v=3.2";
         document.getElementById("gender-pick").hidden = false;
       });
     });
