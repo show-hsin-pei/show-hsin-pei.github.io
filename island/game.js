@@ -1,6 +1,8 @@
 (function () {
-  const VERSION = "3.4";
-  const UPDATED = "2026年11月26日";
+  const VERSION = "3.5";
+  const UPDATED = "2026年11月27日";
+  const AVATAR_ORIGIN = "https://island-avatars.bn-lovestar.workers.dev";
+  const AVATAR_KEYS = { agent_m: 1, agent_f: 1, broker_m: 1, broker_f: 1, client_m: 1, client_f: 1 };
   const KEY = "hean-village-v1";
   const FONT = '"Noto Sans TC", "PingFang TC", "Microsoft JhengHei", "WenQuanYi Micro Hei", sans-serif';
   const WORLD = { w: 2300, h: 1960 };
@@ -327,7 +329,9 @@
       progress: { consumer: {}, agent: {}, broker: {} },
       xp: { consumer: 0, agent: 0, broker: 0 },
       byRole: { consumer: emptyRole(), agent: emptyRole(), broker: emptyRole() },
-      tutorialDone: false
+      tutorialDone: false,
+      avatarPublic: false,
+      avatarNick: ""
     };
   }
 
@@ -356,6 +360,8 @@
       if (typeof data.seenBank === "boolean") base.byRole[heir].seenBank = data.seenBank;
       if (data.font === "lg" || data.font === "xl" || data.font === "md") base.font = data.font;
       base.tutorialDone = !!data.tutorialDone;
+      base.avatarPublic = data.avatarPublic === true;
+      base.avatarNick = typeof data.avatarNick === "string" ? data.avatarNick.slice(0, 12) : "";
       return base;
     } catch (err) {
       return defaultState();
@@ -818,6 +824,7 @@
     }
     if (doorLock > 0) doorLock -= dt;
     else tryDoors();
+    stepGhosts(dt);
     if (area === "town") {
       settleChests();
       holdZones();
@@ -933,6 +940,12 @@
     queue.push({
       y: player.y,
       draw: function () { drawPerson(player.x, player.y, 0, true); }
+    });
+    GHOSTS.forEach(function (ghost) {
+      queue.push({
+        y: ghost.y,
+        draw: function () { drawOneGhost(ghost); }
+      });
     });
     queue.sort(function (a, b) { return a.y - b.y; });
     queue.forEach(function (item) { item.draw(); });
@@ -1918,6 +1931,9 @@
     if (next === "home") grantPlaceXp("家");
     if (next === "room" && name) grantPlaceXp(name);
     resize();
+    GHOSTS.length = 0;
+    pullAvatars();
+    queueAvatarPost();
   }
 
   function townDoor(b) {
@@ -2336,6 +2352,7 @@
     if (lv <= seen) return;
     bag().seenLevel = lv;
     save();
+    queueAvatarPost();
     const nodes = [
       para("稱號：" + (LEVEL_TITLE[lv - 1] || "鎮民")),
       para(LEVEL_NOTE[lv] || "經驗又多了一些。這是遊戲等級，不是證照。")
@@ -3829,6 +3846,337 @@
     }
   }
 
+  const GHOSTS = [];
+  let avatarTimer = 0;
+  let avatarNext = 0;
+  let avatarPullTimer = 0;
+
+  function avatarClientId() {
+    try {
+      const current = localStorage.getItem("hean-avatar-client");
+      if (/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(current || "")) return current;
+      const id = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : "00000000-0000-4000-8000-000000000000";
+      localStorage.setItem("hean-avatar-client", id);
+      return id;
+    } catch (err) {
+      return "";
+    }
+  }
+
+  function nicknameIssue(name) {
+    const text = String(name || "").trim();
+    if (text.length < 2 || text.length > 12) return "nickname_length";
+    if (/https?:\/\/|www\./i.test(text)) return "nickname_url";
+    if (/[^\s@]+@[^\s@]+\.[^\s@]+/.test(text) || text.indexOf("@") !== -1) return "nickname_email";
+    if (/(?:\+?886|0\d)[\d\-\s]{7,}/.test(text)) return "nickname_phone";
+    if (/(?:^|\s)line(?:\s|$)|line\s*(?:id|[:：@])/i.test(text)) return "nickname_line";
+    if (/\.[a-z]{2,}\b/i.test(text)) return "nickname_domain";
+    if (/[^\u3400-\u9fffA-Za-z0-9 _\-·．]/.test(text)) return "nickname_invalid_chars";
+    return "";
+  }
+
+  function nicknameMessage(code) {
+    const copy = {
+      nickname_length: "暱稱要 2 到 12 個字。",
+      nickname_url: "暱稱不能放網址。",
+      nickname_domain: "暱稱不能放網域。",
+      nickname_email: "暱稱不能放電子郵件。",
+      nickname_phone: "暱稱不能放電話。",
+      nickname_line: "暱稱不能放 LINE ID。",
+      nickname_invalid_chars: "暱稱有不能用的字。"
+    };
+    return copy[code] || "這個暱稱現在不能用。";
+  }
+
+  function avatarNote(text) {
+    const note = document.getElementById("avatar-note");
+    if (!note) return;
+    note.hidden = !text;
+    note.textContent = text || "";
+  }
+
+  function paintAvatarShare() {
+    const input = document.getElementById("avatar-nick");
+    const button = document.getElementById("btn-avatar-public");
+    if (input && document.activeElement !== input) input.value = state.avatarNick || "";
+    if (!button) return;
+    const on = !!state.avatarPublic;
+    button.textContent = "公開我的分身：" + (on ? "開" : "關");
+    button.setAttribute("aria-pressed", on ? "true" : "false");
+  }
+
+  function currentZoneSlug() {
+    if (area === "town") return "town";
+    if (area === "home") return "home";
+    const slugs = {
+      "銀行": "bank", "超商": "shop", "車行": "garage", "寵物店": "pet",
+      "小鎮法院": "court", "事務所": "office", "小鎮公所": "hall", "勞工服務站": "labor",
+      "暖禾人壽": "life-nuan", "青畦人壽": "life-qing", "拾穗人壽": "life-shi", "暮嵐人壽": "life-mu",
+      "石橋產物": "prop-shi", "岸蒲產物": "prop-an", "原麓產物": "prop-yuan", "澄川產物": "prop-cheng",
+      "醫院": "hospital", "青禾診所": "clinic", "公園亭": "park", "湖畔亭": "lake",
+      "步道牌": "trail", "鎮民中心": "center", "周家": "zhou", "吳家": "wu"
+    };
+    return slugs[roomName] || "room";
+  }
+
+  function avatarAppearance() {
+    const key = window.HEAN_ART && window.HEAN_ART.artKey ? window.HEAN_ART.artKey(role, genderOf(role)) : "client_m";
+    const character = AVATAR_KEYS[key] ? key : "client_m";
+    return { character: character, style: { outfit: character } };
+  }
+
+  function ghostLook(appearance) {
+    const style = appearance && appearance.style;
+    const outfit = style && typeof style.outfit === "string" ? style.outfit : "";
+    const character = appearance && typeof appearance.character === "string" ? appearance.character : "";
+    if (AVATAR_KEYS[outfit]) return outfit;
+    if (AVATAR_KEYS[character]) return character;
+    return "client_m";
+  }
+
+  function ghostName(raw) {
+    return String(raw || "").replace(/[\u0000-\u001f<>]/g, "").trim().slice(0, 12);
+  }
+
+  function ghostSpotOk(x, y) {
+    if (solidAt(x, y, 12)) return false;
+    return !SPOTS.some(function (spot) {
+      return spot.facility === "chest" && Math.hypot(spot.x - x, spot.y - y) < 40;
+    });
+  }
+
+  function walkableNear(x, y) {
+    const box = bounds();
+    if (!isFinite(x) || !isFinite(y)) {
+      x = player.x + 70;
+      y = player.y + 20;
+    }
+    x = clamp(x, 24, box.w - 24);
+    y = clamp(y, 24, box.h - 24);
+    if (ghostSpotOk(x, y)) return { x: x, y: y };
+    for (let ring = 24; ring <= 180; ring += 24) {
+      for (let step = 0; step < 8; step++) {
+        const px = clamp(x + Math.cos(step) * ring, 24, box.w - 24);
+        const py = clamp(y + Math.sin(step * 1.2) * ring, 24, box.h - 24);
+        if (ghostSpotOk(px, py)) return { x: px, y: py };
+      }
+    }
+    return { x: player.x, y: player.y };
+  }
+
+  function queueAvatarPost() {
+    if (!state.avatarPublic || !role || playScreen.hidden) return;
+    const delay = Math.max(0, avatarNext - Date.now());
+    clearTimeout(avatarTimer);
+    avatarTimer = setTimeout(postAvatar, delay);
+  }
+
+  function postAvatar() {
+    if (!state.avatarPublic || !role) return;
+    const issue = nicknameIssue(state.avatarNick);
+    if (issue) {
+      avatarNote(nicknameMessage(issue));
+      return;
+    }
+    const id = avatarClientId();
+    if (!id) return;
+    avatarNext = Date.now() + 10000;
+    const body = {
+      id: id,
+      nickname: String(state.avatarNick).trim(),
+      appearance: avatarAppearance(),
+      level: clamp(levelOf(), 1, 99),
+      zone: currentZoneSlug()
+    };
+    const x = Math.round(player.x);
+    const y = Math.round(player.y);
+    if (x >= -10000 && x <= 10000 && y >= -10000 && y <= 10000) {
+      body.x = x;
+      body.y = y;
+    }
+    fetch(AVATAR_ORIGIN + "/avatar", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body)
+    }).then(function (res) {
+      if (res.status === 429) {
+        const retry = Number(res.headers.get("Retry-After")) || 10;
+        avatarNext = Date.now() + Math.max(10, retry) * 1000;
+        queueAvatarPost();
+        return null;
+      }
+      return res.json().catch(function () { return null; });
+    }).then(function (data) {
+      if (!data || data.ok !== false) return;
+      if (String(data.error || "").indexOf("nickname_") === 0) avatarNote(nicknameMessage(data.error));
+    }).catch(function () { /* 後端故障時遊戲照常 */ });
+  }
+
+  function forgetAvatar() {
+    clearTimeout(avatarTimer);
+    const id = avatarClientId();
+    if (!id) return;
+    fetch(AVATAR_ORIGIN + "/avatar/" + encodeURIComponent(id), { method: "DELETE" }).catch(function () {});
+  }
+
+  function pullAvatars() {
+    const zone = currentZoneSlug();
+    clearTimeout(avatarPullTimer);
+    avatarPullTimer = setTimeout(function () {
+      fetch(AVATAR_ORIGIN + "/avatars?zone=" + encodeURIComponent(zone) + "&limit=20").then(function (res) {
+        if (!res.ok) return null;
+        return res.json();
+      }).then(function (data) {
+        if (!data || !data.ok || !Array.isArray(data.avatars)) return;
+        if (currentZoneSlug() !== zone) return;
+        const mine = avatarClientId();
+        const kept = [];
+        data.avatars.forEach(function (raw) {
+          if (!raw || raw.id === mine || kept.length >= 8) return;
+          const prev = GHOSTS.filter(function (ghost) { return ghost.id === raw.id; })[0];
+          const spot = walkableNear(Number(raw.x), Number(raw.y));
+          if (prev) {
+            prev.nickname = ghostName(raw.nickname);
+            prev.level = clamp(Number(raw.level) || 1, 1, 99);
+            prev.look = ghostLook(raw.appearance);
+            prev.anchor = spot;
+            kept.push(prev);
+            return;
+          }
+          kept.push({
+            id: String(raw.id),
+            nickname: ghostName(raw.nickname),
+            level: clamp(Number(raw.level) || 1, 1, 99),
+            look: ghostLook(raw.appearance),
+            x: spot.x,
+            y: spot.y,
+            anchor: spot,
+            tx: spot.x,
+            ty: spot.y,
+            facing: "down",
+            travel: 0,
+            moving: false,
+            pause: 0.3
+          });
+        });
+        GHOSTS.length = 0;
+        kept.forEach(function (ghost) { GHOSTS.push(ghost); });
+      }).catch(function () {});
+    }, 40);
+  }
+
+  function stepGhosts(dt) {
+    GHOSTS.forEach(function (ghost) {
+      if (ghost.pause > 0) {
+        ghost.pause -= dt;
+        ghost.moving = false;
+        return;
+      }
+      const dx = ghost.tx - ghost.x;
+      const dy = ghost.ty - ghost.y;
+      const dist = Math.hypot(dx, dy);
+      if (dist < 8) {
+        const ang = hash(Math.floor(ghost.x + ghost.level), Math.floor(time * 2 + ghost.y)) * Math.PI * 2;
+        const nx = ghost.anchor.x + Math.cos(ang) * 56;
+        const ny = ghost.anchor.y + Math.sin(ang) * 42;
+        if (ghostSpotOk(nx, ny) && Math.hypot(nx - player.x, ny - player.y) > 28) {
+          ghost.tx = nx;
+          ghost.ty = ny;
+        }
+        ghost.pause = 0.7;
+        ghost.moving = false;
+        return;
+      }
+      const step = Math.min(dist, 26 * dt);
+      const nx = ghost.x + dx / dist * step;
+      const ny = ghost.y + dy / dist * step;
+      if (!ghostSpotOk(nx, ny) || Math.hypot(nx - player.x, ny - player.y) < 22) {
+        ghost.tx = ghost.x;
+        ghost.pause = 0.5;
+        ghost.moving = false;
+        return;
+      }
+      ghost.x = nx;
+      ghost.y = ny;
+      ghost.travel += step;
+      ghost.moving = true;
+      ghost.facing = Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? "left" : "right") : (dy < 0 ? "up" : "down");
+    });
+  }
+
+  function drawOneGhost(ghost) {
+    const image = window.HEAN_ART && window.HEAN_ART.walkSheet && window.HEAN_ART.walkSheet(ghost.look);
+    if (!image || !window.HEAN_CHARS) return;
+    const id = "ghost-" + ghost.look;
+    window.HEAN_CHARS.useImageSheet(id, image);
+    const target = area === "town" ? 110 : 124;
+    const aiH = target / ((130 / 320) * (zoom || 1));
+    const aiW = aiH * 256 / 320;
+    const frame = ghost.moving ? Math.floor(ghost.travel / STEP) % 4 : 1;
+    const foot = -aiH * FOOT_Y / 320;
+    pen.save();
+    pen.translate(ghost.x, ghost.y);
+    pen.globalAlpha = 0.58;
+    window.HEAN_CHARS.drawSheet(pen, id, ghost.facing || "down", frame, -aiW / 2, foot, aiW, aiH);
+    const label = (ghost.nickname || "分身") + "  Lv." + ghost.level;
+    pen.globalAlpha = 0.9;
+    pen.font = "600 13px " + FONT;
+    pen.textAlign = "center";
+    pen.textBaseline = "middle";
+    const width = pen.measureText(label).width + 16;
+    const lift = personTagLift();
+    pen.fillStyle = "rgba(255, 253, 249, 0.9)";
+    roundRect(-width / 2, -lift - 10, width, 20, 10);
+    pen.fill();
+    pen.fillStyle = "#3f362e";
+    pen.fillText(label, 0, -lift);
+    pen.restore();
+  }
+
+  function ghostAt(x, y) {
+    let best = null;
+    let bestD = 52;
+    GHOSTS.forEach(function (ghost) {
+      const dist = Math.hypot(ghost.x - x, ghost.y - y);
+      if (dist < bestD) {
+        bestD = dist;
+        best = ghost;
+      }
+    });
+    return best;
+  }
+
+  function showGhost(ghost) {
+    showToast((ghost.nickname || "分身") + "　Lv." + ghost.level);
+  }
+
+  function setAvatarPublic(on) {
+    const input = document.getElementById("avatar-nick");
+    state.avatarNick = input ? input.value.trim().slice(0, 12) : (state.avatarNick || "");
+    if (on) {
+      const issue = nicknameIssue(state.avatarNick);
+      if (issue) {
+        state.avatarPublic = false;
+        save();
+        paintAvatarShare();
+        avatarNote(nicknameMessage(issue));
+        return;
+      }
+      state.avatarPublic = true;
+      save();
+      avatarNote("");
+      paintAvatarShare();
+      avatarNext = 0;
+      queueAvatarPost();
+      return;
+    }
+    state.avatarPublic = false;
+    save();
+    paintAvatarShare();
+    avatarNote("");
+    forgetAvatar();
+  }
+
   function bind() {
     let pendingRole = null;
     document.querySelectorAll("[data-role]").forEach(function (btn) {
@@ -3836,8 +4184,8 @@
         pendingRole = btn.getAttribute("data-role");
         document.getElementById("gender-role").textContent = ROLE_NAME[pendingRole];
         const base = pendingRole === "agent" ? "agent" : pendingRole === "broker" ? "broker" : "client";
-        document.getElementById("gender-art-m").src = "assets/characters/" + base + "_m.webp?v=3.4";
-        document.getElementById("gender-art-f").src = "assets/characters/" + base + "_f.webp?v=3.4";
+        document.getElementById("gender-art-m").src = "assets/characters/" + base + "_m.webp?v=3.5";
+        document.getElementById("gender-art-f").src = "assets/characters/" + base + "_f.webp?v=3.5";
         document.getElementById("gender-pick").hidden = false;
       });
     });
@@ -3969,9 +4317,23 @@
       if (dialog.hidden && progress.hidden) document.body.classList.remove("ui-busy");
     });
     document.getElementById("btn-avatar").addEventListener("click", function () {
+      paintAvatarShare();
       document.getElementById("menu-panel").hidden = false;
       document.body.classList.add("ui-busy");
     });
+    document.getElementById("avatar-nick").addEventListener("input", function (e) {
+      state.avatarNick = e.target.value.slice(0, 12);
+      save();
+      if (state.avatarPublic) queueAvatarPost();
+    });
+    document.getElementById("btn-avatar-public").addEventListener("click", function () {
+      setAvatarPublic(!state.avatarPublic);
+    });
+    setInterval(function () {
+      if (playScreen.hidden) return;
+      pullAvatars();
+      if (state.avatarPublic) queueAvatarPost();
+    }, 60000);
     document.getElementById("menu-close").addEventListener("click", function () {
       document.getElementById("menu-panel").hidden = true;
       if (dialog.hidden && progress.hidden) document.body.classList.remove("ui-busy");
@@ -4066,6 +4428,11 @@
       if (uiOpen() || playScreen.hidden) return;
       if (e.pointerType === "mouse" && e.button !== 0) return;
       const world = screenToWorld(e.clientX, e.clientY);
+      const ghost = ghostAt(world.x, world.y);
+      if (ghost) {
+        showGhost(ghost);
+        return;
+      }
       walkTo(world.x, world.y);
     });
     canvas.addEventListener("contextmenu", function (e) { e.preventDefault(); });
@@ -4992,6 +5359,11 @@
     pathLen: function () { return path ? path.length : 0; },
     area: function () { return area; },
     sleep: sleepNight,
-    forceEvent: function (id) { bag().forceEvent = id; }
+    forceEvent: function (id) { bag().forceEvent = id; },
+    ghosts: function () {
+      return GHOSTS.map(function (ghost) {
+        return { nickname: ghost.nickname, level: ghost.level, x: ghost.x, y: ghost.y };
+      });
+    }
   };
 })();

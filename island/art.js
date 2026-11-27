@@ -195,6 +195,10 @@
     },
     artId: function (id) { return map[id] || null; },
     sheet: function (id) { return sheets[keyFor(id)] || null; },
+    walkSheet: function (key) {
+      if (sheets[key]) return sheets[key];
+      return sheets.client_m || null;
+    },
     full: function (id) {
       const key = keyFor(id);
       return key ? window.HEAN_ASSETS.full[key] : null;
