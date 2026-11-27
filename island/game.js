@@ -1,5 +1,5 @@
 (function () {
-  const VERSION = "3.6";
+  const VERSION = "3.6.1";
   const UPDATED = "2026年11月27日";
   const SAVE_VERSION = 2;
   const PEOPLE_KEY = "hean-village-people-v1";
@@ -286,6 +286,7 @@
   let townLayer = null;
   let townBakedMode = "";
   let hourOverride = null;
+  let minuteOverride = 0;
   let dateOverride = null;
   window.HEAN_ASSETS = window.HEAN_ASSETS || { scenes: { town: null, home: null, map: null }, characters: {} };
   if (!window.HEAN_ASSETS.scenes) window.HEAN_ASSETS.scenes = {};
@@ -1040,23 +1041,39 @@
       }
       if (!closed) return;
       if (!SHOP_HOURS[b.name] && b.name !== "蘆灣港亭") return;
-      pen.fillStyle = "rgba(62, 56, 50, 0.78)";
-      pen.fillRect(b.x + 8, b.y + b.h * 0.42, b.w - 16, b.h * 0.55);
-      pen.strokeStyle = "rgba(236, 226, 206, 0.55)";
-      pen.lineWidth = 2;
-      for (let i = 0; i < 5; i++) {
-        const y = b.y + b.h * 0.48 + i * 10;
-        pen.beginPath();
-        pen.moveTo(b.x + 12, y);
-        pen.lineTo(b.x + b.w - 12, y);
-        pen.stroke();
-      }
-      pen.fillStyle = "#fffdf9";
-      pen.font = "700 14px " + FONT;
-      pen.textAlign = "center";
-      pen.textBaseline = "middle";
-      pen.fillText("休息中", b.x + b.w / 2, b.y + b.h * 0.7);
+      drawDoorShutter(b);
     });
+  }
+
+  function drawDoorShutter(b) {
+    const doorX = b.door ? b.door.x : b.x + b.w / 2;
+    const sw = 38;
+    const sh = 26;
+    const sx = doorX - sw / 2;
+    const sy = b.y + b.h - sh - 2;
+    pen.save();
+    pen.fillStyle = "rgba(46, 42, 38, 0.94)";
+    pen.fillRect(sx, sy, sw, sh);
+    pen.strokeStyle = "rgba(232, 224, 208, 0.8)";
+    pen.lineWidth = 1.3;
+    for (let i = 1; i <= 4; i++) {
+      const y = sy + i * (sh / 5);
+      pen.beginPath();
+      pen.moveTo(sx + 2, y);
+      pen.lineTo(sx + sw - 2, y);
+      pen.stroke();
+    }
+    pen.font = "700 11px " + FONT;
+    pen.textAlign = "center";
+    pen.textBaseline = "middle";
+    const label = "休息中";
+    const tw = pen.measureText(label).width + 10;
+    pen.fillStyle = "rgba(255, 253, 249, 0.96)";
+    roundRect(doorX - tw / 2, sy - 16, tw, 14, 7);
+    pen.fill();
+    pen.fillStyle = "#3f362e";
+    pen.fillText(label, doorX, sy - 9);
+    pen.restore();
   }
 
   function drawTownMarks() {
@@ -1185,7 +1202,7 @@
 
   function taipeiParts() {
     if (hourOverride != null) {
-      return { hour: hourOverride, minute: 0, weekday: weekdayOverride == null ? 3 : weekdayOverride };
+      return { hour: hourOverride, minute: minuteOverride || 0, weekday: weekdayOverride == null ? 3 : weekdayOverride };
     }
     const parts = new Intl.DateTimeFormat("en-US", {
       timeZone: "Asia/Taipei",
@@ -2537,7 +2554,7 @@
     const level = levelOf();
     const now = new Date();
     const clock = hourOverride != null
-      ? String(taipeiHour()).padStart(2, "0") + ":00"
+      ? String(taipeiHour()).padStart(2, "0") + ":" + String(minuteOverride || 0).padStart(2, "0")
       : new Intl.DateTimeFormat("en-GB", {
         timeZone: "Asia/Taipei",
         hour: "2-digit",
@@ -4301,8 +4318,8 @@
         pendingRole = btn.getAttribute("data-role");
         document.getElementById("gender-role").textContent = ROLE_NAME[pendingRole];
         const base = pendingRole === "agent" ? "agent" : pendingRole === "broker" ? "broker" : "client";
-        document.getElementById("gender-art-m").src = "assets/characters/" + base + "_m.webp?v=3.6";
-        document.getElementById("gender-art-f").src = "assets/characters/" + base + "_f.webp?v=3.6";
+        document.getElementById("gender-art-m").src = "assets/characters/" + base + "_m.webp?v=3.6.1";
+        document.getElementById("gender-art-f").src = "assets/characters/" + base + "_f.webp?v=3.6.1";
         document.getElementById("gender-pick").hidden = false;
       });
     });
@@ -5620,7 +5637,7 @@
     place: function () { return roomName; },
     cam: function () { return { x: cam.x, y: cam.y }; },
     zoom: function () { return zoom; },
-    setHour: function (hour) { hourOverride = hour; townLayer = null; },
+    setHour: function (hour, minute) { hourOverride = hour; minuteOverride = minute || 0; townLayer = null; },
     setWeekday: function (day) { weekdayOverride = day; townLayer = null; },
     setTyphoon: function (on) { forceTyphoon = on; },
     setDate: function (day) { dateOverride = day || null; },
