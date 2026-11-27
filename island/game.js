@@ -1,5 +1,5 @@
 (function () {
-  const VERSION = "3.8";
+  const VERSION = "3.9";
   const UPDATED = "2026年11月27日";
   const SAVE_VERSION = 2;
   const PEOPLE_KEY = "hean-village-people-v1";
@@ -32,17 +32,17 @@
   const byId = Object.fromEntries(SCENARIOS.map(function (s) { return [s.id, s]; }));
 
   const BUILDINGS = [
-    { name: "我家", zone: "住宅區", x: 160, y: 40, w: 270, h: 280, roof: "#c4a36a", wall: "#fff8ef", kind: "home", art: true, scenarios: [] },
+    { name: "我家", zone: "住宅區", x: 160, y: 40, w: 270, h: 280, roof: "#c4a36a", wall: "#fff8ef", kind: "home", art: true, door: { x: 400, y: 340 }, scenarios: [] },
     { name: "鎮民中心", zone: "住宅區", x: 380, y: 1320, w: 220, h: 150, roof: "#c4a36a", wall: "#fffaf3", kind: "office", card: "center", scenarios: [] },
-    { name: "周家", zone: "住宅區", x: 1868, y: 1148, w: 156, h: 132, roof: "#b98362", wall: "#fff8ef", kind: "house", card: "zhou", door: { x: 1946, y: 1330 }, scenarios: [] },
-    { name: "吳家", zone: "住宅區", x: 2036, y: 1148, w: 148, h: 132, roof: "#c4896a", wall: "#fff6f0", kind: "house", card: "wu", door: { x: 2110, y: 1330 }, scenarios: [] },
+    { name: "周家", zone: "住宅區", x: 1868, y: 1148, w: 156, h: 132, roof: "#b98362", wall: "#fff8ef", kind: "house", card: "zhou", door: { x: 1946, y: 1362 }, scenarios: [] },
+    { name: "吳家", zone: "住宅區", x: 2036, y: 1148, w: 148, h: 132, roof: "#c4896a", wall: "#fff6f0", kind: "house", card: "wu", door: { x: 2110, y: 1362 }, scenarios: [] },
     { name: "銀行", zone: "商店街", x: 980, y: 90, w: 210, h: 200, roof: "#8d6b45", wall: "#f7f3ea", kind: "bank", scenarios: [] },
     { name: "超商", zone: "商店街", x: 1230, y: 100, w: 180, h: 180, roof: "#d2b48a", wall: "#fffaf3", kind: "stall", card: "shop", scenarios: [] },
     { name: "車行", zone: "商店街", x: 1520, y: 70, w: 200, h: 176, roof: "#c4a36a", wall: "#f3eee6", kind: "garage", door: { x: 1620, y: 368 }, scenarios: [] },
     { name: "寵物店", zone: "商店街", x: 970, y: 590, w: 190, h: 210, roof: "#c48a6a", wall: "#fff6ea", kind: "stall", level: 2, scenarios: ["pet-visit"] },
-    { name: "小鎮法院", zone: "公家機關區", x: 640, y: 1288, w: 160, h: 110, roof: "#8d6b45", wall: "#f7f1e8", kind: "office", door: { x: 720, y: 1368 }, scenarios: [] },
-    { name: "蘆灣港亭", zone: "蘆灣", x: 2000, y: 720, w: 180, h: 130, roof: "#6d90a0", wall: "#f2f7f8", kind: "stall", level: 6, door: { x: 2090, y: 892 }, scenarios: [] },
-    { name: "事務所", zone: "商店街", x: 1880, y: 500, w: 176, h: 156, roof: "#b98362", wall: "#f6f1e6", kind: "office", card: "office", scenarios: ["broker-fee", "broker-commission", "broker-conflict", "broker-scope"] },
+    { name: "小鎮法院", zone: "公家機關區", x: 640, y: 1288, w: 160, h: 110, roof: "#8d6b45", wall: "#f7f1e8", kind: "office", door: { x: 760, y: 1240 }, scenarios: [] },
+    { name: "蘆灣港亭", zone: "蘆灣", x: 2000, y: 720, w: 180, h: 130, roof: "#6d90a0", wall: "#f2f7f8", kind: "stall", level: 6, door: { x: 2088, y: 832 }, scenarios: [] },
+    { name: "事務所", zone: "商店街", x: 1880, y: 500, w: 176, h: 156, roof: "#b98362", wall: "#f6f1e6", kind: "office", card: "office", door: { x: 1988, y: 832 }, scenarios: ["broker-fee", "broker-commission", "broker-conflict", "broker-scope"] },
     { name: "小鎮公所", zone: "公家機關區", x: 1180, y: 500, w: 340, h: 280, roof: "#c4a36a", wall: "#f7f1e8", kind: "office", card: "hall", scenarios: [] },
     { name: "勞工服務站", zone: "公家機關區", x: 1880, y: 860, w: 176, h: 140, roof: "#c4a36a", wall: "#fffaf3", kind: "office", card: "labor", scenarios: [] },
     { name: "暖禾人壽", zone: "壽險街", x: 975, y: 900, w: 175, h: 165, roof: "#c4896a", wall: "#fff4ea", sign: "#c4896a", theme: "醫療條款", motto: "這裡常把醫療條款和收據對在一起。", kind: "office", scenarios: ["clinic-necessity", "hospital-reimburse", "claim-docs", "face-sign", "no-rebate", "health-blank"] },
@@ -56,8 +56,8 @@
     { name: "醫院", zone: "醫院", x: 48, y: 1296, w: 168, h: 156, roof: "#d7e4ea", wall: "#f7fbff", kind: "clinic", scenarios: [] },
     { name: "青禾診所", zone: "醫院", x: 500, y: 520, w: 140, h: 100, roof: "#d7e4ea", wall: "#f7fbff", kind: "clinic", scenarios: [] },
     { name: "公園亭", zone: "公園", x: 1900, y: 40, w: 200, h: 240, roof: "#7f8f78", wall: "#f7f3ea", kind: "stall", level: 3, scenarios: ["park-walk"] },
-    { name: "湖畔亭", zone: "湖畔", x: 90, y: 1748, w: 130, h: 100, roof: "#7aa0b0", wall: "#f7f4ee", kind: "house", level: 5, door: { x: 420, y: 1608 }, scenarios: ["lake-rest"] },
-    { name: "步道牌", zone: "山上步道", x: 1768, y: 1496, w: 52, h: 86, roof: "#8d6a45", wall: "#f6efe4", kind: "stall", level: 8, door: { x: 1660, y: 1508 }, scenarios: ["trail-sign"] },
+    { name: "湖畔亭", zone: "湖畔", x: 90, y: 1748, w: 130, h: 100, roof: "#7aa0b0", wall: "#f7f4ee", kind: "house", level: 5, door: { x: 282, y: 1836 }, scenarios: ["lake-rest"] },
+    { name: "步道牌", zone: "山上步道", x: 1768, y: 1496, w: 52, h: 86, roof: "#8d6a45", wall: "#f6efe4", kind: "stall", level: 8, door: { x: 2010, y: 1724 }, scenarios: ["trail-sign"] },
     { name: "青田穀倉", zone: "農田區", x: 2580, y: 430, w: 150, h: 110, roof: "#b98362", wall: "#fff6ea", kind: "stall", level: 5, door: { x: 2655, y: 560 } },
     { name: "青田農會", zone: "農田區", x: 2860, y: 420, w: 190, h: 120, roof: "#c4a36a", wall: "#fffaf3", kind: "office", level: 5, door: { x: 2955, y: 560 } },
     { name: "杉徑小屋", zone: "山林區", x: 2680, y: 1320, w: 130, h: 100, roof: "#6f8f62", wall: "#f6f1e6", kind: "stall", level: 8, door: { x: 2745, y: 1440 } },
@@ -101,7 +101,7 @@
   ];
   const ZONES = [
     { name: "公園", level: 3, x: 1840, y: 40, w: 440, h: 500, back: { x: 1700, y: 390 } },
-    { name: "湖畔", level: 5, x: 40, y: 1572, w: 780, h: 360, back: { x: 240, y: 1460 } },
+    { name: "湖畔", level: 5, x: 40, y: 1572, w: 780, h: 360, back: { x: 560, y: 1532 }, enter: { x: 560, y: 1532 } },
     { name: "山上步道", level: 8, x: 1840, y: 1572, w: 440, h: 360, back: { x: 1600, y: 1460 } },
     { name: "蘆灣", level: 6, x: 1920, y: 640, w: 360, h: 360, back: { x: 1795, y: 700 } },
     { name: "農田區", slug: "farm", level: 5, x: 2360, y: 400, w: 760, h: 560, back: { x: 2100, y: 590 }, enter: { x: 2460, y: 590 } },
@@ -271,6 +271,44 @@
     "杉徑小屋": { x: 2735, y: 1396, w: 20, h: 24 },
     "漁村棚": { x: 1250, y: 2316, w: 20, h: 24 }
   };
+  // Painted footprint in map pixels. Nameplates sit above these rects, and
+  // town collision uses them instead of the older BUILDINGS boxes.
+  // 青禾診所 and 小鎮法院 are not painted, so they have no footprint.
+  const FACADE = {
+    "我家": { x: 312, y: 78, w: 168, h: 228 },
+    "鎮民中心": { x: 408, y: 1328, w: 214, h: 158 },
+    "周家": { x: 1884, y: 1188, w: 150, h: 140 },
+    "吳家": { x: 2056, y: 1188, w: 136, h: 140 },
+    "銀行": { x: 1008, y: 124, w: 160, h: 160 },
+    "超商": { x: 1252, y: 132, w: 148, h: 148 },
+    "車行": { x: 1552, y: 112, w: 168, h: 148 },
+    "寵物店": { x: 992, y: 620, w: 156, h: 168 },
+    "事務所": { x: 1936, y: 598, w: 214, h: 208 },
+    "蘆灣港亭": { x: 1936, y: 598, w: 214, h: 208 },
+    "小鎮公所": { x: 1212, y: 532, w: 288, h: 246 },
+    "勞工服務站": { x: 1972, y: 952, w: 144, h: 124 },
+    "暖禾人壽": { x: 992, y: 972, w: 144, h: 108 },
+    "青畦人壽": { x: 1192, y: 972, w: 144, h: 108 },
+    "拾穗人壽": { x: 1398, y: 972, w: 144, h: 108 },
+    "暮嵐人壽": { x: 1592, y: 972, w: 144, h: 108 },
+    "石橋產物": { x: 992, y: 1192, w: 144, h: 136 },
+    "岸蒲產物": { x: 1198, y: 1200, w: 144, h: 128 },
+    "原麓產物": { x: 1406, y: 1200, w: 136, h: 128 },
+    "澄川產物": { x: 1606, y: 1208, w: 144, h: 120 },
+    "醫院": { x: 64, y: 1308, w: 276, h: 176 },
+    "公園亭": { x: 1976, y: 100, w: 164, h: 196 },
+    "湖畔亭": { x: 172, y: 1664, w: 220, h: 144 },
+    "步道牌": { x: 2050, y: 1642, w: 32, h: 164 },
+    "青田穀倉": { x: 2580, y: 430, w: 150, h: 110 },
+    "青田農會": { x: 2860, y: 420, w: 190, h: 120 },
+    "杉徑小屋": { x: 2680, y: 1320, w: 130, h: 100 },
+    "漁村棚": { x: 1180, y: 2240, w: 160, h: 100 }
+  };
+  const CAR_SOLIDS = [
+    { x: 1556, y: 318, w: 52, h: 28 },
+    { x: 1624, y: 318, w: 52, h: 28 },
+    { x: 1692, y: 318, w: 52, h: 28 }
+  ];
   const LEVEL_GO = {
     2: ["寵物店"],
     3: ["公園亭"],
@@ -541,20 +579,28 @@
     if (x < rad + 10 || y < rad + 10 || x > WORLD.w - rad - 10 || y > WORLD.h - rad - 10) return true;
     const mapped = backdropMode() === "map";
     if (mapped) {
-      const dx = (x - 250) / 300;
-      const dy = (y - 1888) / 130;
-      if (y > 1740 && x < 680 && dx * dx + dy * dy < 1) return true;
-    } else if (Math.hypot(x - 460, y - 1780) < 120 + rad) return true;
+      if (waterAt(x, y)) return true;
+      if (harborWater(x, y)) return true;
+      const faces = facadeList();
+      for (let i = 0; i < faces.length; i++) {
+        const r = faces[i];
+        if (x > r.x - rad && x < r.x + r.w + rad && y > r.y - rad && y < r.y + r.h + rad) return true;
+      }
+      for (let i = 0; i < CAR_SOLIDS.length; i++) {
+        const r = CAR_SOLIDS[i];
+        if (x > r.x - rad && x < r.x + r.w + rad && y > r.y - rad && y < r.y + r.h + rad) return true;
+      }
+      return false;
+    }
+    if (Math.hypot(x - 460, y - 1780) < 120 + rad) return true;
     if (x > WORLD.w - 70 - rad) return true;
-    if (!mapped && Math.hypot(x - 820, y - 640) < 22 + rad) return true;
+    if (Math.hypot(x - 820, y - 640) < 22 + rad) return true;
     for (let i = 0; i < BUILDINGS.length; i++) {
       const b = BUILDINGS[i];
       if (x > b.x - rad && x < b.x + b.w + rad && y > b.y - rad && y < b.y + b.h + rad) return true;
     }
-    if (!mapped) {
-      for (let t = 0; t < TREES.length; t++) {
-        if (Math.hypot(x - TREES[t].x, y - TREES[t].y) < 16 + rad) return true;
-      }
+    for (let t = 0; t < TREES.length; t++) {
+      if (Math.hypot(x - TREES[t].x, y - TREES[t].y) < 16 + rad) return true;
     }
     for (let i = 0; i < SOLIDS.length; i++) {
       const r = SOLIDS[i];
@@ -564,6 +610,67 @@
       if (Math.hypot(x - TREE_HITS[t].x, y - TREE_HITS[t].y) < TREE_HITS[t].r + rad) return true;
     }
     return false;
+  }
+
+  let facadeCache = null;
+  function facadeList() {
+    if (facadeCache) return facadeCache;
+    const seen = {};
+    const list = [];
+    Object.keys(FACADE).forEach(function (name) {
+      const r = FACADE[name];
+      const key = r.x + ":" + r.y + ":" + r.w + ":" + r.h;
+      if (seen[key]) return;
+      seen[key] = true;
+      list.push(r);
+    });
+    facadeCache = list;
+    return list;
+  }
+
+  let waterBits = null;
+  let waterCW = 0;
+  const WATER_CELL = 8;
+  function ensureWater() {
+    if (waterBits) return;
+    const scenes = window.HEAN_ASSETS && window.HEAN_ASSETS.scenes;
+    const map = scenes && scenes.map;
+    if (!map || !map.complete || !map.naturalWidth) return;
+    const cw = Math.ceil(OLD_WORLD.w / WATER_CELL);
+    const ch = Math.ceil(OLD_WORLD.h / WATER_CELL);
+    const c = document.createElement("canvas");
+    c.width = cw;
+    c.height = ch;
+    const g = c.getContext("2d", { willReadFrequently: true });
+    g.drawImage(map, 0, 0, cw, ch);
+    const data = g.getImageData(0, 0, cw, ch).data;
+    const bits = new Uint8Array(cw * ch);
+    for (let i = 0; i < bits.length; i++) {
+      const y = Math.floor(i / cw) * WATER_CELL;
+      const x = (i % cw) * WATER_CELL;
+      if (y < 1600 || x > 920) continue;
+      const r = data[i * 4];
+      const gg = data[i * 4 + 1];
+      const b = data[i * 4 + 2];
+      if (b > 100 && b > r + 20 && gg > r + 8 && (r + gg + b) / 3 < 170) bits[i] = 1;
+    }
+    waterBits = bits;
+    waterCW = cw;
+  }
+
+  function waterAt(x, y) {
+    ensureWater();
+    if (!waterBits || y < 1600 || x < 0 || x > 920 || y >= OLD_WORLD.h) return false;
+    const c = Math.floor(x / WATER_CELL);
+    const r = Math.floor(y / WATER_CELL);
+    if (c < 0 || r < 0 || c >= waterCW) return false;
+    return waterBits[r * waterCW + c] === 1;
+  }
+
+  function harborWater(x, y) {
+    const hx = (x - 1400) / 240;
+    const hy = (y - 2430) / 48;
+    return hx * hx + hy * hy < 1;
   }
 
   function buildNav() {
@@ -1022,6 +1129,7 @@
       drawTownMarks();
       drawLife();
       drawFog();
+      if (showSolids) drawSolidOverlay();
     } else {
       window.HEAN_ROOMS.paint(pen, area === "home" ? "home" : roomKind, time);
       if (area === "home") {
@@ -1504,9 +1612,53 @@
     drawGround();
   }
 
+  function labelAnchor(b) {
+    const face = FACADE[b.name];
+    if (!face) return null;
+    const mates = [];
+    Object.keys(FACADE).forEach(function (name) {
+      const other = FACADE[name];
+      if (other.x === face.x && other.y === face.y && other.w === face.w && other.h === face.h) mates.push(name);
+    });
+    mates.sort();
+    const index = Math.max(0, mates.indexOf(b.name));
+    return { x: face.x + face.w / 2, y: face.y - 16 - (mates.length - 1 - index) * 26 };
+  }
+
+  let showSolids = false;
+  function drawSolidOverlay() {
+    pen.save();
+    pen.globalAlpha = 0.35;
+    pen.fillStyle = "#d24b4b";
+    facadeList().forEach(function (r) {
+      pen.fillRect(r.x, r.y, r.w, r.h);
+    });
+    pen.fillStyle = "#3d6fd4";
+    CAR_SOLIDS.forEach(function (r) {
+      pen.fillRect(r.x, r.y, r.w, r.h);
+    });
+    pen.fillStyle = "#2a9bb5";
+    if (waterBits) {
+      for (let i = 0; i < waterBits.length; i++) {
+        if (!waterBits[i]) continue;
+        const x = (i % waterCW) * WATER_CELL;
+        const y = Math.floor(i / waterCW) * WATER_CELL;
+        pen.fillRect(x, y, WATER_CELL, WATER_CELL);
+      }
+    }
+    const hx = 1400;
+    const hy = 2430;
+    pen.beginPath();
+    pen.ellipse(hx, hy, 240, 48, 0, 0, Math.PI * 2);
+    pen.fill();
+    pen.restore();
+  }
+
   function drawPlaceLabel(b) {
-    const x = b.x + b.w / 2;
-    const y = b.y + Math.min(36, b.h * 0.38);
+    const anchor = labelAnchor(b);
+    if (!anchor) return;
+    const x = anchor.x;
+    const y = anchor.y;
     pen.font = "700 15px " + FONT;
     pen.textAlign = "center";
     pen.textBaseline = "middle";
@@ -2170,10 +2322,14 @@
   }
 
   function townDoor(b) {
-    return b.door || { x: b.x + b.w / 2, y: b.y + b.h + 18 };
+    if (b.door) return b.door;
+    const face = FACADE[b.name];
+    if (face) return { x: face.x + face.w / 2, y: face.y + face.h + 22 };
+    return { x: b.x + b.w / 2, y: b.y + b.h + 18 };
   }
 
   function inTownDoor(b) {
+    if (!FACADE[b.name] && b.name !== "小鎮法院") return false;
     const door = townDoor(b);
     return Math.abs(player.x - door.x) < 48 && Math.abs(player.y - door.y) < 42;
   }
@@ -2387,7 +2543,9 @@
     const labelPts = [];
     const showNames = mapGeom.scale >= 0.28;
     BUILDINGS.forEach(function (b) {
-      const p = toScreen(b.x + b.w / 2, b.y + b.h / 2);
+      const anchor = labelAnchor(b);
+      if (!anchor) return;
+      const p = toScreen(anchor.x, anchor.y);
       if (p.x < -40 || p.y < -20 || p.x > box.w + 40 || p.y > box.h + 20) return;
       if (!showNames) return;
       if (labelPts.some(function (q) { return Math.hypot(q.x - p.x, q.y - p.y) < 36; })) return;
@@ -2688,7 +2846,9 @@
   function walkTo(x, y) {
     if (area === "town") {
       const building = BUILDINGS.find(function (item) {
-        return x > item.x - 8 && x < item.x + item.w + 8 && y > item.y - 16 && y < item.y + item.h + 36;
+        const face = FACADE[item.name];
+        if (!face) return false;
+        return x > face.x - 8 && x < face.x + face.w + 8 && y > face.y - 28 && y < face.y + face.h + 36;
       });
       if (building) {
         guideTo(building.name);
@@ -4521,8 +4681,8 @@
         pendingRole = btn.getAttribute("data-role");
         document.getElementById("gender-role").textContent = ROLE_NAME[pendingRole];
         const base = pendingRole === "agent" ? "agent" : pendingRole === "broker" ? "broker" : "client";
-        document.getElementById("gender-art-m").src = "assets/characters/" + base + "_m.webp?v=3.8";
-        document.getElementById("gender-art-f").src = "assets/characters/" + base + "_f.webp?v=3.8";
+        document.getElementById("gender-art-m").src = "assets/characters/" + base + "_m.webp?v=3.9";
+        document.getElementById("gender-art-f").src = "assets/characters/" + base + "_f.webp?v=3.9";
         document.getElementById("gender-pick").hidden = false;
       });
     });
@@ -5957,6 +6117,11 @@
   applyFont();
   if (window.HEAN_ART) {
     window.HEAN_ART.onReady = function () {
+      if (!waterBits && backdropMode() === "map") {
+        ensureWater();
+        if (area === "town") buildNav();
+        townLayer = null;
+      }
       if (!role) return;
       paintAvatar();
       if (currentId && dialog && !dialog.hidden) paintDialogArt(currentId);
@@ -6005,6 +6170,30 @@
     setHour: function (hour, minute) { hourOverride = hour; minuteOverride = minute || 0; townLayer = null; },
     setWeekday: function (day) { weekdayOverride = day; townLayer = null; },
     setTyphoon: function (on) { forceTyphoon = on; },
+    showSolids: function (on) { showSolids = on !== false; },
+    facadeOf: function (name) { return FACADE[name] || null; },
+    stops: function () {
+      const doors = BUILDINGS.filter(function (b) { return FACADE[b.name] || b.name === "小鎮法院"; }).map(function (b) {
+        const door = townDoor(b);
+        return { name: b.name, x: door.x, y: door.y, solid: solidAt(door.x, door.y, 12) };
+      });
+      const zones = ZONES.map(function (zone) {
+        const dest = zone.enter || zone.back;
+        return { name: zone.name, x: dest.x, y: dest.y, solid: solidAt(dest.x, dest.y, 12) };
+      });
+      return { doors: doors, zones: zones };
+    },
+    reach: function (x, y) {
+      const prev = area;
+      area = "town";
+      buildNav();
+      const route = findPath(player.x, player.y, x, y);
+      area = prev;
+      if (prev !== "town") buildNav();
+      if (!route || !route.length) return { ok: false, len: 0 };
+      const end = route[route.length - 1];
+      return { ok: Math.hypot(end.x - x, end.y - y) < 48, len: route.length, x: end.x, y: end.y };
+    },
     setDate: function (day) { dateOverride = day || null; },
     auditChests: function () {
       const prev = area;
