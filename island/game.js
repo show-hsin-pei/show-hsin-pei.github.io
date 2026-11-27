@@ -1,5 +1,5 @@
 (function () {
-  const VERSION = "3.7";
+  const VERSION = "3.8";
   const UPDATED = "2026年11月27日";
   const SAVE_VERSION = 2;
   const PEOPLE_KEY = "hean-village-people-v1";
@@ -240,6 +240,36 @@
     "公園亭": { start: 6, end: 21 },
     "湖畔亭": { start: 8, end: 18 },
     "步道牌": { start: 7, end: 17 }
+  };
+  // Painted doorway in map pixels (same space as the town backdrop).
+  // Interaction points in BUILDINGS.door are walking targets, not these openings.
+  // 青禾診所 and 小鎮法院 have no painted door, so they get no shutter.
+  const DOOR_RECTS = {
+    "銀行": { x: 1048, y: 228, w: 34, h: 50 },
+    "超商": { x: 1316, y: 236, w: 42, h: 52 },
+    "車行": { x: 1624, y: 208, w: 24, h: 48 },
+    "寵物店": { x: 1056, y: 732, w: 30, h: 44 },
+    "事務所": { x: 1994, y: 738, w: 72, h: 58 },
+    "蘆灣港亭": { x: 1994, y: 738, w: 72, h: 58 },
+    "小鎮公所": { x: 1372, y: 724, w: 40, h: 54 },
+    "勞工服務站": { x: 2006, y: 928, w: 34, h: 48 },
+    "暖禾人壽": { x: 1040, y: 1052, w: 32, h: 44 },
+    "青畦人壽": { x: 1242, y: 1052, w: 32, h: 44 },
+    "拾穗人壽": { x: 1448, y: 1054, w: 32, h: 44 },
+    "暮嵐人壽": { x: 1642, y: 1052, w: 32, h: 44 },
+    "石橋產物": { x: 1032, y: 1280, w: 36, h: 52 },
+    "岸蒲產物": { x: 1244, y: 1294, w: 32, h: 46 },
+    "原麓產物": { x: 1454, y: 1294, w: 30, h: 46 },
+    "澄川產物": { x: 1654, y: 1300, w: 32, h: 46 },
+    "醫院": { x: 172, y: 1476, w: 76, h: 54 },
+    "鎮民中心": { x: 490, y: 1452, w: 34, h: 52 },
+    "公園亭": { x: 1988, y: 234, w: 38, h: 54 },
+    "湖畔亭": { x: 240, y: 1732, w: 52, h: 52 },
+    "步道牌": { x: 2050, y: 1648, w: 42, h: 24 },
+    "青田穀倉": { x: 2645, y: 516, w: 20, h: 24 },
+    "青田農會": { x: 2945, y: 516, w: 20, h: 24 },
+    "杉徑小屋": { x: 2735, y: 1396, w: 20, h: 24 },
+    "漁村棚": { x: 1250, y: 2316, w: 20, h: 24 }
   };
   const LEVEL_GO = {
     2: ["寵物店"],
@@ -1062,49 +1092,63 @@
   }
 
   function drawShutters() {
+    const seen = {};
     BUILDINGS.forEach(function (b) {
-      const closed = !isOpen(b.name);
       if (b.name === "銀行" && bankOffHours()) {
+        const door = DOOR_RECTS["銀行"];
         pen.fillStyle = "rgba(255, 253, 249, 0.92)";
         pen.font = "700 13px " + FONT;
         pen.textAlign = "center";
-        pen.fillText("練習櫃台", b.x + b.w / 2, b.y + b.h + 28);
+        pen.textBaseline = "middle";
+        pen.fillText("練習櫃台", door.x + door.w / 2, door.y + door.h + 14);
         return;
       }
-      if (!closed) return;
-      if (!SHOP_HOURS[b.name] && b.name !== "蘆灣港亭") return;
-      drawDoorShutter(b);
+      if (isOpen(b.name)) return;
+      const rect = DOOR_RECTS[b.name];
+      if (!rect) return;
+      const key = rect.x + ":" + rect.y + ":" + rect.w + ":" + rect.h;
+      if (seen[key]) return;
+      seen[key] = true;
+      drawDoorShutter(rect);
     });
   }
 
-  function drawDoorShutter(b) {
-    const doorX = b.door ? b.door.x : b.x + b.w / 2;
-    const sw = 38;
-    const sh = 26;
-    const sx = doorX - sw / 2;
-    const sy = b.y + b.h - sh - 2;
+  function drawDoorShutter(rect) {
+    const x = rect.x;
+    const y = rect.y;
+    const w = rect.w;
+    const h = rect.h;
     pen.save();
-    pen.fillStyle = "rgba(46, 42, 38, 0.94)";
-    pen.fillRect(sx, sy, sw, sh);
-    pen.strokeStyle = "rgba(232, 224, 208, 0.8)";
-    pen.lineWidth = 1.3;
-    for (let i = 1; i <= 4; i++) {
-      const y = sy + i * (sh / 5);
+    pen.fillStyle = "rgba(54, 58, 64, 0.94)";
+    pen.fillRect(x, y, w, h);
+    pen.fillStyle = "rgba(226, 230, 234, 0.92)";
+    pen.fillRect(x, y, 2, h);
+    pen.fillRect(x + w - 2, y, 2, h);
+    pen.fillRect(x, y, w, 2);
+    pen.strokeStyle = "rgba(232, 236, 240, 0.78)";
+    pen.lineWidth = 1;
+    const rows = Math.max(3, Math.round(h / 6));
+    for (let i = 1; i < rows; i++) {
+      const yy = y + (h * i) / rows;
       pen.beginPath();
-      pen.moveTo(sx + 2, y);
-      pen.lineTo(sx + sw - 2, y);
+      pen.moveTo(x + 2, yy);
+      pen.lineTo(x + w - 2, yy);
       pen.stroke();
     }
-    pen.font = "700 11px " + FONT;
+    const label = "休息中";
+    const size = Math.max(8, Math.min(12, Math.floor(Math.min(w, h) / 2.6)));
+    pen.font = "700 " + size + "px " + FONT;
     pen.textAlign = "center";
     pen.textBaseline = "middle";
-    const label = "休息中";
-    const tw = pen.measureText(label).width + 10;
+    const tw = Math.min(w - 4, pen.measureText(label).width + 8);
+    const th = size + 4;
+    const lx = x + w / 2 - tw / 2;
+    const ly = y + h / 2 - th / 2;
     pen.fillStyle = "rgba(255, 253, 249, 0.96)";
-    roundRect(doorX - tw / 2, sy - 16, tw, 14, 7);
+    roundRect(lx, ly, tw, th, 3);
     pen.fill();
     pen.fillStyle = "#3f362e";
-    pen.fillText(label, doorX, sy - 9);
+    pen.fillText(label, x + w / 2, y + h / 2);
     pen.restore();
   }
 
@@ -4477,8 +4521,8 @@
         pendingRole = btn.getAttribute("data-role");
         document.getElementById("gender-role").textContent = ROLE_NAME[pendingRole];
         const base = pendingRole === "agent" ? "agent" : pendingRole === "broker" ? "broker" : "client";
-        document.getElementById("gender-art-m").src = "assets/characters/" + base + "_m.webp?v=3.7";
-        document.getElementById("gender-art-f").src = "assets/characters/" + base + "_f.webp?v=3.7";
+        document.getElementById("gender-art-m").src = "assets/characters/" + base + "_m.webp?v=3.8";
+        document.getElementById("gender-art-f").src = "assets/characters/" + base + "_f.webp?v=3.8";
         document.getElementById("gender-pick").hidden = false;
       });
     });
