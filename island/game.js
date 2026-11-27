@@ -1,6 +1,8 @@
 (function () {
-  const VERSION = "3.5";
+  const VERSION = "3.6";
   const UPDATED = "2026年11月27日";
+  const SAVE_VERSION = 2;
+  const PEOPLE_KEY = "hean-village-people-v1";
   const AVATAR_ORIGIN = "https://island-avatars.bn-lovestar.workers.dev";
   const AVATAR_KEYS = { agent_m: 1, agent_f: 1, broker_m: 1, broker_f: 1, client_m: 1, client_f: 1 };
   const KEY = "hean-village-v1";
@@ -166,6 +168,8 @@
     SPOTS.push({ id: item[0], name: item[1], x: item[2], y: item[3], facility: "meet" });
   });
   SPOTS.push({ id: "sport-corner", name: "青禾運動角", x: 775, y: 700, facility: "sport" });
+  SPOTS.push({ id: "monthly-issue", name: "月刊問答", x: 560, y: 820, facility: "issue" });
+  SPOTS.push({ id: "notice-board", name: "公告欄", x: 760, y: 820, facility: "notice" });
   SPOTS.push({ id: "barley-square", name: "麥穗廣場", x: 640, y: 480, facility: "draw" });
   [
     ["hospital", 320, 1460], ["hospital", 640, 1460], ["hospital", 760, 1460], ["hospital", 900, 1460], ["hospital", 1100, 1460],
@@ -282,6 +286,7 @@
   let townLayer = null;
   let townBakedMode = "";
   let hourOverride = null;
+  let dateOverride = null;
   window.HEAN_ASSETS = window.HEAN_ASSETS || { scenes: { town: null, home: null, map: null }, characters: {} };
   if (!window.HEAN_ASSETS.scenes) window.HEAN_ASSETS.scenes = {};
   if (!("map" in window.HEAN_ASSETS.scenes)) window.HEAN_ASSETS.scenes.map = null;
@@ -362,15 +367,57 @@
       base.tutorialDone = !!data.tutorialDone;
       base.avatarPublic = data.avatarPublic === true;
       base.avatarNick = typeof data.avatarNick === "string" ? data.avatarNick.slice(0, 12) : "";
+      base.saveVersion = SAVE_VERSION;
+      ["consumer", "agent", "broker"].forEach(function (r) {
+        const bag = base.byRole[r];
+        if (!bag.clients || typeof bag.clients !== "object" || Array.isArray(bag.clients)) bag.clients = {};
+        if (!bag.approaches || typeof bag.approaches !== "object" || Array.isArray(bag.approaches)) bag.approaches = {};
+        if (!bag.issueDone || typeof bag.issueDone !== "object") bag.issueDone = {};
+      });
+      mergePeople(base);
       return base;
     } catch (err) {
       return defaultState();
     }
   }
 
+  function peopleSnap(source) {
+    const snap = { version: 1, roles: {} };
+    ["consumer", "agent", "broker"].forEach(function (r) {
+      const bag = source.byRole && source.byRole[r] ? source.byRole[r] : {};
+      snap.roles[r] = {
+        clients: bag.clients && typeof bag.clients === "object" ? bag.clients : {},
+        approaches: bag.approaches && typeof bag.approaches === "object" ? bag.approaches : {}
+      };
+    });
+    return snap;
+  }
+
+  function mergePeople(base) {
+    try {
+      const raw = localStorage.getItem(PEOPLE_KEY);
+      if (!raw) return;
+      const snap = JSON.parse(raw);
+      const roles = snap && snap.roles;
+      if (!roles) return;
+      ["consumer", "agent", "broker"].forEach(function (r) {
+        const kept = roles[r] || {};
+        const bag = base.byRole[r];
+        Object.keys(kept.clients || {}).forEach(function (id) {
+          if (!bag.clients[id]) bag.clients[id] = kept.clients[id];
+        });
+        Object.keys(kept.approaches || {}).forEach(function (id) {
+          if (!bag.approaches[id]) bag.approaches[id] = kept.approaches[id];
+        });
+      });
+    } catch (err) { /* ignore broken sidecar */ }
+  }
+
   function save() {
     try {
+      state.saveVersion = SAVE_VERSION;
       localStorage.setItem(KEY, JSON.stringify(state));
+      localStorage.setItem(PEOPLE_KEY, JSON.stringify(peopleSnap(state)));
     } catch (err) { /* private mode */ }
   }
 
@@ -1625,6 +1672,7 @@
     pen.ellipse(0, 2, aiW * 0.18, 4, 0, 0, Math.PI * 2);
     pen.fill();
     if (window.HEAN_CHARS.drawSheet(pen, id, facing, aiFrame, -aiW / 2, foot, aiW, aiH)) {
+      if (isPlayer && wearingScarf()) drawScarf(aiH);
       pen.restore();
       if (!isPlayer) markSpot(x, y, scenarioId);
       return;
@@ -1837,6 +1885,17 @@
       const w = pen.measureText(text).width + 16;
       const x = s.x - w / 2;
       const y = s.y - tagLift(s);
+      if (s.facility === "meet") {
+        const tag = manageTag(s.id);
+        if (tag) {
+          const tw = pen.measureText(tag).width + 14;
+          roundRect(s.x - tw / 2, y - 26, tw, 18, 9);
+          pen.fillStyle = tag.indexOf("今天") === 0 ? "#e7c98a" : "#f3e6cf";
+          pen.fill();
+          pen.fillStyle = "#3f362e";
+          pen.fillText(tag, s.x, y - 17);
+        }
+      }
       roundRect(x, y, w, 20, 10);
       pen.fillStyle = "rgba(255, 253, 249, 0.94)";
       pen.fill();
@@ -2939,11 +2998,36 @@
     pen.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
   }
 
+  function dailyHeadlines(list) {
+    const pack = list || [];
+    if (!pack.length) return [];
+    const n = dayNumber(taipeiDate());
+    const out = [];
+    for (let i = 0; i < 3; i++) out.push(pack[(n + i * 3) % pack.length]);
+    return out;
+  }
+
+  function speakNews(text, rate) {
+    try {
+      if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) return;
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = "zh-TW";
+      utter.rate = rate || 1;
+      const voices = window.speechSynthesis.getVoices ? window.speechSynthesis.getVoices() : [];
+      const zh = voices.filter(function (voice) { return voice.lang === "zh-TW" || voice.lang.indexOf("zh") === 0; })[0];
+      if (zh) utter.voice = zh;
+      window.speechSynthesis.speak(utter);
+    } catch (err) { /* 沒有朗讀就安靜跳過 */ }
+  }
+
   function openNews() {
-    const today = newsPool().filter(function (item) { return !item.roles; });
-    const ideas = newsPool().filter(function (item) { return item.roles || !item.when; });
+    const issue = window.HEAN_ISSUE || {};
+    const today = dailyHeadlines(issue.insuranceNews);
+    const ideas = dailyHeadlines(issue.financeNews);
     let tab = "today";
-    let index = newsIndex() % Math.max(1, today.length);
+    let index = 0;
+    let rate = 1;
     const wrap = document.createElement("div");
     wrap.className = "news-card";
     const top = document.createElement("div");
@@ -2970,8 +3054,8 @@
     const tabIdeas = document.createElement("button");
     tabToday.type = "button";
     tabIdeas.type = "button";
-    tabToday.textContent = "今日";
-    tabIdeas.textContent = "觀念";
+    tabToday.textContent = "保險新聞";
+    tabIdeas.textContent = "財經快訊";
     tabs.appendChild(tabToday);
     tabs.appendChild(tabIdeas);
     const nav = document.createElement("div");
@@ -2988,6 +3072,27 @@
     nav.appendChild(prev);
     nav.appendChild(page);
     nav.appendChild(next);
+    const read = document.createElement("button");
+    read.type = "button";
+    read.className = "ghost";
+    read.textContent = "朗讀";
+    const speed = document.createElement("select");
+    speed.setAttribute("aria-label", "朗讀速度");
+    [["慢", "0.85"], ["普通", "1"], ["快", "1.2"]].forEach(function (pair) {
+      const opt = document.createElement("option");
+      opt.value = pair[1];
+      opt.textContent = pair[0];
+      if (pair[1] === "1") opt.selected = true;
+      speed.appendChild(opt);
+    });
+    speed.addEventListener("change", function () { rate = Number(speed.value) || 1; });
+    read.addEventListener("click", function () {
+      const list = currentList();
+      const item = list[positiveMod(index, list.length)];
+      if (item) speakNews(item.title + "。" + item.body, rate);
+    });
+    nav.appendChild(read);
+    nav.appendChild(speed);
     const listEl = document.createElement("div");
     listEl.className = "news-list";
     const detail = document.createElement("p");
@@ -3000,6 +3105,7 @@
       const list = currentList();
       index = positiveMod(index, list.length);
       const item = list[index];
+      if (!item) return;
       tabToday.className = tab === "today" ? "news-tab on" : "news-tab";
       tabIdeas.className = tab === "ideas" ? "news-tab on" : "news-tab";
       page.textContent = (index + 1) + " / " + list.length;
@@ -3074,6 +3180,8 @@
     if (near.facility === "sport") return "運動";
     if (near.facility === "draw") return "抽一次";
     if (near.facility === "quiz") return "聽故事";
+    if (near.facility === "issue") return "月刊";
+    if (near.facility === "notice") return "公告";
     const building = BUILDINGS.find(function (b) {
       const door = b.door || { x: b.x + b.w / 2, y: b.y + b.h + 18 };
       return Math.hypot(door.x - player.x, door.y - player.y) < 36 && Math.hypot(near.x - door.x, near.y - door.y) < 48;
@@ -3257,6 +3365,14 @@
     }
     if (near.facility === "quiz") {
       openQuiz(near);
+      return;
+    }
+    if (near.facility === "issue") {
+      openIssue();
+      return;
+    }
+    if (near.facility === "notice") {
+      openNotice();
       return;
     }
     if (talkBtn.textContent === "出門" && area !== "town" && inExitZone()) {
@@ -3456,6 +3572,7 @@
       button("定存 7 天", "primary", function () { lockTerm(Number(amount.value), 7); }),
       button("定存 15 天", "primary", function () { lockTerm(Number(amount.value), 15); }),
       button("定存 30 天", "primary", function () { lockTerm(Number(amount.value), 30); }),
+      button("主管機關公告欄", "ghost", openNotice),
       rows
     ]);
   }
@@ -4184,8 +4301,8 @@
         pendingRole = btn.getAttribute("data-role");
         document.getElementById("gender-role").textContent = ROLE_NAME[pendingRole];
         const base = pendingRole === "agent" ? "agent" : pendingRole === "broker" ? "broker" : "client";
-        document.getElementById("gender-art-m").src = "assets/characters/" + base + "_m.webp?v=3.5";
-        document.getElementById("gender-art-f").src = "assets/characters/" + base + "_f.webp?v=3.5";
+        document.getElementById("gender-art-m").src = "assets/characters/" + base + "_m.webp?v=3.6";
+        document.getElementById("gender-art-f").src = "assets/characters/" + base + "_f.webp?v=3.6";
         document.getElementById("gender-pick").hidden = false;
       });
     });
@@ -4344,6 +4461,7 @@
     document.getElementById("btn-pack").addEventListener("click", openPack);
     document.getElementById("btn-clients").addEventListener("click", openClientBook);
     document.getElementById("btn-badges").addEventListener("click", openBadges);
+    document.getElementById("btn-guide").addEventListener("click", openGuide);
     document.getElementById("radio").addEventListener("click", openRadio);
     document.getElementById("finance-close").addEventListener("click", function () {
       document.getElementById("finance").hidden = true;
@@ -4486,6 +4604,7 @@
   }
 
   function taipeiDate() {
+    if (dateOverride) return dateOverride;
     return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Taipei" }).format(new Date());
   }
 
@@ -4854,6 +4973,7 @@
         clientBook()[near.id] = { step: 2, day: today, cold: "", name: near.name };
         earnBadge("booked");
       }
+      grantSeason();
     } else {
       rec.cold = shiftDate(today, 2);
     }
@@ -4895,6 +5015,7 @@
     if (!hurt) {
       save();
       renderHud();
+      grantSeason();
       nodes.push(para("今天沒有受傷。連續 " + data.sportStreak + " 天。滿 3 天，當天陌開多 1 次。"));
       nodes.push(para("若拉傷：沒有意外或醫療練習保單自己付 18 枚；有對應保單只付自負額。遊戲數值，不是保費試算。"));
       fillFacility(item.name, nodes);
@@ -4906,6 +5027,7 @@
     const due = covered ? Math.min.apply(null, [medical, accident].filter(Boolean)) : 18;
     const paid = Math.min(due, cashOf(role));
     if (paid > 0) payCash(paid, "運動拉傷");
+    grantSeason();
     save();
     renderHud();
     const compare = document.createElement("div");
@@ -4928,6 +5050,7 @@
     const card = deck[dayNumber(today) % deck.length];
     data.drawDay = today;
     earnBadge("draw");
+    grantSeason();
     if (card.kind === "coin") earnCash(card.amount, "麥穗廣場");
     if (card.kind === "xp") {
       const before = levelOf();
@@ -4947,6 +5070,161 @@
       para(card.line),
       para("一天一次。遊戲獎勵，不是抽獎廣告，也沒有真實獎金。")
     ]);
+  }
+
+  function manageTag(id) {
+    if (!role || (role !== "agent" && role !== "broker")) return "";
+    const approach = approachBook()[id];
+    if (!approach || approach.stage < 2) return "";
+    const rec = clientBook()[id] || {};
+    const today = taipeiDate();
+    if ((rec.cold && rec.cold > today) || (rec.day && rec.day >= today)) return "明天可經營";
+    return "今天可經營";
+  }
+
+  function wearingScarf() {
+    if (!role) return false;
+    const today = taipeiDate();
+    if (today.slice(5, 7) !== "12") return false;
+    return bag().scarf === today.slice(0, 7);
+  }
+
+  function grantSeason() {
+    const today = taipeiDate();
+    if (today.slice(5, 7) !== "12") return;
+    const month = today.slice(0, 7);
+    if (bag().scarf === month) return;
+    bag().scarf = month;
+    save();
+    showFloater("聖誕圍巾\n12 月限定");
+  }
+
+  function drawScarf(aiH) {
+    const neck = -aiH * 62 / 320;
+    pen.fillStyle = "#b23a3a";
+    pen.beginPath();
+    pen.ellipse(0, neck, aiH * 0.07, aiH * 0.018, 0, 0, Math.PI * 2);
+    pen.fill();
+    pen.fillStyle = "#f4f7f2";
+    pen.fillRect(-aiH * 0.012, neck, aiH * 0.024, aiH * 0.045);
+  }
+
+  function issuePack() {
+    return (window.HEAN_ISSUE && window.HEAN_ISSUE.questions) || [];
+  }
+
+  function issueUnlocked() {
+    const day = Number(taipeiDate().slice(8, 10)) || 1;
+    const count = Math.min(issuePack().length, 8 + (day - 1) * 2);
+    return issuePack().slice(0, count);
+  }
+
+  function issueState() {
+    const data = bag();
+    if (!data.issueDone || typeof data.issueDone !== "object") data.issueDone = {};
+    const today = taipeiDate();
+    if (data.issueDay !== today) {
+      data.issueDay = today;
+      data.issueCount = 0;
+    }
+    return data;
+  }
+
+  function openIssue() {
+    const data = issueState();
+    const month = taipeiDate().slice(0, 7);
+    const list = issueUnlocked();
+    const nodes = [para(month + " 月刊。1 日先開 8 題，其後每天再解鎖 2 題，最多 " + issuePack().length + " 題。今天解鎖 " + list.length + " 題。遊戲值，不是證照。")];
+    nodes.push(para("今天還可答 " + Math.max(0, 5 - (data.issueCount || 0)) + " 題。答過的會留在存檔。"));
+    list.forEach(function (item) {
+      const mark = data.issueDone[month + ":" + item.id];
+      nodes.push(button((mark ? "已答 · " : "") + item.cat + " · " + item.title, mark ? "ghost" : "option", function () { askIssue(item); }));
+    });
+    fillFacility("月刊問答", nodes);
+  }
+
+  function askIssue(item) {
+    const data = issueState();
+    const month = taipeiDate().slice(0, 7);
+    const key = month + ":" + item.id;
+    if (data.issueDone[key]) {
+      fillFacility(item.title, [para("這題這個月答過了。"), para(item.why), para(item.source), para("遊戲說明，不是法律意見。")]);
+      return;
+    }
+    if ((data.issueCount || 0) >= 5) {
+      showToast("今天的 5 題月刊用完了。遊戲規則。");
+      return;
+    }
+    const nodes = [para(item.cat), para(item.q)];
+    item.options.forEach(function (text, index) {
+      nodes.push(button(text, "option", function () { answerIssue(item, index); }));
+    });
+    fillFacility(item.cat + " · " + item.title, nodes);
+  }
+
+  function answerIssue(item, index) {
+    const data = issueState();
+    const month = taipeiDate().slice(0, 7);
+    const key = month + ":" + item.id;
+    if (data.issueDone[key]) return;
+    data.issueCount = (data.issueCount || 0) + 1;
+    const good = index === item.best;
+    data.issueDone[key] = good ? "ok" : "no";
+    if (good) {
+      earnCash(6, "月刊問答");
+      const before = levelOf();
+      state.xp[role] = (state.xp[role] || 0) + 6;
+      const after = levelOf();
+      animateXp(before, after);
+      grantSeason();
+      if (after > before) noteLevel();
+    }
+    save();
+    renderHud();
+    fillFacility(good ? "答對了" : "教練", [
+      para(good ? "遊戲金幣 6、經驗 6。數字是遊戲值。" : "這次沒有金幣，也沒有經驗。"),
+      para(item.why),
+      para(item.source),
+      para("教學說明，不推薦商品，也不構成法律或稅務意見。")
+    ]);
+  }
+
+  function openNotice() {
+    const pack = (window.HEAN_ISSUE && window.HEAN_ISSUE.notices) || [];
+    const nodes = [para("這裡的公司和罰鍰都是虛構的遊戲值。不點名真實公司，也不留電話。")];
+    pack.forEach(function (item) {
+      nodes.push(para(item.title + " · " + item.line));
+      nodes.push(para(item.lesson));
+    });
+    nodes.push(para("申訴櫃檯：先向自己的保險公司書面說明不同意的地方，保留回覆。仍不服，再依當時公開的評議程序。訴訟不是第一步。本遊戲不代寫、不代送、不留電話。"));
+    fillFacility("主管機關公告欄", nodes);
+  }
+
+  function openGuide() {
+    document.getElementById("menu-panel").hidden = true;
+    const data = bag();
+    const today = taipeiDate();
+    issueState();
+    if (data.clientDay !== today) data.clientSteps = 0;
+    if (data.approachDay !== today) data.approachCount = 0;
+    const nodes = [para("遊戲規則。帶我去會改走目前這條路。數字都是遊戲值。")];
+    LEVEL_TABLE.forEach(function (row) {
+      nodes.push(para("Lv." + row.lv + (levelOf() >= row.lv ? " 已開" : "") + "　" + row.text));
+    });
+    nodes.push(para("陌開還可 " + Math.max(0, approachLimit() - (data.approachCount || 0)) + " / " + approachLimit()));
+    nodes.push(para("運動 " + (data.sportDay === today ? "今天做過" : "今天還可 1 次")));
+    nodes.push(para("麥穗抽籤 " + (data.drawDay === today ? "今天抽過" : "今天還可 1 次")));
+    nodes.push(para("月刊問答還可 " + Math.max(0, 5 - (data.issueCount || 0)) + " / 5，本月已解鎖 " + issueUnlocked().length + " 題"));
+    nodes.push(para("寶箱還可 " + Math.max(0, 5 - (data.chestDay === today ? (data.chestCount || 0) : 0)) + " / 5"));
+    nodes.push(para("釣魚還可 " + Math.max(0, 5 - (data.castDay === today ? (data.casts || 0) : 0)) + " / 5"));
+    nodes.push(para("客戶步驟還可 " + Math.max(0, 5 - (data.clientSteps || 0)) + " / 5"));
+    nodes.push(para(today.slice(5, 7) === "12" ? "12 月限定圍巾：" + (wearingScarf() ? "已戴上" : "完成一項今日任務可取得") : "聖誕圍巾只在台北時間 12/1–12/31 出現。"));
+    nodes.push(button("去月刊問答", "primary", function () { closeTips(); guideToPoint(560, 820); }));
+    nodes.push(button("去公告欄", "ghost", function () { closeTips(); guideToPoint(760, 820); }));
+    nodes.push(button("去運動角", "ghost", function () { closeTips(); guideToPoint(775, 760); }));
+    nodes.push(button("去麥穗廣場", "ghost", function () { closeTips(); guideToPoint(640, 520); }));
+    nodes.push(button("去銀行", "ghost", function () { closeTips(); guideTo("銀行"); }));
+    fillFacility("小鎮攻略", nodes);
   }
 
   function openQuiz(near) {
@@ -5345,6 +5623,7 @@
     setHour: function (hour) { hourOverride = hour; townLayer = null; },
     setWeekday: function (day) { weekdayOverride = day; townLayer = null; },
     setTyphoon: function (on) { forceTyphoon = on; },
+    setDate: function (day) { dateOverride = day || null; },
     auditChests: function () {
       const prev = area;
       area = "town";

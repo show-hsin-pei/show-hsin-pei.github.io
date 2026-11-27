@@ -752,6 +752,15 @@ body.ui-busy .toast { visibility: hidden; }
   color: #fffdf9;
 }
 
+.news-nav select {
+  min-height: 44px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: #fffdf9;
+  font: inherit;
+  padding: 0 8px;
+}
+
 .news-nav span {
   flex: none;
   min-width: 52px;
