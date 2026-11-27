@@ -129,7 +129,12 @@
     "folk-lu": "npc_shopkeeper",
     "folk-chen": "npc_grandma",
     "folk-lin": "npc_grandpa",
-    "folk-man": "npc_office"
+    "folk-man": "npc_office",
+    "farm-keeper": "npc_grandma",
+    "farm-clerk": "npc_mom",
+    "forest-guide": "npc_grandpa",
+    "harbor-skipper": "npc_office",
+    "harbor-aunt": "npc_shopkeeper"
   };
   ["hospital", "clinic", "civic", "life", "prop"].forEach(function (district, districtIndex) {
     const cycle = ["npc_grandma", "npc_mom", "npc_grandpa", "npc_office", "npc_shopkeeper"];

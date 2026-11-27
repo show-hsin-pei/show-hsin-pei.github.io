@@ -1,5 +1,5 @@
 (function () {
-  const VERSION = "3.6.1";
+  const VERSION = "3.7";
   const UPDATED = "2026年11月27日";
   const SAVE_VERSION = 2;
   const PEOPLE_KEY = "hean-village-people-v1";
@@ -7,7 +7,8 @@
   const AVATAR_KEYS = { agent_m: 1, agent_f: 1, broker_m: 1, broker_f: 1, client_m: 1, client_f: 1 };
   const KEY = "hean-village-v1";
   const FONT = '"Noto Sans TC", "PingFang TC", "Microsoft JhengHei", "WenQuanYi Micro Hei", sans-serif';
-  const WORLD = { w: 2300, h: 1960 };
+  const WORLD = { w: 3180, h: 2640 };
+  const OLD_WORLD = { w: 2300, h: 1960 };
   const CS = 20;
   const SPEED = 150;
   const CHEST_WAIT = 3 * 60 * 1000;
@@ -56,7 +57,11 @@
     { name: "青禾診所", zone: "醫院", x: 500, y: 520, w: 140, h: 100, roof: "#d7e4ea", wall: "#f7fbff", kind: "clinic", scenarios: [] },
     { name: "公園亭", zone: "公園", x: 1900, y: 40, w: 200, h: 240, roof: "#7f8f78", wall: "#f7f3ea", kind: "stall", level: 3, scenarios: ["park-walk"] },
     { name: "湖畔亭", zone: "湖畔", x: 90, y: 1748, w: 130, h: 100, roof: "#7aa0b0", wall: "#f7f4ee", kind: "house", level: 5, door: { x: 420, y: 1608 }, scenarios: ["lake-rest"] },
-    { name: "步道牌", zone: "山上步道", x: 1768, y: 1496, w: 52, h: 86, roof: "#8d6a45", wall: "#f6efe4", kind: "stall", level: 8, door: { x: 1660, y: 1508 }, scenarios: ["trail-sign"] }
+    { name: "步道牌", zone: "山上步道", x: 1768, y: 1496, w: 52, h: 86, roof: "#8d6a45", wall: "#f6efe4", kind: "stall", level: 8, door: { x: 1660, y: 1508 }, scenarios: ["trail-sign"] },
+    { name: "青田穀倉", zone: "農田區", x: 2580, y: 430, w: 150, h: 110, roof: "#b98362", wall: "#fff6ea", kind: "stall", level: 5, door: { x: 2655, y: 560 } },
+    { name: "青田農會", zone: "農田區", x: 2860, y: 420, w: 190, h: 120, roof: "#c4a36a", wall: "#fffaf3", kind: "office", level: 5, door: { x: 2955, y: 560 } },
+    { name: "杉徑小屋", zone: "山林區", x: 2680, y: 1320, w: 130, h: 100, roof: "#6f8f62", wall: "#f6f1e6", kind: "stall", level: 8, door: { x: 2745, y: 1440 } },
+    { name: "漁村棚", zone: "港口漁村", x: 1180, y: 2240, w: 160, h: 100, roof: "#6d90a0", wall: "#f4f7f8", kind: "stall", level: 12, door: { x: 1260, y: 2360 } }
   ];
 
   const PATHS = [
@@ -98,17 +103,21 @@
     { name: "公園", level: 3, x: 1840, y: 40, w: 440, h: 500, back: { x: 1700, y: 390 } },
     { name: "湖畔", level: 5, x: 40, y: 1572, w: 780, h: 360, back: { x: 240, y: 1460 } },
     { name: "山上步道", level: 8, x: 1840, y: 1572, w: 440, h: 360, back: { x: 1600, y: 1460 } },
-    { name: "蘆灣", level: 6, x: 1920, y: 640, w: 360, h: 360, back: { x: 1795, y: 700 } }
+    { name: "蘆灣", level: 6, x: 1920, y: 640, w: 360, h: 360, back: { x: 1795, y: 700 } },
+    { name: "農田區", slug: "farm", level: 5, x: 2360, y: 400, w: 760, h: 560, back: { x: 2100, y: 590 }, enter: { x: 2460, y: 590 } },
+    { name: "山林區", slug: "forest", level: 8, x: 2360, y: 1240, w: 760, h: 640, back: { x: 2140, y: 1532 }, enter: { x: 2460, y: 1532 } },
+    { name: "港口漁村", slug: "harbor", level: 12, x: 820, y: 2040, w: 900, h: 520, back: { x: 935, y: 1880 }, enter: { x: 1100, y: 2120 } }
   ];
-  const LEVEL_XP = [0, 30, 70, 120, 180, 250, 340, 450, 580, 730];
-  const LEVEL_TITLE = ["新鎮民", "認得路", "會看條款", "問得出口", "走得到湖", "蘆灣開放", "客戶簿", "步道熟", "鎮裡熟", "條款熟"];
+  const LEVEL_XP = [0, 30, 70, 120, 180, 250, 340, 450, 580, 730, 920, 1140];
+  const LEVEL_TITLE = ["新鎮民", "認得路", "會看條款", "問得出口", "走得到湖", "蘆灣開放", "客戶簿", "步道熟", "鎮裡熟", "條款熟", "田裡熟", "漁村開"];
   const LEVEL_NOTE = {
     2: "寵物店和打工開了。",
     3: "公園的霧散了。",
-    5: "湖畔可以走進去。",
+    5: "湖畔和農田區可以走進去。",
     6: "蘆灣港口開了，碼頭可以釣魚。",
     7: "業務員和經紀人可以用客戶簿。",
-    8: "山上步道的霧散了。"
+    8: "山上步道和山林區的霧散了。",
+    12: "港口漁村開了。颱風日那裡的加釣會休息。"
   };
   const DAY_MS = 30000;
 
@@ -170,6 +179,21 @@
   SPOTS.push({ id: "sport-corner", name: "青禾運動角", x: 775, y: 700, facility: "sport" });
   SPOTS.push({ id: "monthly-issue", name: "月刊問答", x: 560, y: 820, facility: "issue" });
   SPOTS.push({ id: "notice-board", name: "公告欄", x: 760, y: 820, facility: "notice" });
+  [
+    ["chest-farm", 2500, 590, "農田區"],
+    ["chest-forest", 2580, 1532, "山林區"],
+    ["chest-harbor", 1240, 2140, "港口漁村"]
+  ].forEach(function (item) {
+    SPOTS.push({ id: item[0], name: "寶箱", x: item[1], y: item[2], facility: "chest", zone: item[3] });
+  });
+  SPOTS.push({ id: "farm-keeper", name: "田裡阿嬤", x: 2500, y: 680, facility: "zone-talk", zone: "農田區", topic: "farm" });
+  SPOTS.push({ id: "farm-clerk", name: "農會窗口", x: 2920, y: 560, facility: "zone-talk", zone: "農田區", topic: "farm2" });
+  SPOTS.push({ id: "farm-harvest", name: "田裡", x: 2700, y: 680, facility: "harvest", zone: "農田區" });
+  SPOTS.push({ id: "forest-guide", name: "杉徑爺爺", x: 2760, y: 1620, facility: "zone-talk", zone: "山林區", topic: "forest" });
+  SPOTS.push({ id: "forest-hike", name: "步道口", x: 2920, y: 1532, facility: "hike", zone: "山林區" });
+  SPOTS.push({ id: "harbor-skipper", name: "船頭", x: 1360, y: 2200, facility: "zone-talk", zone: "港口漁村", topic: "harbor" });
+  SPOTS.push({ id: "harbor-aunt", name: "漁村阿姨", x: 1080, y: 2200, facility: "zone-talk", zone: "港口漁村", topic: "harbor2" });
+  SPOTS.push({ id: "harbor-bonus", name: "加釣", x: 1620, y: 2140, facility: "harbor-fish", zone: "港口漁村" });
   SPOTS.push({ id: "barley-square", name: "麥穗廣場", x: 640, y: 480, facility: "draw" });
   [
     ["hospital", 320, 1460], ["hospital", 640, 1460], ["hospital", 760, 1460], ["hospital", 900, 1460], ["hospital", 1100, 1460],
@@ -189,7 +213,10 @@
     "醫院": [{ x: 320, y: 1532 }, { x: 480, y: 1532 }, { x: 640, y: 1532 }, { x: 1100, y: 1532 }],
     "公園": [{ x: 1900, y: 395 }, { x: 2040, y: 395 }, { x: 2140, y: 480 }, { x: 1880, y: 480 }],
     "湖畔": [{ x: 320, y: 1532 }, { x: 480, y: 1532 }, { x: 700, y: 1532 }, { x: 1100, y: 1532 }],
-    "山上步道": [{ x: 1500, y: 1532 }, { x: 1640, y: 1532 }, { x: 1795, y: 1400 }, { x: 1795, y: 1280 }]
+    "山上步道": [{ x: 1500, y: 1532 }, { x: 1640, y: 1532 }, { x: 1795, y: 1400 }, { x: 1795, y: 1280 }],
+    "農田區": [{ x: 2500, y: 590 }, { x: 2780, y: 590 }, { x: 3000, y: 590 }],
+    "山林區": [{ x: 2520, y: 1532 }, { x: 2860, y: 1532 }, { x: 3040, y: 1532 }],
+    "港口漁村": [{ x: 1000, y: 2140 }, { x: 1280, y: 2140 }, { x: 1500, y: 2140 }]
   };
   const SHOP_HOURS = {
     "超商": { start: 7, end: 23 },
@@ -215,19 +242,21 @@
     "步道牌": { start: 7, end: 17 }
   };
   const LEVEL_GO = {
-    2: "寵物店",
-    3: "公園亭",
-    5: "湖畔亭",
-    6: "蘆灣港亭",
-    8: "步道牌"
+    2: ["寵物店"],
+    3: ["公園亭"],
+    5: ["湖畔亭", "農田區"],
+    6: ["蘆灣港亭"],
+    8: ["步道牌", "山林區"],
+    12: ["港口漁村"]
   };
   const LEVEL_TABLE = [
     { lv: 1, text: "家、商店街、銀行、醫院、公所。銀行練習櫃台整天開著。" },
     { lv: 2, text: "寵物店。業務員和經紀人可以開始客戶簿。" },
     { lv: 3, text: "公園。" },
-    { lv: 5, text: "湖畔。" },
+    { lv: 5, text: "湖畔、農田區。" },
     { lv: 6, text: "蘆灣。颱風日港口會休息。" },
-    { lv: 8, text: "山上步道。" }
+    { lv: 8, text: "山上步道、山林區。" },
+    { lv: 12, text: "港口漁村。颱風日加釣休息。" }
   ];
   let townSeen = null;
   let forceTyphoon = null;
@@ -981,6 +1010,9 @@
           else if (s.facility === "fish") drawRod(s.x, s.y);
           else if (s.animal) drawCat(s.x, s.y);
           else if (s.facility === "chest") drawChest(s.x, s.y, s.id);
+          else if (s.facility === "harvest") drawCrop(s.x, s.y);
+          else if (s.facility === "hike") drawRod(s.x, s.y);
+          else if (s.facility === "harbor-fish") drawRod(s.x, s.y);
           else drawPerson(s.x, s.y, i, false, s.id);
         }
       });
@@ -1098,14 +1130,92 @@
     pen.restore();
   }
 
+  const fogSeen = {};
+
+  function fogAlpha(zone) {
+    const open = !!(role && levelOf() >= zone.level);
+    if (fogSeen[zone.name] == null) fogSeen[zone.name] = open ? 0 : 1;
+    const target = open ? 0 : 1;
+    fogSeen[zone.name] += (target - fogSeen[zone.name]) * 0.08;
+    if (Math.abs(fogSeen[zone.name] - target) < 0.02) fogSeen[zone.name] = target;
+    return fogSeen[zone.name];
+  }
+
   function drawFog() {
     if (!role) return;
-    const level = levelOf();
+    pen.save();
+    pen.font = "700 15px " + FONT;
+    pen.textAlign = "center";
+    pen.textBaseline = "middle";
     ZONES.forEach(function (zone) {
-      if (level >= zone.level) return;
-      pen.fillStyle = "rgba(226, 228, 222, 0.55)";
-      pen.fillRect(zone.x, zone.y, zone.w, zone.h);
+      const alpha = fogAlpha(zone);
+      if (alpha > 0.04) {
+        pen.fillStyle = "rgba(226, 228, 222, " + (0.55 * alpha) + ")";
+        pen.fillRect(zone.x, zone.y, zone.w, zone.h);
+      }
+      if (alpha > 0.35 && zone.back) {
+        pen.fillStyle = "#fffdf9";
+        pen.fillText("Lv." + zone.level + " 解鎖", zone.back.x, zone.back.y - 28);
+      }
     });
+    pen.restore();
+  }
+
+  function drawNewLands(ctx) {
+    const g = ctx || pen;
+    g.save();
+    g.fillStyle = "#d5e2b4";
+    g.fillRect(2400, 430, 680, 140);
+    g.fillStyle = "#e7d7bc";
+    g.fillRect(2100, 560, 1020, 60);
+    g.fillRect(2140, 1500, 980, 64);
+    g.fillRect(900, 1820, 70, 360);
+    g.fillRect(860, 2100, 820, 64);
+    g.fillStyle = "#c9d7a4";
+    for (let i = 0; i < 6; i++) g.fillRect(2420 + (i % 3) * 180, 440 + Math.floor(i / 3) * 60, 150, 40);
+    shed(g, 2580, 430, 150, 110, "#b98362");
+    shed(g, 2860, 420, 190, 120, "#c4a36a");
+    g.fillStyle = "#6f8f62";
+    [[2500, 1360], [2700, 1480], [2920, 1360], [3040, 1600], [2480, 1680]].forEach(function (p) {
+      g.beginPath();
+      g.arc(p[0], p[1], 28, 0, Math.PI * 2);
+      g.fill();
+    });
+    shed(g, 2680, 1320, 130, 100, "#6f8f62");
+    g.fillStyle = "rgba(120, 160, 176, 0.55)";
+    g.beginPath();
+    g.ellipse(1400, 2360, 280, 90, 0, 0, Math.PI * 2);
+    g.fill();
+    shed(g, 1180, 2240, 160, 100, "#6d90a0");
+    g.fillStyle = "#8d6b45";
+    g.fillRect(1320, 2320, 46, 10);
+    g.fillRect(1500, 2300, 54, 10);
+    g.restore();
+  }
+
+  function shed(ctx, x, y, w, h, roof) {
+    ctx.fillStyle = roof;
+    ctx.beginPath();
+    ctx.moveTo(x - 8, y + h * 0.42);
+    ctx.lineTo(x + w * 0.5, y);
+    ctx.lineTo(x + w + 8, y + h * 0.42);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = "#fff8ef";
+    ctx.fillRect(x, y + h * 0.4, w, h * 0.6);
+    ctx.fillStyle = "#7a4e32";
+    ctx.fillRect(x + w / 2 - 10, y + h - 24, 20, 24);
+  }
+
+  function drawCrop(x, y) {
+    pen.fillStyle = "#6f8f62";
+    pen.fillRect(x - 8, y - 16, 4, 16);
+    pen.fillRect(x + 4, y - 18, 4, 18);
+    pen.fillStyle = "#e6c36a";
+    pen.beginPath();
+    pen.ellipse(x - 6, y - 16, 5, 3, 0, 0, Math.PI * 2);
+    pen.ellipse(x + 6, y - 18, 5, 3, 0, 0, Math.PI * 2);
+    pen.fill();
   }
 
   function drawHen(x, y) {
@@ -1333,8 +1443,11 @@
   function drawTownBackdrop() {
     const scenes = window.HEAN_ASSETS && window.HEAN_ASSETS.scenes;
     const map = scenes && scenes.map;
+    pen.fillStyle = "#e7d3b0";
+    pen.fillRect(0, 0, WORLD.w, WORLD.h);
     if (map && map.complete && map.naturalWidth) {
-      pen.drawImage(map, 0, 0, WORLD.w, WORLD.h);
+      pen.drawImage(map, 0, 0, OLD_WORLD.w, OLD_WORLD.h);
+      drawNewLands(pen);
       return;
     }
     const image = townImage();
@@ -2178,7 +2291,10 @@
     g.clip();
     g.translate(-mapGeom.x * mapGeom.scale, -mapGeom.y * mapGeom.scale);
     g.scale(mapGeom.scale, mapGeom.scale);
-    if (art && art.complete && art.naturalWidth) g.drawImage(art, 0, 0, WORLD.w, WORLD.h);
+    g.fillStyle = "#e7d3b0";
+    g.fillRect(0, 0, WORLD.w, WORLD.h);
+    if (art && art.complete && art.naturalWidth) g.drawImage(art, 0, 0, OLD_WORLD.w, OLD_WORLD.h);
+    if (art && art.complete && art.naturalWidth) drawNewLands(g);
     else {
       const town = townImage();
       if (town) coverTown(g, town);
@@ -2205,9 +2321,14 @@
     }
     const level = role ? levelOf() : 1;
     ZONES.forEach(function (zone) {
-      if (level >= zone.level) return;
-      g.fillStyle = "rgba(210, 214, 208, 0.72)";
+      const alpha = fogAlpha(zone);
+      if (alpha < 0.04) return;
+      g.fillStyle = "rgba(210, 214, 208, " + (0.72 * alpha) + ")";
       g.fillRect(zone.x, zone.y, zone.w, zone.h);
+      g.fillStyle = "#3f362e";
+      g.font = "700 18px " + FONT;
+      g.textAlign = "center";
+      g.fillText(zone.name + "  Lv." + zone.level + " 解鎖", zone.x + zone.w / 2, zone.y + 36);
     });
     g.restore();
     function toScreen(x, y) {
@@ -2433,14 +2554,14 @@
       para("稱號：" + (LEVEL_TITLE[lv - 1] || "鎮民")),
       para(LEVEL_NOTE[lv] || "經驗又多了一些。這是遊戲等級，不是證照。")
     ];
-    const dest = LEVEL_GO[lv];
-    if (dest) {
-      nodes.push(button("帶我去", "primary", function () {
+    const dests = LEVEL_GO[lv] ? (Array.isArray(LEVEL_GO[lv]) ? LEVEL_GO[lv] : [LEVEL_GO[lv]]) : [];
+    dests.forEach(function (dest) {
+      nodes.push(button("帶我去" + dest, "primary", function () {
         document.getElementById("facility").hidden = true;
         document.body.classList.remove("ui-busy");
         guideTo(dest);
       }));
-    }
+    });
     fillFacility("升到 Lv." + lv, nodes);
   }
 
@@ -2477,7 +2598,7 @@
     path = null;
     if (zoneNote !== zone.name) {
       zoneNote = zone.name;
-      showToast(zone.name + "要到 Lv." + zone.level + " 才進得去");
+      showToast(zone.name + " Lv." + zone.level + " 解鎖");
     }
   }
 
@@ -2494,6 +2615,18 @@
   }
 
   function guideTo(name) {
+    const zone = ZONES.find(function (item) { return item.name === name; });
+    if (zone) {
+      if (levelOf() < zone.level) {
+        showToast(zone.name + "要到 Lv." + zone.level + " 解鎖");
+        return;
+      }
+      const dest = zone.enter || zone.back;
+      if (area !== "town") setArea("town", zone.back.x, zone.back.y);
+      path = findPath(player.x, player.y, dest.x, dest.y);
+      document.getElementById("map-panel").hidden = true;
+      return;
+    }
     const building = BUILDINGS.find(function (item) { return item.name === name; });
     if (!building) return;
     if (building.level && levelOf() < building.level) {
@@ -2660,6 +2793,7 @@
     playScreen.hidden = false;
     document.body.classList.remove("ui-busy");
     applyFont();
+    applyLocalLevel();
     setArea("home", 582, 400);
     resize();
     paintAvatar();
@@ -3199,6 +3333,10 @@
     if (near.facility === "quiz") return "聽故事";
     if (near.facility === "issue") return "月刊";
     if (near.facility === "notice") return "公告";
+    if (near.facility === "harvest") return "收成";
+    if (near.facility === "hike") return "走走";
+    if (near.facility === "harbor-fish") return "加釣";
+    if (near.facility === "zone-talk") return "聽故事";
     const building = BUILDINGS.find(function (b) {
       const door = b.door || { x: b.x + b.w / 2, y: b.y + b.h + 18 };
       return Math.hypot(door.x - player.x, door.y - player.y) < 36 && Math.hypot(near.x - door.x, near.y - door.y) < 48;
@@ -3390,6 +3528,22 @@
     }
     if (near.facility === "notice") {
       openNotice();
+      return;
+    }
+    if (near.facility === "zone-talk") {
+      openZoneStory(near);
+      return;
+    }
+    if (near.facility === "harvest") {
+      openHarvest();
+      return;
+    }
+    if (near.facility === "hike") {
+      openHike();
+      return;
+    }
+    if (near.facility === "harbor-fish") {
+      openHarborFish();
       return;
     }
     if (talkBtn.textContent === "出門" && area !== "town" && inExitZone()) {
@@ -4040,7 +4194,12 @@
   }
 
   function currentZoneSlug() {
-    if (area === "town") return "town";
+    if (area === "town") {
+      const here = ZONES.find(function (zone) {
+        return zone.slug && player.x > zone.x && player.x < zone.x + zone.w && player.y > zone.y && player.y < zone.y + zone.h;
+      });
+      return here ? here.slug : "town";
+    }
     if (area === "home") return "home";
     const slugs = {
       "銀行": "bank", "超商": "shop", "車行": "garage", "寵物店": "pet",
@@ -4318,8 +4477,8 @@
         pendingRole = btn.getAttribute("data-role");
         document.getElementById("gender-role").textContent = ROLE_NAME[pendingRole];
         const base = pendingRole === "agent" ? "agent" : pendingRole === "broker" ? "broker" : "client";
-        document.getElementById("gender-art-m").src = "assets/characters/" + base + "_m.webp?v=3.6.1";
-        document.getElementById("gender-art-f").src = "assets/characters/" + base + "_f.webp?v=3.6.1";
+        document.getElementById("gender-art-m").src = "assets/characters/" + base + "_m.webp?v=3.7";
+        document.getElementById("gender-art-f").src = "assets/characters/" + base + "_f.webp?v=3.7";
         document.getElementById("gender-pick").hidden = false;
       });
     });
@@ -5206,6 +5365,162 @@
     ]);
   }
 
+  const ZONE_STORIES = {
+    farm: { title: "田裡的風", q: "農作物被風打壞，住宅火災保險會自動賠嗎？", options: ["會，都是損失。", "不會。作物和農業設施要看有沒有另外的約定。", "只要是颱風就一定賠。"], best: 1, why: "火災、作物、設施常常是不同約定。沒寫的災害不會因為發生了就進來。", source: "參考：契約條款常見結構。遊戲說明，不推薦商品。" },
+    farm2: { title: "田裡工作", q: "在田裡做事受傷，一定同時有職災和意外給付嗎？", options: ["一定兩邊一起領。", "職災和商業意外契約要分開看，沒有寫的不會自動出現。", "農會一句話就等於條款。"], best: 1, why: "職業災害和意外險是兩套規則。這裡的農會是虛構的，不代賣任何商品。", source: "參考：社會保險與商業契約應分開看。" },
+    forest: { title: "山徑骨折", q: "登山摔傷住院，遊戲裡該怎麼看？", options: ["有走路就算全程保證。", "先分意外、住院日額和責任。沒有的項目就還沒有約定。", "骨折一定全額。"], best: 1, why: "意外、住院、活動責任常常分開。數字如果出現，也只是遊戲值。", source: "參考：契約條款常見結構。" },
+    harbor: { title: "船和颱風", q: "颱風停航那天，漁船損失會自動算進火災保險嗎？", options: ["會。", "不會。船舶責任和颱風停航要看有沒有另外寫。", "停航就一定有補償。"], best: 1, why: "停航是風險管理，不是自動給付。這座漁村是虛構的。", source: "參考：主管機關公開資料的一般觀念，這裡不寫條號。" },
+    harbor2: { title: "海上意外", q: "船上有人受傷，和船體損壞是同一筆嗎？", options: ["是。", "常常要分開：人的傷害、船的責任、船體本身。", "人沒關係，只看船。"], best: 1, why: "人、責任、船體不要疊成一句「有保險」。", source: "參考：契約條款常見結構。" }
+  };
+
+  function harvestLeft() {
+    const data = bag();
+    if (data.harvestDay !== taipeiDate()) return 5;
+    return Math.max(0, 5 - (data.harvestCount || 0));
+  }
+
+  function hikeLeft() {
+    const data = bag();
+    if (data.hikeDay !== taipeiDate()) return 3;
+    return Math.max(0, 3 - (data.hikeCount || 0));
+  }
+
+  function harborLeft() {
+    const data = bag();
+    if (data.harborDay !== taipeiDate()) return 3;
+    return Math.max(0, 3 - (data.harborCasts || 0));
+  }
+
+  function openZoneStory(near) {
+    const item = ZONE_STORIES[near.topic];
+    if (!item) return;
+    const data = bag();
+    if (!data.zoneQuiz) data.zoneQuiz = {};
+    const key = near.topic;
+    if (data.zoneQuiz[key]) {
+      fillFacility(item.title, [para("這則記過了。"), para(item.why), para(item.source)]);
+      return;
+    }
+    const nodes = [para(item.q)];
+    item.options.forEach(function (text, index) {
+      nodes.push(button(text, "option", function () {
+        data.zoneQuiz[key] = index === item.best ? "ok" : "no";
+        if (index === item.best) {
+          earnCash(4, near.zone + "故事");
+          state.xp[role] = (state.xp[role] || 0) + 4;
+        }
+        save();
+        renderHud();
+        fillFacility(index === item.best ? "答對了" : "教練", [
+          para(index === item.best ? "遊戲金幣 4、經驗 4。" : "這次沒有金幣，也沒有經驗。"),
+          para(item.why),
+          para(item.source)
+        ]);
+      }));
+    });
+    fillFacility(item.title, nodes);
+  }
+
+  function openHarvest() {
+    if (harvestLeft() <= 0) {
+      showToast("今天的 5 次收成用完了。遊戲次數。");
+      return;
+    }
+    const data = bag();
+    if (data.harvestDay !== taipeiDate()) {
+      data.harvestDay = taipeiDate();
+      data.harvestCount = 0;
+    }
+    data.harvestCount += 1;
+    earnCash(4, "農田收成");
+    state.xp[role] = (state.xp[role] || 0) + 3;
+    const storm = hash(dayNumber(taipeiDate()), data.harvestCount) < 0.28;
+    save();
+    renderHud();
+    if (!storm) {
+      showReward("收成。遊戲金幣 4、經驗 3。今天還可 " + harvestLeft() + " 次。");
+      return;
+    }
+    const covered = !!policiesOf().home;
+    const due = covered ? LIFE_COVERS.home.deductible : 20;
+    const paid = Math.min(due, cashOf(role));
+    if (paid) payCash(paid, "田裡風雨");
+    save();
+    fillFacility("田裡風雨", [
+      para("這次用遊戲值比較。有住宅練習時付自負額 " + LIFE_COVERS.home.deductible + "，沒有就自己付 20。作物和設施不會自動含在火災裡。"),
+      para("你這次" + (covered ? "有住宅練習，付 " + due : "沒有住宅練習，自己付 " + due) + "。都是遊戲值，不是保費，也不推薦商品。"),
+      para("今天還可收成 " + harvestLeft() + " 次。")
+    ]);
+  }
+
+  function openHike() {
+    if (hikeLeft() <= 0) {
+      showToast("今天的 3 次山徑用完了。遊戲次數。");
+      return;
+    }
+    const data = bag();
+    if (data.hikeDay !== taipeiDate()) {
+      data.hikeDay = taipeiDate();
+      data.hikeCount = 0;
+    }
+    data.hikeCount += 1;
+    state.xp[role] = (state.xp[role] || 0) + 4;
+    const hurt = hash(dayNumber(taipeiDate()), data.hikeCount + 9) < 0.3;
+    if (!hurt) {
+      earnCash(3, "山徑走走");
+      save();
+      renderHud();
+      showReward("走完一段。遊戲金幣 3、經驗 4。還可 " + hikeLeft() + " 次。");
+      return;
+    }
+    const covered = !!policiesOf().accident;
+    const due = covered ? LIFE_COVERS.accident.deductible : 18;
+    const paid = Math.min(due, cashOf(role));
+    if (paid) payCash(paid, "山徑扭傷");
+    save();
+    renderHud();
+    fillFacility("山徑扭傷", [
+      para("遊戲值：有意外練習只付自負額 " + LIFE_COVERS.accident.deductible + "，沒有就自己付 18。骨折住院還要另看醫療約定，不會自動附帶。"),
+      para("你這次" + (covered ? "有意外練習，付 " + due : "沒有意外練習，自己付 " + due) + "。不是商品建議。"),
+      para("今天還可 " + hikeLeft() + " 次。")
+    ]);
+  }
+
+  function openHarborFish() {
+    if (isTyphoon()) {
+      fillFacility("颱風停航", [
+        para("今天港口漁村的加釣休息，和蘆灣一樣。這是遊戲天氣。"),
+        para("漁船、船舶責任和颱風停航不會自動算進火災保險。有沒有另外約定，要看條款。不推薦商品。")
+      ]);
+      return;
+    }
+    if (harborLeft() <= 0) {
+      showToast("今天的 3 次加釣用完了。遊戲次數。");
+      return;
+    }
+    const data = bag();
+    if (data.harborDay !== taipeiDate()) {
+      data.harborDay = taipeiDate();
+      data.harborCasts = 0;
+    }
+    data.harborCasts += 1;
+    earnCash(5, "漁村加釣");
+    state.xp[role] = (state.xp[role] || 0) + 3;
+    save();
+    renderHud();
+    showReward("加釣。遊戲金幣 5、經驗 3。還可 " + harborLeft() + " 次。海上意外和船體要分開看。");
+  }
+
+  function applyLocalLevel() {
+    const host = location.hostname;
+    if (host !== "localhost" && host !== "127.0.0.1") return;
+    const lv = Number(new URLSearchParams(location.search).get("lv"));
+    if (!lv || !role) return;
+    const need = LEVEL_XP[lv - 1];
+    if (need == null) return;
+    state.xp[role] = Math.max(xpOf(), need);
+  }
+
   function openNotice() {
     const pack = (window.HEAN_ISSUE && window.HEAN_ISSUE.notices) || [];
     const nodes = [para("這裡的公司和罰鍰都是虛構的遊戲值。不點名真實公司，也不留電話。")];
@@ -5235,12 +5550,18 @@
     nodes.push(para("寶箱還可 " + Math.max(0, 5 - (data.chestDay === today ? (data.chestCount || 0) : 0)) + " / 5"));
     nodes.push(para("釣魚還可 " + Math.max(0, 5 - (data.castDay === today ? (data.casts || 0) : 0)) + " / 5"));
     nodes.push(para("客戶步驟還可 " + Math.max(0, 5 - (data.clientSteps || 0)) + " / 5"));
+    nodes.push(para("農田收成還可 " + harvestLeft() + " / 5"));
+    nodes.push(para("山林走走還可 " + hikeLeft() + " / 3"));
+    nodes.push(para("漁村加釣 " + (isTyphoon() ? "颱風日休息" : "還可 " + harborLeft() + " / 3")));
     nodes.push(para(today.slice(5, 7) === "12" ? "12 月限定圍巾：" + (wearingScarf() ? "已戴上" : "完成一項今日任務可取得") : "聖誕圍巾只在台北時間 12/1–12/31 出現。"));
     nodes.push(button("去月刊問答", "primary", function () { closeTips(); guideToPoint(560, 820); }));
     nodes.push(button("去公告欄", "ghost", function () { closeTips(); guideToPoint(760, 820); }));
     nodes.push(button("去運動角", "ghost", function () { closeTips(); guideToPoint(775, 760); }));
     nodes.push(button("去麥穗廣場", "ghost", function () { closeTips(); guideToPoint(640, 520); }));
     nodes.push(button("去銀行", "ghost", function () { closeTips(); guideTo("銀行"); }));
+    nodes.push(button("去農田區", "ghost", function () { closeTips(); guideTo("農田區"); }));
+    nodes.push(button("去山林區", "ghost", function () { closeTips(); guideTo("山林區"); }));
+    nodes.push(button("去港口漁村", "ghost", function () { closeTips(); guideTo("港口漁村"); }));
     fillFacility("小鎮攻略", nodes);
   }
 
