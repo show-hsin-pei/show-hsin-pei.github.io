@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=3.9">
+  <link rel="stylesheet" href="styles.css?v=4.0">
 </head>
 <body>
   <a class="skip" href="#title-main">跳至主要內容</a>
@@ -59,7 +59,7 @@
       <p class="eyebrow">保險觀念散步</p>
       <h1 id="title-main">藝世錄保險小鎮</h1>
       <p class="lede">選一個身分，在小鎮裡走走。靠近住家或村民，聽一段保險爭議，再選一個看法。這是教學，不是測驗排名。</p>
-      <p class="version" id="version-line">版本 3.9 · 2026年11月27日更新</p>
+      <p class="version" id="version-line">版本 4.0 · 2026年11月27日更新</p>
       <div class="roles" role="group" aria-label="選擇身分">
         <button class="role-card" type="button" data-role="consumer">
           <img class="role-full" alt="" data-art="client" width="88" height="120">
@@ -199,13 +199,14 @@
         </div>
         <button type="button" class="icon-btn" id="map-close" aria-label="關閉">×</button>
       </div>
-      <p class="body-copy">拖曳移動，雙指或滾輪縮放。點建築會走過去。紅點是你現在的位置。</p>
+      <p class="body-copy">拖曳移動，雙指或滾輪縮放。點建築或按「帶我去」會走過去。紅點是你現在的位置。</p>
       <canvas id="town-map" aria-label="藝世錄保險小鎮全景地圖"></canvas>
       <div class="map-tools">
         <button type="button" class="chip" id="map-in" aria-label="放大">＋</button>
         <button type="button" class="chip" id="map-out" aria-label="縮小">－</button>
         <button type="button" class="chip" id="map-fit">看全景</button>
       </div>
+      <div id="map-places" class="map-places"></div>
       <div id="map-levels" class="map-levels"></div>
     </div>
   </div>
@@ -225,6 +226,7 @@
         <button type="button" class="chip" id="btn-pack">背包</button>
         <button type="button" class="chip" id="btn-clients">客戶簿</button>
         <button type="button" class="chip" id="btn-badges">徽章</button>
+        <button type="button" class="chip" id="btn-library">圖書館</button>
         <button type="button" class="chip" id="btn-guide">小鎮攻略</button>
         <button type="button" class="chip" id="btn-progress">進度</button>
         <button type="button" class="chip" id="btn-role">換身分</button>
@@ -288,12 +290,13 @@
   </div>
 
   <noscript><p class="legal">藝世錄保險小鎮需要開啟 JavaScript 才能走動與對話。</p></noscript>
-  <script src="scenarios.js?v=3.9" defer></script>
-  <script src="characters.js?v=3.9" defer></script>
-  <script src="rooms.js?v=3.9" defer></script>
-  <script src="art.js?v=3.9" defer></script>
-  <script src="life.js?v=3.9" defer></script>
-  <script src="issue.js?v=3.9" defer></script>
-  <script src="game.js?v=3.9" defer></script>
+  <script src="scenarios.js?v=4.0" defer></script>
+  <script src="characters.js?v=4.0" defer></script>
+  <script src="rooms.js?v=4.0" defer></script>
+  <script src="art.js?v=4.0" defer></script>
+  <script src="life.js?v=4.0" defer></script>
+  <script src="issue.js?v=4.0" defer></script>
+  <script src="learn.js?v=4.0" defer></script>
+  <script src="game.js?v=4.0" defer></script>
 </body>
 </html>
