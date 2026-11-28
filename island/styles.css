@@ -435,12 +435,23 @@ h1 {
 .radio-pill span { display: block; font-size: 12px; }
 .radio-pill #radio-now { font-weight: 700; }
 
+.map-places {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.map-places .chip { font-size: 13px; }
+
 .map-levels {
   flex: none;
   margin-top: 8px;
   font-size: 13px;
   line-height: 1.45;
 }
+
+.rank-filters { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
 
 .map-levels p { margin: 0 0 4px; }
 

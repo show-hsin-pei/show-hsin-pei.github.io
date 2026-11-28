@@ -1,5 +1,5 @@
 (function () {
-  const VERSION = "3.9";
+  const VERSION = "4.0";
   const UPDATED = "2026年11月27日";
   const SAVE_VERSION = 2;
   const PEOPLE_KEY = "hean-village-people-v1";
@@ -2204,9 +2204,8 @@
     pen.textAlign = "center";
     pen.textBaseline = "middle";
     activeSpots().forEach(function (s) {
-      const dist = Math.hypot(s.x - player.x, s.y - player.y);
-      if (dist > 150 && !(near && near.id === s.id)) return;
       const sc = byId[s.id];
+      if (!sc && !s.facility && !s.name) return;
       const text = sc ? sc.speaker : (s.name || "這裡");
       const w = pen.measureText(text).width + 16;
       const x = s.x - w / 2;
@@ -2447,6 +2446,15 @@
         levels.appendChild(line);
       });
     }
+    const places = document.getElementById("map-places");
+    if (places) {
+      places.replaceChildren();
+      catalogPlaces().forEach(function (place) {
+        places.appendChild(button(place.name + " · 帶我去", "chip", function () {
+          walkToPlace(place);
+        }));
+      });
+    }
     requestAnimationFrame(function () {
       requestAnimationFrame(function () {
         const box = mapBox();
@@ -2608,7 +2616,9 @@
   function mapClick(clientX, clientY) {
     const world = mapWorld(clientX, clientY);
     const hit = BUILDINGS.find(function (b) {
-      return world.x > b.x - 12 && world.x < b.x + b.w + 12 && world.y > b.y - 12 && world.y < b.y + b.h + 12;
+      const face = FACADE[b.name];
+      if (!face) return false;
+      return world.x > face.x - 12 && world.x < face.x + face.w + 12 && world.y > face.y - 28 && world.y < face.y + face.h + 18;
     });
     if (hit) guideTo(hit.name);
   }
@@ -2821,6 +2831,11 @@
     if (zone) {
       if (levelOf() < zone.level) {
         showToast(zone.name + "要到 Lv." + zone.level + " 解鎖");
+        const door = zone.enter || zone.back;
+        if (area !== "town") setArea("town", door.x, door.y);
+        else path = findPath(player.x, player.y, door.x, door.y);
+        document.getElementById("map-panel").hidden = true;
+        document.body.classList.remove("ui-busy");
         return;
       }
       const dest = zone.enter || zone.back;
@@ -4681,8 +4696,8 @@
         pendingRole = btn.getAttribute("data-role");
         document.getElementById("gender-role").textContent = ROLE_NAME[pendingRole];
         const base = pendingRole === "agent" ? "agent" : pendingRole === "broker" ? "broker" : "client";
-        document.getElementById("gender-art-m").src = "assets/characters/" + base + "_m.webp?v=3.9";
-        document.getElementById("gender-art-f").src = "assets/characters/" + base + "_f.webp?v=3.9";
+        document.getElementById("gender-art-m").src = "assets/characters/" + base + "_m.webp?v=4.0";
+        document.getElementById("gender-art-f").src = "assets/characters/" + base + "_f.webp?v=4.0";
         document.getElementById("gender-pick").hidden = false;
       });
     });
@@ -4842,6 +4857,7 @@
     document.getElementById("btn-clients").addEventListener("click", openClientBook);
     document.getElementById("btn-badges").addEventListener("click", openBadges);
     document.getElementById("btn-guide").addEventListener("click", openGuide);
+    document.getElementById("btn-library").addEventListener("click", openLibrary);
     document.getElementById("radio").addEventListener("click", openRadio);
     document.getElementById("finance-close").addEventListener("click", function () {
       document.getElementById("finance").hidden = true;
@@ -4992,28 +5008,41 @@
     const today = taipeiDate();
     const data = bag();
     if (!data.visits) data.visits = [];
-    if (data.daily === today) return;
-    const prev = data.daily;
-    data.daily = today;
-    data.chestCount = 0;
-    data.casts = 0;
-    data.clientSteps = 0;
-    data.streak = prev && dateGap(prev, today) === 1 ? (data.streak || 1) + 1 : 1;
-    if (data.visits[data.visits.length - 1] !== today) data.visits.push(today);
-    const pay = 8 + levelOf() * 4;
-    data.bonus = (data.bonus || 0) + pay;
-    noteMoney("in", "今日薪水", pay);
-    matureTerms(today);
-    chargePremiums();
-    const list = scenariosFor(role);
-    const n = today.split("-").reduce(function (sum, part) { return sum + Number(part); }, 0);
-    if (list.length) data.dailyId = list[n % list.length].id;
-    const eventId = data.forceEvent || (Math.random() < 0.35 ? LIFE_EVENTS[n % LIFE_EVENTS.length].id : "");
-    data.forceEvent = "";
-    save();
-    renderHud();
-    showReward("連續到訪 " + data.streak + " 天。今日薪水 " + pay + " 枚。遊戲數字。");
-    if (eventId) setTimeout(function () { if (!uiOpen()) openEvent(eventId); }, 400);
+    let eventId = "";
+    if (data.daily !== today) {
+      const prev = data.daily;
+      data.daily = today;
+      data.chestCount = 0;
+      data.casts = 0;
+      data.clientSteps = 0;
+      data.streak = prev && dateGap(prev, today) === 1 ? (data.streak || 1) + 1 : 1;
+      if (data.visits[data.visits.length - 1] !== today) data.visits.push(today);
+      const pay = 8 + levelOf() * 4;
+      data.bonus = (data.bonus || 0) + pay;
+      noteMoney("in", "今日薪水", pay);
+      matureTerms(today);
+      chargePremiums();
+      const list = scenariosFor(role);
+      const n = today.split("-").reduce(function (sum, part) { return sum + Number(part); }, 0);
+      if (list.length) data.dailyId = list[n % list.length].id;
+      eventId = data.forceEvent || (Math.random() < 0.35 ? LIFE_EVENTS[n % LIFE_EVENTS.length].id : "");
+      data.forceEvent = "";
+      save();
+      renderHud();
+      showReward("連續到訪 " + data.streak + " 天。今日薪水 " + pay + " 枚。遊戲數字。");
+    }
+    if (data.greetDay !== today) {
+      data.greetDay = today;
+      earnCash(20, "今日報到");
+      const before = levelOf();
+      state.xp[role] = (state.xp[role] || 0) + 5;
+      const after = levelOf();
+      animateXp(before, after);
+      save();
+      renderHud();
+      openDailyTip();
+    }
+    if (eventId) setTimeout(function () { if (!uiOpen()) openEvent(eventId); }, 1200);
   }
 
   function matureTerms(today) {
@@ -5455,11 +5484,114 @@
   function manageTag(id) {
     if (!role || (role !== "agent" && role !== "broker")) return "";
     const approach = approachBook()[id];
-    if (!approach || approach.stage < 2) return "";
-    const rec = clientBook()[id] || {};
+    const rec = clientBook()[id];
+    if ((!approach || (approach.stage || 0) < 1) && !rec) return "";
+    return clientNext(id);
+  }
+
+  function clientNext(id) {
     const today = taipeiDate();
-    if ((rec.cold && rec.cold > today) || (rec.day && rec.day >= today)) return "明天可經營";
-    return "今天可經營";
+    const approach = approachBook()[id];
+    const rec = clientBook()[id];
+    if (rec && rec.cold && rec.cold > today) return "冷到 " + rec.cold;
+    if ((rec && rec.day === today) || (approach && approach.day === today)) return "明天可經營";
+    if (rec && rec.step >= CLIENT_STEPS.length) return "這段談完";
+    if (rec && CLIENT_STEPS[rec.step]) {
+      const name = CLIENT_STEPS[rec.step].name;
+      if (name === "破冰") return "初次拜訪";
+      if (name === "留聯絡" || name === "約見面") return name;
+      return "答題 · " + name;
+    }
+    if (approach && approach.stage === 1) return "留聯絡";
+    if (approach && (approach.stage || 0) >= 2) return "約見面";
+    return "初次拜訪";
+  }
+
+  function personSpot(person) {
+    const byIdSpot = SPOTS.filter(function (s) { return s.id === person.id; })[0];
+    if (byIdSpot) return byIdSpot;
+    return SPOTS.filter(function (s) { return s.name === person.name && s.facility; })[0];
+  }
+
+  function walkToPlace(place) {
+    const facility = document.getElementById("facility");
+    const menu = document.getElementById("menu-panel");
+    const map = document.getElementById("map-panel");
+    if (facility) facility.hidden = true;
+    if (menu) menu.hidden = true;
+    if (map) map.hidden = true;
+    document.body.classList.remove("ui-busy");
+    if (place.zone) {
+      const zone = ZONES.find(function (item) { return item.name === place.zone; });
+      if (zone && levelOf() < zone.level) {
+        showToast(zone.name + "要到 Lv." + zone.level + " 解鎖");
+        const dest = zone.enter || zone.back;
+        if (area !== "town") setArea("town", dest.x, dest.y);
+        else path = findPath(player.x, player.y, dest.x, dest.y);
+        return;
+      }
+    }
+    guideToPoint(place.x, place.y);
+  }
+
+  function catalogPlaces() {
+    const list = [];
+    const seen = {};
+    BUILDINGS.forEach(function (b) {
+      if (!FACADE[b.name]) return;
+      const door = townDoor(b);
+      list.push({ name: b.name, x: door.x, y: door.y, zone: "" });
+    });
+    SPOTS.forEach(function (s) {
+      if (!s.facility || !s.name) return;
+      const key = s.facility + ":" + s.name + ":" + Math.round(s.x) + ":" + Math.round(s.y);
+      if (seen[key]) return;
+      seen[key] = true;
+      list.push({ name: s.name, x: s.x, y: s.y, zone: s.zone || "" });
+    });
+    return list;
+  }
+
+  function openDailyTip() {
+    const pack = learnPack();
+    const tip = pack.tips[pack.tipIndex(taipeiDate())] || "";
+    fillFacility("今日小技巧", [
+      para(tip),
+      para("今日報到：遊戲金幣 +20、遊戲經驗 +5。數字是遊戲值，不能換成錢。"),
+      para("依台北時間換日。不推薦商品，不承諾報酬，也不教節稅。")
+    ]);
+  }
+
+  let libraryRank = 0;
+  function openLibrary() {
+    const menu = document.getElementById("menu-panel");
+    if (menu) menu.hidden = true;
+    const pack = learnPack();
+    const suggest = pack.suggestRank(role ? levelOf() : 1);
+    const names = ["", "入門", "基礎", "進階", "專業"];
+    const nodes = [para("以你現在的等級，建議先看「" + names[suggest] + "」。難度對應新人訓練：第一週、第一個月、三個月、半年。")];
+    const filters = document.createElement("div");
+    filters.className = "rank-filters";
+    [0, 1, 2, 3, 4].forEach(function (rank) {
+      const chip = button(rank ? names[rank] : "全部", "chip", function () {
+        libraryRank = rank;
+        openLibrary();
+      });
+      if (libraryRank === rank) chip.setAttribute("aria-pressed", "true");
+      filters.appendChild(chip);
+    });
+    nodes.push(filters);
+    const read = (bag().readArticles) || {};
+    pack.articles.filter(function (item) {
+      return !libraryRank || item.rank === libraryRank;
+    }).sort(function (a, b) {
+      return (a.rank === suggest ? 0 : 1) - (b.rank === suggest ? 0 : 1) || a.rank - b.rank;
+    }).forEach(function (item) {
+      nodes.push(button((read[item.id] ? "讀過 · " : "") + item.rankName + " · " + item.stage + " · " + item.title, "ghost", function () {
+        openArticle(item.id);
+      }));
+    });
+    fillFacility("圖書館", nodes);
   }
 
   function wearingScarf() {
@@ -5517,8 +5649,11 @@
     const nodes = [para(month + " 月刊。1 日先開 8 題，其後每天再解鎖 2 題，最多 " + issuePack().length + " 題。今天解鎖 " + list.length + " 題。遊戲值，不是證照。")];
     nodes.push(para("今天還可答 " + Math.max(0, 5 - (data.issueCount || 0)) + " 題。答過的會留在存檔。"));
     list.forEach(function (item) {
-      const mark = data.issueDone[month + ":" + item.id];
-      nodes.push(button((mark ? "已答 · " : "") + item.cat + " · " + item.title, mark ? "ghost" : "option", function () { askIssue(item); }));
+      const key = month + ":" + item.id;
+      const mark = data.issueDone[key];
+      const again = mark === "no" || knowTry()["issue:" + key] === "miss" || knowTry()["issue:" + key] === "read";
+      const label = (mark === "ok" ? "已答 · " : again ? "可重答 · " : "") + item.cat + " · " + item.title;
+      nodes.push(button(label, mark === "ok" ? "ghost" : "option", function () { askIssue(item); }));
     });
     fillFacility("月刊問答", nodes);
   }
@@ -5527,15 +5662,31 @@
     const data = issueState();
     const month = taipeiDate().slice(0, 7);
     const key = month + ":" + item.id;
-    if (data.issueDone[key]) {
+    const stateKey = "issue:" + key;
+    if (data.issueDone[key] === "ok" || knowTry()[stateKey] === "ok") {
       fillFacility(item.title, [para("這題這個月答過了。"), para(item.why), para(item.source), para("遊戲說明，不是法律意見。")]);
       return;
     }
-    if ((data.issueCount || 0) >= 5) {
+    if (data.issueDone[key] === "no") knowTry()[stateKey] = knowTry()[stateKey] || "miss";
+    if (knowTry()[stateKey] === "miss") {
+      fillFacility(item.title, [
+        para("這題上次沒答對。先讀文章再重答。重答答對的遊戲金幣和經驗減半。"),
+        para(item.why),
+        button("去看文章", "primary", function () {
+          openArticle(learnPack().articleFor(item.id), {
+            mark: function () { knowTry()[stateKey] = "read"; },
+            back: function () { askIssue(item); }
+          });
+        })
+      ]);
+      return;
+    }
+    if ((data.issueCount || 0) >= 5 && knowTry()[stateKey] !== "read") {
       showToast("今天的 5 題月刊用完了。遊戲規則。");
       return;
     }
     const nodes = [para(item.cat), para(item.q)];
+    if (knowTry()[stateKey] === "read") nodes.push(para("這是重答。答對的遊戲金幣和經驗減半。"));
     item.options.forEach(function (text, index) {
       nodes.push(button(text, "option", function () { answerIssue(item, index); }));
     });
@@ -5546,23 +5697,43 @@
     const data = issueState();
     const month = taipeiDate().slice(0, 7);
     const key = month + ":" + item.id;
-    if (data.issueDone[key]) return;
-    data.issueCount = (data.issueCount || 0) + 1;
+    const stateKey = "issue:" + key;
+    if (data.issueDone[key] === "ok" || knowTry()[stateKey] === "ok") return;
     const good = index === item.best;
-    data.issueDone[key] = good ? "ok" : "no";
-    if (good) {
-      earnCash(6, "月刊問答");
-      const before = levelOf();
-      state.xp[role] = (state.xp[role] || 0) + 6;
-      const after = levelOf();
-      animateXp(before, after);
-      grantSeason();
-      if (after > before) noteLevel();
+    const retry = knowTry()[stateKey] === "read" || data.issueDone[key] === "no";
+    if (!good) {
+      knowTry()[stateKey] = "miss";
+      data.issueDone[key] = "no";
+      save();
+      fillFacility("教練", [
+        para("這次沒有金幣，也沒有經驗。讀完文章可以重答，重答答對只給一半。"),
+        para(item.why),
+        para(item.source),
+        button("去看文章", "primary", function () {
+          openArticle(learnPack().articleFor(item.id), {
+            mark: function () { knowTry()[stateKey] = "read"; },
+            back: function () { askIssue(item); }
+          });
+        }),
+        para("教學說明，不推薦商品，也不構成法律或稅務意見。")
+      ]);
+      return;
     }
+    if (!retry) data.issueCount = (data.issueCount || 0) + 1;
+    data.issueDone[key] = "ok";
+    knowTry()[stateKey] = "ok";
+    const gain = retry ? 3 : 6;
+    earnCash(gain, "月刊問答");
+    const before = levelOf();
+    state.xp[role] = (state.xp[role] || 0) + gain;
+    const after = levelOf();
+    animateXp(before, after);
+    grantSeason();
+    if (after > before) noteLevel();
     save();
     renderHud();
-    fillFacility(good ? "答對了" : "教練", [
-      para(good ? "遊戲金幣 6、經驗 6。數字是遊戲值。" : "這次沒有金幣，也沒有經驗。"),
+    fillFacility("答對了", [
+      para((retry ? "重答答對。遊戲金幣 " : "遊戲金幣 ") + gain + "、經驗 " + gain + (retry ? "（減半）。" : "。") + "數字是遊戲值。"),
       para(item.why),
       para(item.source),
       para("教學說明，不推薦商品，也不構成法律或稅務意見。")
@@ -5601,22 +5772,56 @@
     const data = bag();
     if (!data.zoneQuiz) data.zoneQuiz = {};
     const key = near.topic;
-    if (data.zoneQuiz[key]) {
+    const stateKey = "zone:" + key;
+    if (data.zoneQuiz[key] === "ok" || knowTry()[stateKey] === "ok") {
       fillFacility(item.title, [para("這則記過了。"), para(item.why), para(item.source)]);
       return;
     }
+    if (data.zoneQuiz[key] === "no") knowTry()[stateKey] = knowTry()[stateKey] || "miss";
+    if (knowTry()[stateKey] === "miss") {
+      fillFacility(item.title, [
+        para("上次沒答對。先讀文章再重答。重答答對的遊戲獎勵減半。"),
+        para(item.why),
+        button("去看文章", "primary", function () {
+          openArticle(learnPack().articleFor(key), {
+            mark: function () { knowTry()[stateKey] = "read"; },
+            back: function () { openZoneStory(near); }
+          });
+        })
+      ]);
+      return;
+    }
     const nodes = [para(item.q)];
+    if (knowTry()[stateKey] === "read") nodes.push(para("這是重答。答對的遊戲金幣和經驗減半。"));
     item.options.forEach(function (text, index) {
       nodes.push(button(text, "option", function () {
-        data.zoneQuiz[key] = index === item.best ? "ok" : "no";
-        if (index === item.best) {
-          earnCash(4, near.zone + "故事");
-          state.xp[role] = (state.xp[role] || 0) + 4;
+        const retry = knowTry()[stateKey] === "read";
+        if (index !== item.best) {
+          data.zoneQuiz[key] = "no";
+          knowTry()[stateKey] = "miss";
+          save();
+          fillFacility("教練", [
+            para("這次沒有金幣，也沒有經驗。讀完可以重答，重答答對只給一半。"),
+            para(item.why),
+            para(item.source),
+            button("去看文章", "primary", function () {
+              openArticle(learnPack().articleFor(key), {
+                mark: function () { knowTry()[stateKey] = "read"; },
+                back: function () { openZoneStory(near); }
+              });
+            })
+          ]);
+          return;
         }
+        data.zoneQuiz[key] = "ok";
+        knowTry()[stateKey] = "ok";
+        const gain = retry ? 2 : 4;
+        earnCash(gain, near.zone + "故事");
+        state.xp[role] = (state.xp[role] || 0) + gain;
         save();
         renderHud();
-        fillFacility(index === item.best ? "答對了" : "教練", [
-          para(index === item.best ? "遊戲金幣 4、經驗 4。" : "這次沒有金幣，也沒有經驗。"),
+        fillFacility("答對了", [
+          para("遊戲金幣 " + gain + "、經驗 " + gain + (retry ? "（減半）。" : "。") + "數字是遊戲值。"),
           para(item.why),
           para(item.source)
         ]);
@@ -5769,6 +5974,35 @@
     fillFacility("小鎮攻略", nodes);
   }
 
+  function learnPack() {
+    return window.HEAN_LEARN || { articles: [], tips: [], articleFor: function () { return "clause"; }, article: function () { return null; }, tipIndex: function () { return 0; }, suggestRank: function () { return 1; } };
+  }
+
+  function knowTry() {
+    const data = bag();
+    if (!data.knowTry || typeof data.knowTry !== "object" || Array.isArray(data.knowTry)) data.knowTry = {};
+    return data.knowTry;
+  }
+
+  function openArticle(id, resume) {
+    const spec = learnPack().article(id);
+    if (!spec) return;
+    const data = bag();
+    if (!data.readArticles || typeof data.readArticles !== "object") data.readArticles = {};
+    const nodes = [para(spec.rankName + " · 新人訓練" + spec.stage)];
+    spec.body.forEach(function (line) { nodes.push(para(line)); });
+    nodes.push(para("教學文章。不推薦商品，不承諾報酬，也不教節稅。"));
+    nodes.push(button("讀完了", "primary", function () {
+      data.readArticles[id] = taipeiDate();
+      if (resume && resume.mark) resume.mark();
+      save();
+      if (resume && resume.back) resume.back();
+      else openLibrary();
+    }));
+    nodes.push(button("回圖書館", "ghost", openLibrary));
+    fillFacility(spec.title, nodes);
+  }
+
   function openQuiz(near) {
     refreshDailySpots();
     const quiz = lifeData().quizzes.filter(function (item) { return item.id === near.quizId; })[0];
@@ -5776,11 +6010,27 @@
     const today = taipeiDate();
     const data = bag();
     if (!data.quizDone) data.quizDone = {};
-    if (data.quizDone[quiz.id] === today) {
+    const stateKey = "quiz:" + quiz.id;
+    if (data.quizDone[quiz.id] === today || knowTry()[stateKey] === "ok") {
       showToast("這則今天聽過了。明天會換一批。");
       return;
     }
+    if (knowTry()[stateKey] === "miss") {
+      fillFacility(quiz.title, [
+        para("這題上次沒答對。先讀對應的文章，再回來重答。"),
+        para("重答答對的遊戲經驗減半。"),
+        para(quiz.why),
+        button("去看文章", "primary", function () {
+          openArticle(learnPack().articleFor(quiz.id), {
+            mark: function () { knowTry()[stateKey] = "read"; },
+            back: function () { openQuiz(near); }
+          });
+        })
+      ]);
+      return;
+    }
     const nodes = [para(quiz.story), para(quiz.q)];
+    if (knowTry()[stateKey] === "read") nodes.push(para("這是重答。答對只給一半遊戲經驗。"));
     quiz.options.forEach(function (text, index) {
       nodes.push(button(text, "option", function () { answerQuiz(near, quiz, index); }));
     });
@@ -5793,20 +6043,39 @@
     const good = index === quiz.best;
     const data = bag();
     if (!data.quizDone) data.quizDone = {};
-    data.quizDone[quiz.id] = today;
-    if (good) {
-      data.quizRight = (data.quizRight || 0) + 1;
-      const before = levelOf();
-      state.xp[role] = (state.xp[role] || 0) + 6;
-      const after = levelOf();
-      animateXp(before, after);
-      if (data.quizRight >= 10) earnBadge("quiz10");
-      if (after > before) noteLevel();
+    const stateKey = "quiz:" + quiz.id;
+    const retry = knowTry()[stateKey] === "read";
+    if (!good) {
+      knowTry()[stateKey] = "miss";
+      save();
+      fillFacility("再看一次", [
+        para("這次沒有遊戲經驗。讀完文章可以重答，重答答對只給一半。"),
+        para(quiz.why),
+        para(quiz.source),
+        button("去看文章", "primary", function () {
+          openArticle(learnPack().articleFor(quiz.id), {
+            mark: function () { knowTry()[stateKey] = "read"; },
+            back: function () { openQuiz(near); }
+          });
+        }),
+        para("教學說明，不是法律意見，也不保證給付。")
+      ]);
+      return;
     }
+    data.quizDone[quiz.id] = today;
+    knowTry()[stateKey] = "ok";
+    data.quizRight = (data.quizRight || 0) + 1;
+    const gain = retry ? 3 : 6;
+    const before = levelOf();
+    state.xp[role] = (state.xp[role] || 0) + gain;
+    const after = levelOf();
+    animateXp(before, after);
+    if (data.quizRight >= 10) earnBadge("quiz10");
+    if (after > before) noteLevel();
     save();
     renderHud();
-    fillFacility(good ? "答對了" : "再看一次", [
-      para(good ? "這則記下了。遊戲經驗 6。" : "這則今天先記解釋，經驗留給答對的時候。"),
+    fillFacility("答對了", [
+      para(retry ? "重答答對。遊戲經驗 " + gain + "（減半）。這是遊戲值。" : "這則記下了。遊戲經驗 " + gain + "。這是遊戲值。"),
       para(quiz.why),
       para(quiz.source),
       para("教學說明，不是法律意見，也不保證給付。")
@@ -5881,13 +6150,24 @@
       return;
     }
     document.getElementById("menu-panel").hidden = true;
-    const nodes = [para("路上陌開成功才會出現在這裡。一天最多 5 步，每一步要隔天。答錯冷兩天。")];
+    const nodes = [para("按下一個人，會自動走過去。跨區若還沒解鎖，會走到入口並提示。一天最多 5 步，每一步要隔天。")];
     const people = recruitedPeople();
-    if (!people.length) nodes.push(para("還沒有人留下聯絡。"));
+    Object.keys(approachBook()).forEach(function (id) {
+      if ((approachBook()[id].stage || 0) < 1) return;
+      if (people.some(function (person) { return person.id === id; })) return;
+      const spot = SPOTS.filter(function (item) { return item.id === id; })[0];
+      people.push({ id: id, name: (spot && spot.name) || id });
+    });
+    if (!people.length) nodes.push(para("還沒有人留下聯絡。先在路上完成破冰。"));
     people.forEach(function (person) {
-      const rec = clientBook()[person.id] || { step: 0, cold: "" };
-      const name = rec.step >= CLIENT_STEPS.length ? "這段談完" : CLIENT_STEPS[rec.step].name;
-      nodes.push(para(person.name + " · 下一步：" + name + (rec.cold ? " · 冷到 " + rec.cold : "")));
+      const spot = personSpot(person);
+      nodes.push(button(person.name + " · 下一步：" + clientNext(person.id), "ghost", function () {
+        if (!spot) {
+          showToast("地圖上還沒有這一位的位置。");
+          return;
+        }
+        walkToPlace({ x: spot.x, y: spot.y, zone: spot.zone || "" });
+      }));
     });
     nodes.push(para("今天已用 " + (bag().clientSteps || 0) + " / 5。"));
     fillFacility("客戶簿", nodes);
@@ -6205,6 +6485,17 @@
       return report;
     },
     isOpen: isOpen,
+    openLibrary: openLibrary,
+    openClientBook: openClientBook,
+    openDailyTip: openDailyTip,
+    previewWrong: function () {
+      refreshDailySpots();
+      const near = SPOTS.filter(function (s) { return s.facility === "quiz"; })[0];
+      if (!near) return "no-quiz";
+      knowTry()["quiz:" + near.quizId] = "miss";
+      openQuiz(near);
+      return near.quizId;
+    },
     isTyphoon: isTyphoon,
     pathLen: function () { return path ? path.length : 0; },
     area: function () { return area; },
